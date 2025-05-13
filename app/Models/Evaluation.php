@@ -10,7 +10,14 @@ class Evaluation extends Model
     use HasFactory;
 
     protected $fillable = [
-        'defense_id', 'evaluator_id', 'score', 'comments',
+        'defense_id',
+        'evaluator_id',
+        'report_score',
+        'demo_score',
+        'presentation_score',
+        'qna_score',
+        'final_score',
+        'comments'
     ];
 
     public function defenseSession()
@@ -21,5 +28,10 @@ class Evaluation extends Model
     public function evaluator()
     {
         return $this->belongsTo(Lecturer::class, 'evaluator_id');
+    }
+
+    public function defense()
+    {
+        return $this->belongsTo(DefenseSession::class, 'defense_id');
     }
 }

@@ -36,4 +36,10 @@ class DefenseSession extends Model
     {
         return $this->hasMany(Evaluation::class, 'defense_id');
     }
+
+    public function committee()
+    {
+        return $this->belongsTo(DefenseCommittee::class, 'committee_id');
+    }
+
 }

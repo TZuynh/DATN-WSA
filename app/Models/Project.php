@@ -61,4 +61,15 @@ class Project extends Model
             'defense_id'
         );
     }
+
+    public function batch()
+    {
+        return $this->belongsTo(ProjectBatch::class, 'batch_id');
+    }
+
+    public function reviewer()
+    {
+        return $this->belongsTo(Lecturer::class, 'reviewer_id');
+    }
+
 }
