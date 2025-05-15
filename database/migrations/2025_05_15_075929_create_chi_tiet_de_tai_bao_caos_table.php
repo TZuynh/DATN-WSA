@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('defense_committee_members', function (Blueprint $table) {
+        Schema::create('chi_tiet_de_tai_bao_caos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('committee_id')->constrained('defense_committees')->cascadeOnDelete();
-            $table->foreignId('lecturer_id')->constrained('lecturers')->cascadeOnDelete();
-            $table->string('role', 50)->nullable();
+            $table->foreignId('dot_bao_cao_id')->constrained();
+            $table->foreignId('de_tai_id')->constrained();
+            $table->foreignId('hoi_dong_id')->constrained();
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('defense_committee_members');
+        Schema::dropIfExists('chi_tiet_de_tai_bao_caos');
     }
 };

@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('defense_sessions', function (Blueprint $table) {
-            $table->foreignId('committee_id')->nullable()->constrained('defense_committees');
+        Schema::create('dot_bao_caos', function (Blueprint $table) {
+            $table->id();
+            $table->string('hoc_ky'); // VD: "HK1"
+            $table->year('khoa_hoc');
+            $table->timestamps();
         });
     }
 
@@ -21,8 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('defense_sessions', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('dot_bao_caos');
     }
 };

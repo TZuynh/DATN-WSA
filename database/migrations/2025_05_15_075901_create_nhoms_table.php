@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('evaluations', function (Blueprint $table) {
+        Schema::create('nhoms', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('defense_id')->constrained('defense_sessions');
-            $table->foreignId('evaluator_id')->constrained('lecturers');
-            $table->decimal('score', 4, 2)->nullable();
-            $table->text('comments')->nullable();
+            $table->string('ma_nhom')->unique();
+            $table->string('ten');
+            $table->foreignId('giang_vien_id')->constrained('tai_khoans'); // giáo viên hướng dẫn
+            $table->enum('trang_thai', ['active', 'inactive'])->default('active');
             $table->timestamps();
         });
     }
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('evaluations');
+        Schema::dropIfExists('nhoms');
     }
 };

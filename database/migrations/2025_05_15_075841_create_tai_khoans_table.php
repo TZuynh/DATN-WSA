@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('projects', function (Blueprint $table) {
-            $table->foreignId('batch_id')->nullable()->constrained('project_batches');
-            $table->foreignId('reviewer_id')->nullable()->constrained('lecturers');
+        Schema::create('tai_khoans', function (Blueprint $table) {
+            $table->id();
+            $table->string('ten');
+            $table->string('email')->unique();
+            $table->string('mat_khau');
+            $table->enum('vai_tro', ['admin', 'teacher']);
         });
     }
 
@@ -22,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('projects', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('tai_khoans');
     }
 };

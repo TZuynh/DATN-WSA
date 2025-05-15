@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('thanh_vien_hoi_dongs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
-            $table->foreignId('lecturer_id')->constrained('lecturers')->cascadeOnDelete();
-            $table->string('email', 100)->unique();
-            $table->string('password');
+            $table->foreignId('hoi_dong_id')->constrained();
+            $table->foreignId('tai_khoan_id')->constrained('tai_khoans');
+            $table->enum('vai_tro', ['main', 'reviewer'])->default('main'); // phân biệt phản biện
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('thanh_vien_hoi_dongs');
     }
 };

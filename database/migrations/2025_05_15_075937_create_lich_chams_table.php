@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('project_batches', function (Blueprint $table) {
+        Schema::create('lich_chams', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 100);
-            $table->year('year');
+            $table->foreignId('nhom_id')->constrained();
+            $table->foreignId('hoi_dong_id')->constrained();
+            $table->foreignId('dot_bao_cao_id')->constrained();
+            $table->dateTime('lich_tao');
             $table->timestamps();
         });
     }
@@ -24,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('project_batches');
+        Schema::dropIfExists('lich_chams');
     }
 };
