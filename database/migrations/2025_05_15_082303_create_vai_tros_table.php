@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('thanh_vien_hoi_dongs', function (Blueprint $table) {
+        Schema::create('vai_tros', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('hoi_dong_id')->constrained();
-            $table->foreignId('tai_khoan_id')->constrained('tai_khoans');
-            $table->enum('vai_tro', ['hoi_dong', 'phan_bien'])->default('hoi_dong'); // phân biệt phản biện
+            $table->string('ten'); // VD: "chủ tịch hội đồng", "giáo viên phản biện", "giáo viên thư ký", "giáo viên hướng dẫn"
             $table->timestamps();
         });
     }
@@ -25,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('thanh_vien_hoi_dongs');
+        Schema::dropIfExists('vai_tros');
     }
 };

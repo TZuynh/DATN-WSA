@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('thanh_vien_hoi_dongs', function (Blueprint $table) {
+        Schema::create('dang_ky_de_tais', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('hoi_dong_id')->constrained();
-            $table->foreignId('tai_khoan_id')->constrained('tai_khoans');
-            $table->enum('vai_tro', ['hoi_dong', 'phan_bien'])->default('hoi_dong'); // phân biệt phản biện
+            $table->foreignId('sinh_vien_id')->constrained('sinh_viens');
+            $table->foreignId('de_tai_id')->constrained('de_tais');
+            $table->enum('trang_thai', ['cho_duyet', 'da_duyet', 'tu_choi'])->default('cho_duyet');
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('thanh_vien_hoi_dongs');
+        Schema::dropIfExists('dang_ky_de_tais');
     }
 };

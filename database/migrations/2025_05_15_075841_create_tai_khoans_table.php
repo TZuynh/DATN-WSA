@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('ten');
             $table->string('email')->unique();
             $table->string('mat_khau');
-            $table->enum('vai_tro', ['admin', 'teacher']);
+            $table->enum('vai_tro', ['admin', 'giang_vien']);
         });
     }
 

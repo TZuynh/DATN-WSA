@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('ma_nhom')->unique();
             $table->string('ten');
             $table->foreignId('giang_vien_id')->constrained('tai_khoans'); // giáo viên hướng dẫn
-            $table->enum('trang_thai', ['active', 'inactive'])->default('active');
+            $table->enum('trang_thai', ['hoat_dong', 'khong_hoat_dong'])->default('hoat_dong');
             $table->timestamps();
         });
     }
