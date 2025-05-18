@@ -22,7 +22,7 @@ class AuthController extends Controller
 
         if (Auth::attempt([
             'email' => $credentials['email'],
-            'mat_khau' => $credentials['mat_khau'],  // password chứ không phải mat_khau
+            'password' => $credentials['mat_khau'],  // password chứ không phải mat_khau
             'vai_tro' => 'admin'
         ])) {
             $request->session()->regenerate();
