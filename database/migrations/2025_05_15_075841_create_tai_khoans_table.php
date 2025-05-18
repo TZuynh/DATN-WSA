@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('mat_khau');
             $table->enum('vai_tro', ['admin', 'giang_vien']);
+            $table->timestamps();
         });
     }
 

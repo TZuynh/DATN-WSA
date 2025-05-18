@@ -15,6 +15,11 @@ class TaiKhoan extends Authenticatable
 
     protected $hidden = ['mat_khau'];
 
+    public function getAuthPassword()
+    {
+        return $this->mat_khau;
+    }
+
     public function nhoms()
     {
         return $this->hasMany(Nhom::class, 'giang_vien_id');
