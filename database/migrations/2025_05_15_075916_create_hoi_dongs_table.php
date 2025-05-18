@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('hoi_dongs', function (Blueprint $table) {
             $table->id();
+            $table->string('ma_hoi_dong')->unique();
             $table->string('ten');
             $table->timestamps();
         });

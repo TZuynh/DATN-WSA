@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('dot_bao_caos', function (Blueprint $table) {
+        Schema::create('dot_de_tais', function (Blueprint $table) {
             $table->id();
-            $table->string('hoc_ky'); // VD: "HK1"
-            $table->year('nam_hoc');
+            $table->foreignId('de_tai_id')->constrained('de_tais');
+            $table->foreignId('giang_vien_id')->constrained('tai_khoans');
             $table->timestamps();
         });
     }
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('dot_bao_caos');
+        Schema::dropIfExists('dot_de_tais');
     }
 };

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Nhom extends Model
 {
-    protected $fillable = ['ma_nhom', 'ten', 'giang_vien_id', 'trang_thai'];
+    protected $fillable = ['ma_nhom', 'ten', 'giang_vien_id', 'de_tai_id', 'sinh_vien_id', 'trang_thai'];
 
     public function chiTietNhoms()
     {
@@ -26,5 +26,10 @@ class Nhom extends Model
     public function lichChams()
     {
         return $this->hasMany(LichCham::class);
+    }
+
+    public function sinhVien()
+    {
+        return $this->belongsTo(SinhVien::class);
     }
 }

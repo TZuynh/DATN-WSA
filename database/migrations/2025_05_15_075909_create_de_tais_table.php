@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('mo_ta')->nullable();
             $table->date('ngay_bat_dau')->nullable();
             $table->date('ngay_ket_thuc')->nullable();
-            $table->foreignId('nhom_id')->nullable()->constrained();
+            $table->foreignId('nhom_id')->nullable()->constrained('nhoms');
             $table->foreignId('giang_vien_id')->nullable()->constrained('tai_khoans');
             $table->timestamps();
         });
