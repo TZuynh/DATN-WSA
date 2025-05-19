@@ -1,18 +1,28 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Admin Dashboard</title>
-    @vite('resources/scss/admin-style.scss')
-</head>
-<body>
-<header>
-    <h1>Chào mừng Admin!</h1>
-    <form action="{{ route('admin.logout') }}" method="POST">
-        @csrf
-        <button type="submit">Đăng xuất</button>
-    </form>
-</header>
-</body>
-</html>
+@extends('admin.layout')
+
+@section('title', 'Dashboard - Thống kê')
+
+@vite('resources/scss/dashboard.scss')
+
+@section('content')
+    <h2>Thống kê hệ thống</h2>
+
+    <div class="stats-container">
+        <div class="stat-card">
+            <h3>Tổng người dùng</h3>
+            <p class="stat-number">123</p>
+        </div>
+        <div class="stat-card">
+            <h3>Tổng bài viết</h3>
+            <p class="stat-number">456</p>
+        </div>
+        <div class="stat-card">
+            <h3>Người dùng Admin</h3>
+            <p class="stat-number">789</p>
+        </div>
+        <div class="stat-card">
+            <h3>Người dùng Giảng viên</h3>
+            <p class="stat-number">101112</p>
+        </div>
+    </div>
+@endsection

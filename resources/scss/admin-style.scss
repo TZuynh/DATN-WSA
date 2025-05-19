@@ -39,4 +39,24 @@ header {
             }
         }
     }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+
+        h1 {
+            font-size: 1.3rem;
+        }
+
+        form button {
+            padding: 14px 24px;
+            font-size: 1.2rem;
+            width: 100%;
+            max-width: 250px;
+            margin: 0 auto;
+            display: block;
+        }
+    }
 }

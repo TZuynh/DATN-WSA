@@ -13,9 +13,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::domain('admin.project.test')->group(function () {
+    require __DIR__ . '/admin/auth.php';
+    require __DIR__ . '/admin/dashboard.php';
+    require __DIR__ . '/admin/taikhoan.php';
+});
+
+//Route::domain('giangvien.project.test')->group(function () {
+//    require __DIR__ . '/giangvien/auth.php';
+//    require __DIR__ . '/giangvien/dashboard.php';
+//});
+
 Route::get('/', function () {
     return view('welcome');
 });
-
-require __DIR__ . '/admin/auth.php';
-require __DIR__ . '/admin/dashboard.php';
