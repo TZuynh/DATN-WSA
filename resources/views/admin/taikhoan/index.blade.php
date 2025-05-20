@@ -3,7 +3,40 @@
 @section('title', 'Danh sách quản lý người dùng')
 
 @section('content')
-    <h1 style="margin-bottom: 20px; color: #2d3748; font-weight: 700;">Danh sách quản lý người dùng</h1>
+    <h1 style="margin-bottom: 20px; color: #2d3748; font-weight: 700;">Danh sách quản lý tài khoản</h1>
+
+    @if(session('success'))
+        <div style="background-color: #48bb78; color: white; padding: 10px; border-radius: 4px; margin-bottom: 20px;">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div style="background-color: #f56565; color: white; padding: 10px; border-radius: 4px; margin-bottom: 20px;">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    <!-- Form Import Excel -->
+    <div style="margin-bottom: 20px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);">
+        <h2 style="margin-bottom: 15px; color: #2d3748; font-size: 1.2rem;">Import danh sách nhân viên</h2>
+        <form action="{{ route('admin.taikhoan.import') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="file" name="import_file" accept=".xlsx, .xls" required 
+                    style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; flex: 1;">
+                <button type="submit" 
+                    style="padding: 8px 16px; background-color: #4299e1; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Import Excel
+                </button>
+            </div>
+            @error('import_file')
+                <div style="color: #f56565; margin-top: 5px;">{{ $message }}</div>
+            @enderror
+        </form>
+    </div>
+
+    <!-- Bảng danh sách người dùng -->
     <div style="overflow-x:auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);">
         <table style="width: 100%; border-collapse: collapse; min-width: 600px; font-family: Arial, sans-serif;">
             <thead>
