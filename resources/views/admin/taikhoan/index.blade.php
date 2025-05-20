@@ -3,7 +3,7 @@
 @section('title', 'Danh sách quản lý người dùng')
 
 @section('content')
-    <h1 style="margin-bottom: 20px; color: #2d3748; font-weight: 700;">Danh sách quản lý tài khoản</h1>
+    <h1 style="margin-bottom: 20px; color: #2d3748; font-weight: 700;">Quản lý tài khoản</h1>
 
     @if(session('success'))
         <div style="background-color: #48bb78; color: white; padding: 10px; border-radius: 4px; margin-bottom: 20px;">
@@ -23,9 +23,9 @@
         <form action="{{ route('admin.taikhoan.import') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div style="display: flex; gap: 10px; align-items: center;">
-                <input type="file" name="import_file" accept=".xlsx, .xls" required 
+                <input type="file" name="import_file" accept=".xlsx, .xls" required
                     style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; flex: 1;">
-                <button type="submit" 
+                <button type="submit"
                     style="padding: 8px 16px; background-color: #4299e1; color: white; border: none; border-radius: 4px; cursor: pointer;">
                     Import Excel
                 </button>
