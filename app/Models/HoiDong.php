@@ -13,13 +13,9 @@ class HoiDong extends Model
 
     protected $fillable = [
         'ma_hoi_dong',
-        'ten'
+        'ten',
+        'dot_bao_cao_id'
     ];
-
-    public function thanhViens()
-    {
-        return $this->hasMany(ThanhVienHoiDong::class);
-    }
 
     public function dotBaoCao()
     {

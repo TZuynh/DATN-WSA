@@ -28,6 +28,15 @@ class HoiDongController extends Controller
     }
 
     /**
+     * Hiển thị form tạo hội đồng mới
+     */
+    public function create()
+    {
+        $dotBaoCaos = DotBaoCao::all();
+        return view('admin.hoi-dong.create', compact('dotBaoCaos'));
+    }
+
+    /**
      * Lưu hội đồng mới
      */
     public function store(Request $request)
