@@ -22,10 +22,7 @@ Route::domain('admin.project.test')->group(function () {
     require __DIR__ . '/admin/phan-cong-hoi-dong.php';
     require __DIR__ . '/admin/hoi-dong.php';
     require __DIR__ . '/admin/vai-tro.php';
-    
-    Route::prefix('admin/dot-bao-cao')->group(function () {
-        require __DIR__ . '/admin/dot-bao-cao.php';
-    });
+    require __DIR__ . '/admin/dot-bao-cao.php';
     
     Route::get('/', function () {
         if (Auth::check() && Auth::user()->vai_tro === 'admin') {

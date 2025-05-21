@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\VaiTro;
+use App\Models\PhanCongVaiTro;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class VaiTroController extends Controller
 {
@@ -50,9 +52,23 @@ class VaiTroController extends Controller
 
     public function destroy(VaiTro $vaiTro)
     {
-        $vaiTro->delete();
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('admin.vai-tro.index')
-            ->with('success', 'Vai trò đã được xóa thành công.');
+            // Xóa các phân công vai trò liên quan
+            PhanCongVaiTro::where('vai_tro_id', $vaiTro->id)->delete();
+
+            // Xóa vai trò
+            $vaiTro->delete();
+
+            DB::commit();
+
+            return redirect()->route('admin.vai-tro.index')
+                ->with('success', 'Vai trò đã được xóa thành công.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('admin.vai-tro.index')
+                ->with('error', 'Không thể xóa vai trò này vì có dữ liệu liên quan.');
+        }
     }
 } 

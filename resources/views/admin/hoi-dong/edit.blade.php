@@ -45,7 +45,7 @@
                         <option value="">Chọn đợt báo cáo</option>
                         @foreach($dotBaoCaos as $dotBaoCao)
                             <option value="{{ $dotBaoCao->id }}" {{ old('dot_bao_cao_id', $hoiDong->dot_bao_cao_id) == $dotBaoCao->id ? 'selected' : '' }}>
-                                {{ $dotBaoCao->ten }}
+                                {{ $dotBaoCao->nam_hoc }}
                             </option>
                         @endforeach
                     </select>

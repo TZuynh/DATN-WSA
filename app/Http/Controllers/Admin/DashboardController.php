@@ -13,22 +13,35 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $data = [
-            'totalTaiKhoan' => 0,
-            'totalGiangVien' => 0,
-            'totalHoiDong' => 0,
-            'totalDotBaoCao' => 0
-        ];
-
         try {
-            $data['totalTaiKhoan'] = TaiKhoan::count() ?? 0;
-            $data['totalGiangVien'] = TaiKhoan::where('vai_tro', 'giang_vien')->count() ?? 0;
-            $data['totalHoiDong'] = HoiDong::count() ?? 0;
-            $data['totalDotBaoCao'] = DotBaoCao::count() ?? 0;
-        } catch (\Exception $e) {
-            // Giữ giá trị mặc định là 0
-        }
+            // Lấy tổng số tài khoản
+            $totalTaiKhoan = DB::table('tai_khoans')->count();
 
-        return view('admin.dashboard', $data);
+            // Lấy tổng số giảng viên (vai trò = giang_vien)
+            $totalGiangVien = DB::table('tai_khoans')
+                ->where('vai_tro', 'giang_vien')
+                ->count();
+
+            // Lấy tổng số hội đồng
+            $totalHoiDong = DB::table('hoi_dongs')->count();
+
+            // Lấy tổng số đợt báo cáo
+            $totalDotBaoCao = DB::table('dot_bao_caos')->count();
+
+            return view('admin.dashboard', compact(
+                'totalTaiKhoan',
+                'totalGiangVien',
+                'totalHoiDong',
+                'totalDotBaoCao'
+            ));
+        } catch (\Exception $e) {
+            // Nếu có lỗi, trả về view với giá trị mặc định là 0
+            return view('admin.dashboard', [
+                'totalTaiKhoan' => 0,
+                'totalGiangVien' => 0,
+                'totalHoiDong' => 0,
+                'totalDotBaoCao' => 0
+            ]);
+        }
     }
 } 

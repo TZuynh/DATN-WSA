@@ -5,7 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\HoiDong;
 use App\Models\DotBaoCao;
+use App\Models\PhanCongVaiTro;
+use App\Models\ChiTietDeTaiBaoCao;
+use App\Models\LichCham;
+use App\Models\BienBanNhanXet;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class HoiDongController extends Controller
 {
@@ -60,9 +65,32 @@ class HoiDongController extends Controller
 
     public function destroy(HoiDong $hoiDong)
     {
-        $hoiDong->delete();
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('admin.hoi-dong.index')
-            ->with('success', 'Xóa hội đồng thành công.');
+            // Xóa các phân công vai trò liên quan
+            PhanCongVaiTro::where('hoi_dong_id', $hoiDong->id)->delete();
+
+            // Xóa các chi tiết đề tài báo cáo liên quan
+            ChiTietDeTaiBaoCao::where('hoi_dong_id', $hoiDong->id)->delete();
+
+            // Xóa các lịch chấm liên quan
+            LichCham::where('hoi_dong_id', $hoiDong->id)->delete();
+
+            // Xóa các biên bản nhận xét liên quan
+            BienBanNhanXet::where('hoi_dong_id', $hoiDong->id)->delete();
+
+            // Xóa hội đồng
+            $hoiDong->delete();
+
+            DB::commit();
+
+            return redirect()->route('admin.hoi-dong.index')
+                ->with('success', 'Xóa hội đồng thành công.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('admin.hoi-dong.index')
+                ->with('error', 'Không thể xóa hội đồng này vì có dữ liệu liên quan.');
+        }
     }
 } 

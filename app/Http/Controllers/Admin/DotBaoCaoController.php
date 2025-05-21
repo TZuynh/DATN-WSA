@@ -4,7 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\DotBaoCao;
+use App\Models\HoiDong;
+use App\Models\ChiTietDeTaiBaoCao;
+use App\Models\BaoCaoQuaTrinh;
+use App\Models\BangDiem;
+use App\Models\LichCham;
+use App\Models\BienBanNhanXet;
+use App\Models\PhanCongVaiTro;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DotBaoCaoController extends Controller
 {
@@ -52,9 +60,36 @@ class DotBaoCaoController extends Controller
 
     public function destroy(DotBaoCao $dotBaoCao)
     {
-        $dotBaoCao->delete();
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('admin.dot-bao-cao.index')
-            ->with('success', 'Xóa đợt báo cáo thành công.');
+            // Lấy danh sách hội đồng cần xóa
+            $hoiDongIds = HoiDong::where('dot_bao_cao_id', $dotBaoCao->id)->pluck('id');
+
+            // Xóa các phân công vai trò liên quan đến hội đồng
+            PhanCongVaiTro::whereIn('hoi_dong_id', $hoiDongIds)->delete();
+
+            // Xóa các bản ghi liên quan
+            ChiTietDeTaiBaoCao::where('dot_bao_cao_id', $dotBaoCao->id)->delete();
+            BaoCaoQuaTrinh::where('dot_bao_cao_id', $dotBaoCao->id)->delete();
+            BangDiem::where('dot_bao_cao_id', $dotBaoCao->id)->delete();
+            LichCham::where('dot_bao_cao_id', $dotBaoCao->id)->delete();
+            BienBanNhanXet::where('dot_bao_cao_id', $dotBaoCao->id)->delete();
+            
+            // Xóa các hội đồng liên quan
+            HoiDong::where('dot_bao_cao_id', $dotBaoCao->id)->delete();
+
+            // Xóa đợt báo cáo
+            $dotBaoCao->delete();
+
+            DB::commit();
+
+            return redirect()->route('admin.dot-bao-cao.index')
+                ->with('success', 'Xóa đợt báo cáo thành công.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('admin.dot-bao-cao.index')
+                ->with('error', 'Không thể xóa đợt báo cáo này vì có dữ liệu liên quan.');
+        }
     }
 } 
