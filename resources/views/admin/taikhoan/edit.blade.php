@@ -4,6 +4,19 @@
 
 @section('content')    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .password-container {
+            position: relative;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #666;
+        }
+    </style>
     <div style="max-width: 800px; margin: 0 auto;">
         <h1 style="margin-bottom: 20px; color: #2d3748; font-weight: 700;">Chỉnh sửa tài khoản</h1>
 
@@ -35,8 +48,13 @@
 
             <div style="margin-bottom: 20px;">
                 <label for="mat_khau" style="display: block; margin-bottom: 5px; color: #4a5568;">Mật khẩu mới (để trống nếu không muốn thay đổi)</label>
-                <input type="password" name="mat_khau" id="mat_khau"
-                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                <div class="password-container">
+                    <input type="password" name="mat_khau" id="mat_khau"
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <span class="toggle-password" onclick="togglePassword()">
+                        <i class="fas fa-eye"></i>
+                    </span>
+                </div>
             </div>
 
             <div style="margin-bottom: 20px;">
@@ -60,4 +78,21 @@
             </div>
         </form>
     </div>
+
+    <script>
+    function togglePassword() {
+        const passwordInput = document.getElementById('mat_khau');
+        const toggleIcon = document.querySelector('.toggle-password i');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+    </script>
 @endsection 
