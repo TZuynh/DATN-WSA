@@ -44,11 +44,56 @@
             cursor: pointer;
             color: #666;
         }
+        .alert {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+        .alert-success {
+            background-color: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+        }
+        .alert-danger {
+            background-color: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+        .alert i {
+            margin-right: 0.5rem;
+            font-size: 1.25rem;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-400 via-purple-400 to-pink-300 flex items-center justify-center h-screen">
 <form method="POST" action="{{ route('admin.login.submit') }}" class="bg-white p-6 rounded shadow-md w-96">
     @csrf
+    
+    @if(session('success'))
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ session('error') }}
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle"></i>
+            @foreach($errors->all() as $error)
+                {{ $error }}<br>
+            @endforeach
+        </div>
+    @endif
+
     <div class="mb-4">
         <label class="block text-gray-700 mb-1 flex items-center">Tên đăng nhập:
             <span class="ml-1 text-green-600 tooltip">

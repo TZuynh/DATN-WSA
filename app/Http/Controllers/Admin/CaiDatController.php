@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Setting;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Session;
 
 class CaiDatController extends Controller
 {
@@ -39,11 +41,9 @@ class CaiDatController extends Controller
     {
         $request->validate([
             'thoi_gian_timeout' => 'required|integer|min:1|max:120',
-            'so_lan_dang_nhap_sai_toi_da' => 'required|integer|min:1|max:10',
         ]);
 
-        $data = $request->only(['thoi_gian_timeout', 'so_lan_dang_nhap_sai_toi_da']);
-
+        $data = $request->only(['thoi_gian_timeout']);
 
         foreach ($data as $key => $value) {
             Setting::updateOrCreate(
@@ -52,9 +52,30 @@ class CaiDatController extends Controller
             );
         }
 
-        // Lưu cài đặt vào session
-        session(['settings' => array_merge(session('settings', []), $data)]);
+        // Cập nhật cấu hình hệ thống
+        config(['session.lifetime' => $data['thoi_gian_timeout']]);
+
+        // Lưu cấu hình vào file config
+        $this->updateConfigFile('session', ['lifetime' => $data['thoi_gian_timeout']]);
+
+        // Cập nhật session hiện tại
+        Session::put('settings', array_merge(Session::get('settings', []), $data));
+        Session::put('lifetime', $data['thoi_gian_timeout']);
+
+        // Làm mới session
+        Session::regenerate();
 
         return redirect()->back()->with('success', 'Cập nhật cài đặt bảo mật thành công');
+    }
+
+    private function updateConfigFile($configName, $data)
+    {
+        $path = config_path($configName . '.php');
+        if (file_exists($path)) {
+            $config = require $path;
+            $config = array_merge($config, $data);
+            $content = '<?php return ' . var_export($config, true) . ';';
+            file_put_contents($path, $content);
+        }
     }
 } 

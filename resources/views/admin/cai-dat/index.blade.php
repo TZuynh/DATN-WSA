@@ -149,11 +149,6 @@
                             <input type="number" class="form-control security-input" name="thoi_gian_timeout" value="{{ $settings['thoi_gian_timeout'] ?? '30' }}" min="1" max="120">
                             <small class="text-muted">Thời gian tự động đăng xuất khi không hoạt động (1-120 phút)</small>
                         </div>
-                        <div class="mb-4">
-                            <label class="form-label fw-bold security-label">Số lần đăng nhập sai tối đa</label>
-                            <input type="number" class="form-control security-input" name="so_lan_dang_nhap_sai_toi_da" value="{{ $settings['so_lan_dang_nhap_sai_toi_da'] ?? '5' }}" min="1" max="10">
-                            <small class="text-muted">Số lần đăng nhập sai tối đa trước khi tài khoản bị khóa (1-10 lần)</small>
-                        </div>
                         <button type="submit" class="btn btn-primary btn-lg">
                             <i class="fas fa-save me-2"></i>Lưu thay đổi
                         </button>
