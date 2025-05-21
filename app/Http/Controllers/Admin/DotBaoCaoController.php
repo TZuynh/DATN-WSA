@@ -13,6 +13,7 @@ use App\Models\BienBanNhanXet;
 use App\Models\PhanCongVaiTro;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class DotBaoCaoController extends Controller
 {
@@ -63,21 +64,33 @@ class DotBaoCaoController extends Controller
         try {
             DB::beginTransaction();
 
-            // Lấy danh sách hội đồng cần xóa
-            $hoiDongIds = HoiDong::where('dot_bao_cao_id', $dotBaoCao->id)->pluck('id');
+            // Kiểm tra xem có hội đồng nào đang sử dụng đợt báo cáo này không
+            $hoiDongCount = HoiDong::where('dot_bao_cao_id', $dotBaoCao->id)->count();
+            if ($hoiDongCount > 0) {
+                return redirect()->route('admin.dot-bao-cao.index')
+                    ->with('error', 'Không thể xóa đợt báo cáo này vì đang có hội đồng sử dụng. Vui lòng xóa các hội đồng liên quan trước.');
+            }
 
-            // Xóa các phân công vai trò liên quan đến hội đồng
-            PhanCongVaiTro::whereIn('hoi_dong_id', $hoiDongIds)->delete();
+            // Xóa các bản ghi trực tiếp liên quan đến đợt báo cáo
+            if (Schema::hasTable('chi_tiet_de_tai_bao_caos')) {
+                ChiTietDeTaiBaoCao::where('dot_bao_cao_id', $dotBaoCao->id)->delete();
+            }
 
-            // Xóa các bản ghi liên quan
-            ChiTietDeTaiBaoCao::where('dot_bao_cao_id', $dotBaoCao->id)->delete();
-            BaoCaoQuaTrinh::where('dot_bao_cao_id', $dotBaoCao->id)->delete();
-            BangDiem::where('dot_bao_cao_id', $dotBaoCao->id)->delete();
-            LichCham::where('dot_bao_cao_id', $dotBaoCao->id)->delete();
-            BienBanNhanXet::where('dot_bao_cao_id', $dotBaoCao->id)->delete();
-            
-            // Xóa các hội đồng liên quan
-            HoiDong::where('dot_bao_cao_id', $dotBaoCao->id)->delete();
+            if (Schema::hasTable('bao_cao_qua_trinhs')) {
+                BaoCaoQuaTrinh::where('dot_bao_cao_id', $dotBaoCao->id)->delete();
+            }
+
+            if (Schema::hasTable('bang_diems')) {
+                BangDiem::where('dot_bao_cao_id', $dotBaoCao->id)->delete();
+            }
+
+            if (Schema::hasTable('lich_chams')) {
+                LichCham::where('dot_bao_cao_id', $dotBaoCao->id)->delete();
+            }
+
+            if (Schema::hasTable('bien_ban_nhan_xets')) {
+                BienBanNhanXet::where('dot_bao_cao_id', $dotBaoCao->id)->delete();
+            }
 
             // Xóa đợt báo cáo
             $dotBaoCao->delete();
@@ -89,7 +102,7 @@ class DotBaoCaoController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->route('admin.dot-bao-cao.index')
-                ->with('error', 'Không thể xóa đợt báo cáo này vì có dữ liệu liên quan.');
+                ->with('error', 'Có lỗi xảy ra khi xóa đợt báo cáo: ' . $e->getMessage());
         }
     }
 } 

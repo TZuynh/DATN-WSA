@@ -1,6 +1,6 @@
 <?php return array (
   'driver' => 'file',
-  'lifetime' => '1',
+  'lifetime' => '30',
   'expire_on_close' => false,
   'encrypt' => false,
   'files' => 'D:\\laragon\\www\\project\\storage\\framework/sessions',

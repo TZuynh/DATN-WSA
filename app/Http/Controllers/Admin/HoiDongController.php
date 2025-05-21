@@ -11,6 +11,7 @@ use App\Models\LichCham;
 use App\Models\BienBanNhanXet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class HoiDongController extends Controller
 {
@@ -69,16 +70,19 @@ class HoiDongController extends Controller
             DB::beginTransaction();
 
             // Xóa các phân công vai trò liên quan
-            PhanCongVaiTro::where('hoi_dong_id', $hoiDong->id)->delete();
+            if (Schema::hasTable('phan_cong_vai_tros')) {
+                PhanCongVaiTro::where('hoi_dong_id', $hoiDong->id)->delete();
+            }
 
             // Xóa các chi tiết đề tài báo cáo liên quan
-            ChiTietDeTaiBaoCao::where('hoi_dong_id', $hoiDong->id)->delete();
+            if (Schema::hasTable('chi_tiet_de_tai_bao_caos')) {
+                ChiTietDeTaiBaoCao::where('hoi_dong_id', $hoiDong->id)->delete();
+            }
 
             // Xóa các lịch chấm liên quan
-            LichCham::where('hoi_dong_id', $hoiDong->id)->delete();
-
-            // Xóa các biên bản nhận xét liên quan
-            BienBanNhanXet::where('hoi_dong_id', $hoiDong->id)->delete();
+            if (Schema::hasTable('lich_chams')) {
+                LichCham::where('hoi_dong_id', $hoiDong->id)->delete();
+            }
 
             // Xóa hội đồng
             $hoiDong->delete();
@@ -90,7 +94,7 @@ class HoiDongController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->route('admin.hoi-dong.index')
-                ->with('error', 'Không thể xóa hội đồng này vì có dữ liệu liên quan.');
+                ->with('error', 'Có lỗi xảy ra khi xóa hội đồng: ' . $e->getMessage());
         }
     }
 } 
