@@ -2,7 +2,8 @@
 
 @section('title', 'Thêm tài khoản mới')
 
-@section('content')
+@section('content')    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <div style="max-width: 800px; margin: 0 auto;">
         <h1 style="margin-bottom: 20px; color: #2d3748; font-weight: 700;">Thêm tài khoản mới</h1>
 

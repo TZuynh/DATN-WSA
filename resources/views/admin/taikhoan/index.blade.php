@@ -27,7 +27,7 @@
 
     <!-- Form Import Excel -->
     <div style="margin-bottom: 20px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);">
-        <h2 style="margin-bottom: 15px; color: #2d3748; font-size: 1.2rem;">Import danh sách nhân viên</h2>
+        <h2 style="margin-bottom: 15px; color: #2d3748; font-size: 1.2rem;">Import danh sách tài khoản</h2>
         <form action="{{ route('admin.taikhoan.import') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div style="display: flex; gap: 10px; align-items: center;">

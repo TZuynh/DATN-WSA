@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class DotBaoCao extends Model
 {
-    protected $fillable = ['hoc_ky', 'khoa_hoc'];
+    protected $fillable = ['nam_hoc'];
 
     public function chiTietBaoCaos()
     {

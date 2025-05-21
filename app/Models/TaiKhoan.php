@@ -9,6 +9,8 @@ class TaiKhoan extends Authenticatable
 {
     use Notifiable;
 
+    protected $table = 'tai_khoans';
+
     protected $fillable = [
         'ten', 'email', 'mat_khau', 'vai_tro',
     ];
@@ -20,14 +22,19 @@ class TaiKhoan extends Authenticatable
         return $this->mat_khau;
     }
 
+    public function getAuthIdentifierName()
+    {
+        return 'id';
+    }
+
+    public function getAuthIdentifier()
+    {
+        return $this->id;
+    }
+
     public function nhoms()
     {
         return $this->hasMany(Nhom::class, 'giang_vien_id');
-    }
-
-    public function thanhVienHoiDong()
-    {
-        return $this->hasMany(ThanhVienHoiDong::class, 'tai_khoan_id');
     }
 
     public function bangDiems()
