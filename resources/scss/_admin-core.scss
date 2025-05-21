@@ -1,0 +1,272 @@
+// Variables
+$primary-color: #007bff; // Blue
+$secondary-color: #6c757d; // Gray
+$success-color: #28a745; // Green
+$info-color: #17a2b8; // Cyan
+$warning-color: #ffc107; // Yellow
+$danger-color: #dc3545; // Red
+$light-color: #f8f9fa; // Light gray
+$dark-color: #343a40; // Dark gray
+$white-color: #ffffff;
+
+// Spacing (using a scale)
+$spacer: 1rem;
+$spacers: (
+    0: 0,
+    1: ($spacer * 0.25),
+    2: ($spacer * 0.5),
+    3: $spacer,
+    4: ($spacer * 1.5),
+    5: ($spacer * 3),
+);
+
+// Mixins
+@mixin flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@mixin card-shadow {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+// Layout (Ensure this is still needed or handled by main layout file)
+.admin-main {
+    // Assuming margin and padding are handled by the main layout
+    // margin-left: 250px;
+    // padding: 1.5rem;
+    min-height: 100vh;
+    background-color: $light-color;
+    padding-top: map-get($spacers, 4);
+    padding-bottom: map-get($spacers, 4);
+}
+
+// General Page Styles
+.settings-page {
+    // Specific styles for the settings page container
+}
+
+// Cards
+.card {
+    border: 1px solid #e3e6f0;
+    border-radius: 0.5rem; // Increased border-radius
+    @include card-shadow; // Applied custom shadow
+    overflow: hidden; // Hide overflowing content due to border-radius
+
+    .card-header {
+        background-color: #f8f9fc; // Lighter header background
+        border-bottom: 1px solid #e3e6f0;
+        padding: map-get($spacers, 3) map-get($spacers, 4); // Added horizontal padding
+
+        .d-flex {
+            align-items: center;
+        }
+
+        h6 {
+            color: $dark-color;
+            font-weight: 700; // Bolder header text
+            margin-bottom: 0;
+        }
+
+        i {
+            color: $primary-color; // Icon color
+            margin-right: map-get($spacers, 2);
+        }
+    }
+
+    .card-body {
+        padding: map-get($spacers, 4); // Increased padding
+    }
+}
+
+// Forms
+.form-group,
+.mb-4 {
+
+    // Assuming mb-4 is used like form-group
+    &:not(:last-child) {
+        border-bottom: 1px solid #eee; // Subtle divider
+        padding-bottom: map-get($spacers, 3);
+        margin-bottom: map-get($spacers, 3) !important; // Adjust margin bottom if needed
+    }
+
+    .form-label {
+        font-weight: 600; // Bolder label
+        color: $dark-color;
+        margin-bottom: map-get($spacers, 1);
+    }
+}
+
+.form-control {
+    border-radius: 0.25rem; // Slightly less rounded than cards
+    border: 1px solid #ced4da;
+    padding: 0.5rem 0.75rem; // Adjusted padding
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+    &:focus {
+        border-color: lighten($primary-color, 15%);
+        box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.25);
+    }
+
+    &-file {
+        padding-top: 0.5rem;
+    }
+}
+
+// Buttons
+.btn {
+    border-radius: 0.3rem; // Slightly rounded
+    padding: 0.6rem 1.2rem; // Increased padding
+    font-weight: 600; // Bolder text
+    transition: all 0.15s ease-in-out;
+    display: inline-flex; // Use flex for icon alignment
+    align-items: center;
+    justify-content: center;
+
+    i {
+        margin-right: map-get($spacers, 1); // Spacing for icon
+    }
+
+    &-primary {
+        background-color: $primary-color;
+        border-color: $primary-color;
+        color: $white-color;
+
+        &:hover {
+            background-color: darken($primary-color, 7.5%); // Darken on hover
+            border-color: darken($primary-color, 10%);
+        }
+    }
+
+    &-outline-primary {
+        color: $primary-color;
+        border-color: $primary-color;
+
+        &:hover {
+            background-color: $primary-color;
+            color: $white-color;
+        }
+    }
+
+    &-outline-success {
+        color: $success-color;
+        border-color: $success-color;
+
+        &:hover {
+            background-color: $success-color;
+            color: $white-color;
+        }
+    }
+
+    &-danger {
+        background-color: $danger-color;
+        border-color: $danger-color;
+        color: $white-color;
+
+        &:hover {
+            background-color: darken($danger-color, 7.5%);
+            border-color: darken($danger-color, 10%);
+        }
+    }
+}
+
+// Alerts
+.alert {
+    border: 1px solid;
+    border-radius: 0.25rem;
+    padding: 0.75rem 1.25rem;
+
+    &-success {
+        color: #155724; // Darker text for better contrast
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+    }
+
+    &-danger {
+        color: #721c24; // Darker text
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+    }
+
+    .btn-close {
+        padding: 0.75rem 1.25rem; // Adjust padding to align with alert text
+        margin-right: -1.25rem; // Pull button to the right edge
+    }
+}
+
+// Modals
+.modal-content {
+    border: none;
+    border-radius: 0.5rem; // Match card border-radius
+    @include card-shadow;
+
+    .modal-header {
+        border-bottom: 1px solid #e9ecef;
+        padding: 1rem 1.5rem;
+
+        h5 {
+            margin-bottom: 0;
+            font-weight: 600;
+        }
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #e9ecef;
+        padding: 1rem 1.5rem;
+    }
+}
+
+// Image thumbnail in settings
+.settings-page {
+    .img-thumbnail {
+        border: 1px solid #dee2e6; // Standard thumbnail border
+        padding: 0.25rem;
+        background-color: #fff;
+    }
+
+    .position-relative .btn.rounded-circle {
+        background-color: rgba($light-color, 0.8);
+        border: 1px solid rgba($secondary-color, 0.2);
+        color: $secondary-color;
+        width: 25px;
+        height: 25px;
+        padding: 0;
+        font-size: 0.75rem;
+        @include flex-center;
+
+        &:hover {
+            background-color: $light-color;
+            color: $dark-color;
+        }
+    }
+}
+
+// Responsive
+@media (max-width: 768px) {
+    .admin-main {
+        margin-left: 0; // Ensure full width on small screens
+        padding-left: map-get($spacers, 3);
+        padding-right: map-get($spacers, 3);
+    }
+
+    .card {
+        margin-bottom: map-get($spacers, 4);
+    }
+
+    .card-header {
+        padding: map-get($spacers, 3);
+    }
+
+    .card-body {
+        padding: map-get($spacers, 3);
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+    }
+}

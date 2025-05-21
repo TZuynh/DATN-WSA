@@ -19,11 +19,15 @@ Route::domain('admin.project.test')->group(function () {
     require __DIR__ . '/admin/auth.php';
     require __DIR__ . '/admin/dashboard.php';
     require __DIR__ . '/admin/taikhoan.php';
-    require __DIR__ . '/admin/hoidong.php';
-
+    require __DIR__ . '/admin/phan-cong-hoi-dong.php';
+    require __DIR__ . '/admin/hoi-dong.php';
+    require __DIR__ . '/admin/vai-tro.php';
+    require __DIR__ . '/admin/dot-bao-cao.php';
+    require __DIR__ . '/admin/cai-dat.php';
+    
     Route::get('/', function () {
         if (Auth::check() && Auth::user()->vai_tro === 'admin') {
-            return redirect('/admin/dashboard');
+            return redirect('/dashboard');
         }
         return redirect()->route('admin.login');
     });

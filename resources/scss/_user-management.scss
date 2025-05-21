@@ -1,0 +1,106 @@
+// Styles for the user management page
+
+.user-management-page {
+    .text-gray-800 {
+        color: #2d3748;
+    }
+
+    .card {
+        background-color: #fff;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    }
+
+    .card-header {
+        background-color: #f8f9fc;
+        border-bottom: 1px solid #e3e6f0;
+
+        .text-primary {
+            color: #4e73df !important;
+        }
+    }
+
+    .table {
+        color: #858796;
+
+        thead {
+            background-color: #e3e6f0;
+            color: #858796;
+
+            th {
+                border-bottom-width: 2px;
+            }
+        }
+
+        tbody tr {
+            background-color: #fff;
+
+            &:nth-of-type(odd) {
+                background-color: #f8f9fc;
+            }
+        }
+
+        &.table-bordered {
+            border-color: #e3e6f0;
+
+            th,
+            td {
+                border-color: #e3e6f0;
+            }
+        }
+    }
+
+    // Dark mode styles
+    .theme-dark & {
+        .text-gray-800 {
+            color: #000000;
+        }
+
+        .card {
+            background-color: #1e1e1e;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            background-color: #2d2d2d;
+            border-bottom-color: #333333;
+
+            .text-primary {
+                color: #bb86fc !important;
+            }
+        }
+
+        .table {
+            color: #e0e0e0;
+
+            thead {
+                background-color: #333333;
+                color: #f0f0f0;
+
+                th {
+                    border-bottom-width: 2px;
+                }
+            }
+
+            tbody tr {
+                background-color: #1e1e1e;
+
+                &:nth-of-type(odd) {
+                    background-color: #2d2d2d;
+                }
+
+                td {
+                    color: #e0e0e0;
+                }
+            }
+
+            &.table-bordered {
+                border-color: #333333;
+
+                th,
+                td {
+                    border-color: #333333;
+                }
+            }
+        }
+    }
+}

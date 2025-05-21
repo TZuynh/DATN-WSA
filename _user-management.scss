@@ -1,0 +1,46 @@
+    // Dark mode styles
+    .theme-dark & {
+        .text-gray-800 {
+            color: #f0f0f0;
+        }
+
+        .card {
+            background-color: #1e1e1e;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            background-color: #2d2d2d;
+            border-bottom-color: #333333;
+
+            .text-primary {
+                color: #bb86fc !important;
+            }
+        }
+
+        .table {
+            color: #e0e0e0;
+
+            thead {
+                background-color: #333333;
+                color: #f0f0f0;
+            }
+
+            tbody tr {
+                background-color: #1e1e1e;
+
+                &:nth-of-type(odd) {
+                    background-color: #2d2d2d;
+                }
+            }
+
+            &.table-bordered {
+                border-color: #333333;
+
+                th,
+                td {
+                    border-color: #333333;
+                }
+            }
+        }
+    }

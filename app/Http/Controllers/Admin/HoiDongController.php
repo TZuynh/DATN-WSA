@@ -3,8 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\HoiDong;
+use App\Models\DotBaoCao;
+use App\Models\PhanCongVaiTro;
+use App\Models\ChiTietDeTaiBaoCao;
+use App\Models\LichCham;
+use App\Models\BienBanNhanXet;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class HoiDongController extends Controller
@@ -14,8 +19,11 @@ class HoiDongController extends Controller
      */
     public function index()
     {
-        $hoiDongs = HoiDong::orderBy('created_at', 'desc')->get();
-        return view('admin.hoidong.index', compact('hoiDongs'));
+        $hoiDongs = HoiDong::with('dotBaoCao')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+            
+        return view('admin.hoi-dong.index', compact('hoiDongs'));
     }
 
     /**
@@ -24,78 +32,74 @@ class HoiDongController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'ma_hoi_dong' => 'required|string|max:255|unique:hoi_dongs,ma_hoi_dong',
-            'ten' => 'required|string|max:255',
+            'ma_hoi_dong' => 'required|unique:hoi_dongs,ma_hoi_dong',
+            'ten' => 'required',
+            'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id'
         ]);
 
-        try {
-            DB::beginTransaction();
-            
-            HoiDong::create([
-                'ma_hoi_dong' => $request->ma_hoi_dong,
-                'ten' => $request->ten,
-            ]);
+        HoiDong::create($request->all());
 
-            DB::commit();
-            return redirect()->route('admin.hoidong.index')->with('success', 'Thêm hội đồng thành công!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
-        }
+        return redirect()->route('admin.hoi-dong.index')
+            ->with('success', 'Thêm hội đồng thành công.');
     }
 
     /**
      * Hiển thị form sửa hội đồng
      */
-    public function edit($id)
+    public function edit(HoiDong $hoiDong)
     {
-        $hoiDong = HoiDong::findOrFail($id);
-        return view('admin.hoidong.edit', compact('hoiDong'));
+        $dotBaoCaos = DotBaoCao::all();
+        return view('admin.hoi-dong.edit', compact('hoiDong', 'dotBaoCaos'));
     }
 
     /**
      * Cập nhật hội đồng
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, HoiDong $hoiDong)
     {
         $request->validate([
-            'ma_hoi_dong' => 'required|string|max:255|unique:hoi_dongs,ma_hoi_dong,' . $id,
-            'ten' => 'required|string|max:255',
+            'ma_hoi_dong' => 'required|unique:hoi_dongs,ma_hoi_dong,' . $hoiDong->id,
+            'ten' => 'required',
+            'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id'
         ]);
 
-        try {
-            DB::beginTransaction();
-            
-            $hoiDong = HoiDong::findOrFail($id);
-            $hoiDong->update([
-                'ma_hoi_dong' => $request->ma_hoi_dong,
-                'ten' => $request->ten,
-            ]);
+        $hoiDong->update($request->all());
 
-            DB::commit();
-            return redirect()->route('admin.hoidong.index')->with('success', 'Cập nhật hội đồng thành công!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
-        }
+        return redirect()->route('admin.hoi-dong.index')
+            ->with('success', 'Cập nhật hội đồng thành công.');
     }
 
     /**
      * Xóa hội đồng
      */
-    public function destroy($id)
+    public function destroy(HoiDong $hoiDong)
     {
         try {
             DB::beginTransaction();
-            
-            $hoiDong = HoiDong::findOrFail($id);
+
+            // Xóa các phân công vai trò liên quan
+            PhanCongVaiTro::where('hoi_dong_id', $hoiDong->id)->delete();
+
+            // Xóa các chi tiết đề tài báo cáo liên quan
+            ChiTietDeTaiBaoCao::where('hoi_dong_id', $hoiDong->id)->delete();
+
+            // Xóa các lịch chấm liên quan
+            LichCham::where('hoi_dong_id', $hoiDong->id)->delete();
+
+            // Xóa các biên bản nhận xét liên quan
+            BienBanNhanXet::where('hoi_dong_id', $hoiDong->id)->delete();
+
+            // Xóa hội đồng
             $hoiDong->delete();
 
             DB::commit();
-            return redirect()->route('admin.hoidong.index')->with('success', 'Xóa hội đồng thành công!');
+
+            return redirect()->route('admin.hoi-dong.index')
+                ->with('success', 'Xóa hội đồng thành công.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+            return redirect()->route('admin.hoi-dong.index')
+                ->with('error', 'Không thể xóa hội đồng này vì có dữ liệu liên quan.');
         }
     }
 } 

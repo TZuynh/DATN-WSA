@@ -4,9 +4,9 @@
             ☰
         </button>
         <div class="logo">
-            <a href="{{ url('/admin') }}">
+            <a href="{{ route('admin.profile') }}">
                 <img src="{{ asset('images/logo-caothang.png') }}" alt="Logo" class="logo-img" />
-                Quản Lý Admin
+                Xin chào! {{ Auth::user()->ten }}
             </a>
             @vite('resources/scss/navbar.scss')
         </div>

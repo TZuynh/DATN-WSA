@@ -9,7 +9,8 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/scss/admin-style.scss',
                 'resources/scss/navbar.scss',
-                'resources/scss/dashboard.scss'
+                'resources/scss/dashboard.scss',
+                'resources/scss/profile.scss'
             ],
             refresh: true,
         }),

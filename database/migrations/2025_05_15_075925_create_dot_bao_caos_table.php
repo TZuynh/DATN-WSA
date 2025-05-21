@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('dot_bao_caos', function (Blueprint $table) {
             $table->id();
-            $table->string('hoc_ky'); // VD: "HK1"
             $table->year('nam_hoc');
             $table->timestamps();
         });

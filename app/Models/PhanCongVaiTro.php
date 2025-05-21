@@ -6,27 +6,27 @@ use Illuminate\Database\Eloquent\Model;
 
 class PhanCongVaiTro extends Model
 {
-    protected $table = 'phan_cong_vai_tro';
+    protected $table = 'phan_cong_vai_tros';
 
     protected $fillable = [
         'hoi_dong_id',
         'tai_khoan_id',
-        'role_id'
+        'vai_tro_id'
     ];
 
     public function hoiDong()
     {
-        return $this->belongsTo(HoiDong::class, 'hoi_dong_id');
+        return $this->belongsTo(HoiDong::class);
+    }
+
+    public function vaiTro()
+    {
+        return $this->belongsTo(VaiTro::class);
     }
 
     public function taiKhoan()
     {
-        return $this->belongsTo(TaiKhoan::class, 'tai_khoan_id');
-    }
-
-    public function role()
-    {
-        return $this->belongsTo(Role::class);
+        return $this->belongsTo(TaiKhoan::class);
     }
 }
 
