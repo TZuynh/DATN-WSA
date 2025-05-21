@@ -1,7 +1,22 @@
-.stats-container {
+// File: resources/scss/dashboard.scss
+// Dashboard specific styles
+
+.page-header {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h1 {
+        color: #2d3748; // Default color for page title
+        font-weight: 700;
+    }
+}
+
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
-    flex-wrap: wrap;
     margin-top: 20px;
 
     @media (max-width: 600px) {
@@ -12,9 +27,12 @@
 
 .stat-card {
     background: white;
-    padding: 25px 20px;
-    border-radius: 10px;
-    box-shadow: 0 3px 10px rgb(0 0 0 / 0.1);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
     flex: 1 1 200px;
     min-width: 200px;
     text-align: center;
@@ -24,15 +42,71 @@
         width: 100%;
     }
 
+    .icon-container {
+        padding: 15px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        i {
+            color: white; // Default color for icons
+            font-size: 24px; // Default size for icons
+        }
+    }
+
     h3 {
         font-weight: 600;
-        color: #2d3748;
-        margin-bottom: 12px;
+        color: #4a5568; // Default color for stat card headings
+        margin-bottom: 5px;
     }
 
     .stat-number {
-        font-size: 2.8rem;
-        font-weight: 700;
-        color: #3182ce; // xanh dương
+        font-size: 24px;
+        font-weight: bold;
+        color: #2d3748; // Default color for stat numbers
+        margin: 0;
+    }
+}
+
+// Styles for specific stat icon backgrounds
+.stat-card .icon-container.users {
+    background-color: #4299e1;
+}
+
+.stat-card .icon-container.teachers {
+    background-color: #48bb78;
+}
+
+.stat-card .icon-container.councils {
+    background-color: #ed8936;
+}
+
+.stat-card .icon-container.reports {
+    background-color: #9f7aea;
+}
+
+// Dark mode styles
+.theme-dark {
+    background-color: #1a1a1a;
+    color: #f0f0f0;
+
+    .page-header {
+        h1 {
+            color: #f0f0f0;
+        }
+    }
+
+    .stat-card {
+        background: #2d2d2d;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+
+        h3 {
+            color: #f0f0f0;
+        }
+
+        .stat-number {
+            color: #bb86fc;
+        }
     }
 }

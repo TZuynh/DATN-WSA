@@ -1,0 +1,271 @@
+// Basic theme styles
+
+// Light theme (default)
+body.theme-light {
+    // Default styles - maybe already defined in other partials
+}
+
+// Dark theme
+body.theme-dark {
+    background-color: #121212; // Darker background for overall page
+    color: #000000; // Màu chữ đen mặc định
+
+    // General typography
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        color: #f0f0f0; // Very light color for headings
+    }
+
+    p {
+        color: #d0d0d0; // Slightly darker text for paragraphs
+    }
+
+    a {
+        color: #bb86fc; // Accent color for links
+
+        &:hover {
+            color: lighten(#bb86fc, 10%);
+        }
+    }
+
+    // General borders
+    hr {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .admin-main {
+        background-color: #121212; // Match body background
+    }
+
+    .admin-sidebar {
+        background: #1e1e1e; // Even darker sidebar
+
+        a {
+            color: #b0b0b0; // Lighter text for sidebar links
+
+            &:hover {
+                background: #333333;
+                color: #ffffff;
+            }
+        }
+
+        .submenu {
+            background: #2c2c2c;
+
+            a:hover {
+                background: #333333;
+            }
+        }
+
+        /* Active state */
+        a.active {
+            background: #0056b3; // Darker shade of primary color for active state
+            color: #fff;
+        }
+
+        .submenu a.active {
+            background: #003f7f; // Even darker shade for submenu active
+        }
+    }
+
+    .card {
+        background-color: #1e1e1e; // Darker card background
+        border-color: #333333; // Darker border
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); // Adjust shadow for dark mode
+
+        .card-header {
+            background-color: #2c2c2c; // Darker header background
+            border-bottom-color: #333333;
+
+            h6 {
+                color: #f0f0f0;
+            }
+
+            i {
+                color: #bb86fc; // Use accent color for header icons
+            }
+        }
+
+        .card-body {
+            color: #e0e0e0;
+        }
+    }
+
+    // Adjust form control styles for dark mode
+    .form-control {
+        background-color: #1e1e1e;
+        color: #e0e0e0;
+        border-color: #333333;
+
+        &::placeholder {
+            color: #b0b0b0;
+        }
+
+        &:focus {
+            border-color: #bb86fc; // Use accent color on focus
+            box-shadow: 0 0 0 0.2rem rgba(#bb86fc, 0.25);
+        }
+    }
+
+    .form-label {
+        color: #f0f0f0;
+    }
+
+    .form-check-input {
+        background-color: #2c2c2c;
+        border-color: #b0b0b0;
+
+        &:checked {
+            background-color: #bb86fc;
+            border-color: #bb86fc;
+        }
+    }
+
+    // Adjust alert styles for dark mode
+    .alert {
+        &-success {
+            color: #c3e6cb; // Lighter text
+            background-color: #1c402a; // Darker background
+            border-color: #275b3a;
+        }
+
+        &-danger {
+            color: #f5c6cb; // Lighter text
+            background-color: #721c24; // Darker background
+            border-color: #f5c6cb;
+        }
+
+        .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%); // Make close button visible on dark background
+        }
+    }
+
+    // Adjust modal styles for dark mode
+    .modal-content {
+        background-color: #1e1e1e;
+        color: #e0e0e0;
+
+        .modal-header,
+        .modal-footer {
+            border-color: #333333;
+        }
+
+        .modal-title {
+            color: #f0f0f0;
+        }
+
+        .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%); // Make close button visible on dark background
+        }
+    }
+
+    .settings-page .img-thumbnail {
+        border-color: #333333;
+        background-color: #2c2c2c;
+    }
+
+    .settings-page .position-relative .btn.rounded-circle {
+        background-color: rgba(#1e1e1e, 0.8);
+        border-color: rgba(#b0b0b0, 0.2);
+        color: #b0b0b0;
+
+        &:hover {
+            background-color: #121212;
+            color: #f0f0f0;
+        }
+    }
+
+    // Table styles for dark mode
+    .table {
+        color: #e0e0e0; // Text color
+        background-color: #1e1e1e; // Background color
+
+        thead {
+            th {
+                background-color: #2c2c2c; // Header background
+                border-bottom-color: #333333;
+                color: #f0f0f0;
+            }
+        }
+
+        tbody {
+            tr {
+                &:nth-of-type(odd) {
+                    background-color: #2c2c2c; // Striped rows
+                }
+            }
+        }
+
+        border-color: #333333; // Border color for table and cells
+
+        th,
+        td {
+            border-color: #333333;
+        }
+    }
+
+    // Add styles for pagination if used
+    .pagination {
+        .page-link {
+            background-color: #2c2c2c;
+            border-color: #333333;
+            color: #bb86fc;
+
+            &:hover {
+                background-color: #333333;
+                border-color: #333333;
+                color: lighten(#bb86fc, 10%);
+            }
+
+            &.active {
+                background-color: #bb86fc;
+                border-color: #bb86fc;
+                color: #1e1e1e;
+            }
+
+            &.disabled {
+                color: #6c757d;
+                pointer-events: none;
+                background-color: #1e1e1e;
+                border-color: #333333;
+            }
+        }
+    }
+
+    // Dashboard stats card styles for dark mode
+    .stats-container {
+        // May need adjustments if gap/margin colors are affected
+    }
+
+    .stat-card {
+        background: #1e1e1e; // Darker background
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+
+        .icon-container {
+
+            // Background colors for icons are specific and handled in _dashboard.scss, 
+            // but you might adjust icon color itself if not white
+            i {
+                color: #ffffff; // Ensure icons are white in dark mode
+            }
+        }
+
+        h3 {
+            color: #f0f0f0; // Lighter color for heading
+        }
+
+        .stat-number {
+            color: #bb86fc; // Use accent color for numbers
+        }
+    }
+
+    .page-header h1 {
+        color: #f0f0f0; // Lighter color for page title
+    }
+
+    // ... thêm style cho các thành phần khác trên các trang khác
+}

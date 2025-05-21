@@ -23,6 +23,7 @@ Route::domain('admin.project.test')->group(function () {
     require __DIR__ . '/admin/hoi-dong.php';
     require __DIR__ . '/admin/vai-tro.php';
     require __DIR__ . '/admin/dot-bao-cao.php';
+    require __DIR__ . '/admin/cai-dat.php';
     
     Route::get('/', function () {
         if (Auth::check() && Auth::user()->vai_tro === 'admin') {

@@ -28,11 +28,15 @@ class DashboardController extends Controller
             // Lấy tổng số đợt báo cáo
             $totalDotBaoCao = DB::table('dot_bao_caos')->count();
 
+            // Lấy cài đặt từ session
+            $settings = session('settings', ['theme' => 'light']);
+
             return view('admin.dashboard', compact(
                 'totalTaiKhoan',
                 'totalGiangVien',
                 'totalHoiDong',
-                'totalDotBaoCao'
+                'totalDotBaoCao',
+                'settings'
             ));
         } catch (\Exception $e) {
             // Nếu có lỗi, trả về view với giá trị mặc định là 0
@@ -40,7 +44,8 @@ class DashboardController extends Controller
                 'totalTaiKhoan' => 0,
                 'totalGiangVien' => 0,
                 'totalHoiDong' => 0,
-                'totalDotBaoCao' => 0
+                'totalDotBaoCao' => 0,
+                'settings' => ['theme' => 'light']
             ]);
         }
     }

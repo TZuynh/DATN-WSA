@@ -7,7 +7,7 @@
     {{-- Chỉ dùng 1 cách gọi CSS --}}
     @vite('resources/scss/admin-style.scss')
 </head>
-<body>
+<body class="theme-{{ $settings['theme'] ?? 'light' }}">
 {{-- Gọi component navbar --}}
 <x-admin.navbar />
 
@@ -17,5 +17,7 @@
 <main class="admin-main">
     @yield('content')
 </main>
+
+@vite('resources/js/app.js')
 </body>
 </html>

@@ -1,0 +1,79 @@
+.admin-sidebar {
+    background: #2d3748;
+    min-height: 100vh;
+    width: 250px;
+    padding: 20px 0;
+}
+
+.admin-sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.admin-sidebar li {
+    margin: 5px 0;
+}
+
+.admin-sidebar a {
+    color: #cbd5e0;
+    text-decoration: none;
+    padding: 12px 20px;
+    transition: all 0.3s ease;
+}
+
+.admin-sidebar a:hover {
+    background: #4a5568;
+    color: #fff;
+}
+
+.admin-sidebar a i {
+    margin-right: 10px;
+    width: 20px;
+    text-align: center;
+}
+
+.admin-sidebar .has-submenu {
+    position: relative;
+}
+
+.admin-sidebar .arrow {
+    transition: transform 0.3s ease;
+}
+
+.admin-sidebar .has-submenu:hover .arrow {
+    transform: rotate(180deg);
+}
+
+.admin-sidebar .submenu {
+    display: none;
+    background: #1a202c;
+    padding: 5px 0;
+}
+
+.admin-sidebar .has-submenu:hover .submenu {
+    display: block;
+}
+
+.admin-sidebar .submenu li {
+    margin: 0;
+}
+
+.admin-sidebar .submenu a {
+    padding: 10px 20px 10px 50px;
+    font-size: 0.9em;
+}
+
+.admin-sidebar .submenu a:hover {
+    background: #2d3748;
+}
+
+/* Active state */
+.admin-sidebar a.active {
+    background: #4299e1;
+    color: #fff;
+}
+
+.admin-sidebar .submenu a.active {
+    background: #2b6cb0;
+}
