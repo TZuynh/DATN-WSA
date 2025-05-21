@@ -2,11 +2,19 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class HoiDong extends Model
 {
-    protected $fillable = ['ma_hoi_dong', 'ten', 'dot_bao_cao_id'];
+    use HasFactory;
+
+    protected $table = 'hoi_dongs';
+
+    protected $fillable = [
+        'ma_hoi_dong',
+        'ten'
+    ];
 
     public function thanhViens()
     {
