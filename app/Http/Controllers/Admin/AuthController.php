@@ -8,6 +8,12 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('guest')->except('logout');
+        $this->middleware('auth')->only('logout');
+    }
+
     public function showLoginForm()
     {
         return view('admin.auth.login');
@@ -22,7 +28,7 @@ class AuthController extends Controller
 
         if (Auth::attempt([
             'email' => $credentials['email'],
-            'password' => $credentials['mat_khau'],  // password chứ không phải mat_khau
+            'password' => $credentials['mat_khau'],
             'vai_tro' => 'admin'
         ])) {
             $request->session()->regenerate();

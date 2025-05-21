@@ -19,9 +19,10 @@ Route::domain('admin.project.test')->group(function () {
     require __DIR__ . '/admin/auth.php';
     require __DIR__ . '/admin/dashboard.php';
     require __DIR__ . '/admin/taikhoan.php';
+    
     Route::get('/', function () {
         if (Auth::check() && Auth::user()->vai_tro === 'admin') {
-            return redirect('/admin/dashboard');
+            return redirect('/dashboard');
         }
         return redirect()->route('admin.login');
     });

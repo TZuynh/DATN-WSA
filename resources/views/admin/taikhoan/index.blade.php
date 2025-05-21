@@ -3,7 +3,15 @@
 @section('title', 'Danh sách quản lý người dùng')
 
 @section('content')
-    <h1 style="margin-bottom: 20px; color: #2d3748; font-weight: 700;">Quản lý tài khoản</h1>
+    <!-- Thêm Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1 style="color: #2d3748; font-weight: 700;">Quản lý tài khoản</h1>
+        <a href="{{ route('admin.taikhoan.create') }}" style="padding: 10px 20px; background-color: #4299e1; color: white; border: none; border-radius: 4px; text-decoration: none;">
+            <i class="fas fa-plus"></i> Thêm tài khoản mới
+        </a>
+    </div>
 
     @if(session('success'))
         <div style="background-color: #48bb78; color: white; padding: 10px; border-radius: 4px; margin-bottom: 20px;">
@@ -42,10 +50,11 @@
             <thead>
             <tr style="background-color: #2d3748; color: white; text-align: left;">
                 <th style="padding: 12px 15px;">ID</th>
-                <th style="padding: 12px 15px;">Tên</th>
+                <th style="padding: 12px 15px;">Họ tên</th>
                 <th style="padding: 12px 15px;">Email</th>
                 <th style="padding: 12px 15px;">Vai trò</th>
                 <th style="padding: 12px 15px;">Ngày tạo</th>
+                <th style="padding: 12px 15px;">Thao tác</th>
             </tr>
             </thead>
             <tbody>
@@ -64,6 +73,20 @@
                         @endif
                     </td>
                     <td style="padding: 12px 15px;">{{ $taikhoan->created_at->format('d-m-Y') }}</td>
+                    <td style="padding: 12px 15px;">
+                        <div style="display: flex; gap: 10px;">
+                            <a href="{{ route('admin.taikhoan.edit', $taikhoan->id) }}" class="btn-edit" style="color: #3182ce;">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form action="{{ route('admin.taikhoan.destroy', $taikhoan->id) }}" method="POST" style="display: inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn-delete" style="background: none; border: none; color: #e53e3e; cursor: pointer;" onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản này?')">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
                 </tr>
             @endforeach
             </tbody>

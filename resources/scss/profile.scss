@@ -1,0 +1,190 @@
+// Variables
+$primary-gradient: linear-gradient(to right, #4f46e5, #3b82f6);
+$secondary-gradient: linear-gradient(to bottom right, #f3f4f6, #ffffff);
+$shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+$shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+$shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+$shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+
+// Animations
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+    }
+}
+
+// Custom styles
+.profile-container {
+    .profile-card {
+        position: relative;
+        transition: all 0.3s ease;
+
+        &:hover {
+            transform: translateY(-5px);
+        }
+
+        .header-pattern {
+            &::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0);
+                background-size: 20px 20px;
+                opacity: 0.5;
+            }
+        }
+
+        .avatar-container {
+            animation: float 6s ease-in-out infinite;
+
+            .avatar {
+                position: relative;
+                transition: all 0.3s ease;
+
+                &::after {
+                    content: '';
+                    position: absolute;
+                    inset: -2px;
+                    background: $primary-gradient;
+                    border-radius: 50%;
+                    z-index: -1;
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                }
+
+                &:hover::after {
+                    opacity: 1;
+                }
+            }
+        }
+
+        .info-card {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+
+            &::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: $secondary-gradient;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            &:hover {
+                transform: translateY(-2px);
+
+                &::before {
+                    opacity: 1;
+                }
+
+                .info-icon {
+                    animation: pulse 2s infinite;
+                }
+            }
+
+            .info-icon {
+                position: relative;
+                z-index: 1;
+            }
+        }
+
+        .edit-button {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+
+            &::before {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 0;
+                height: 0;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                transform: translate(-50%, -50%);
+                transition: width 0.6s ease, height 0.6s ease;
+            }
+
+            &:hover {
+                transform: translateY(-2px);
+
+                &::before {
+                    width: 300px;
+                    height: 300px;
+                }
+
+                .button-icon {
+                    transform: rotate(12deg);
+                }
+            }
+
+            .button-icon {
+                transition: transform 0.3s ease;
+            }
+        }
+    }
+}
+
+// Responsive styles
+@media (max-width: 768px) {
+    .profile-container {
+        .profile-card {
+            .avatar-container {
+                .avatar {
+                    width: 120px;
+                    height: 120px;
+                }
+            }
+
+            .info-card {
+                padding: 1rem;
+            }
+        }
+    }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+    .profile-container {
+        .profile-card {
+            background: #1f2937;
+            color: #f3f4f6;
+
+            .info-card {
+                background: #374151;
+                color: #f3f4f6;
+            }
+        }
+    }
+}
