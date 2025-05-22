@@ -1,0 +1,151 @@
+// admin-style.scss
+
+// Navbar cố định trên cùng, full width
+.admin-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background-color: #2d3748;
+    padding: 0 30px;
+    color: white;
+    display: flex;
+    align-items: center;
+    z-index: 1000;
+
+    .container {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .logo {
+        a {
+            color: white;
+            font-weight: 700;
+            font-size: 1.3rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            display: block; // chắc chắn img không bị inline ảnh hưởng
+        }
+    }
+
+    .btn-logout {
+        background-color: #e53e3e;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        color: white;
+        font-weight: 600;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+            background-color: #c53030;
+        }
+    }
+}
+
+// Sidebar nằm bên trái, thấp hơn navbar 60px
+.admin-sidebar {
+    position: fixed;
+    top: 60px; // cách navbar đúng chiều cao navbar
+    left: 0;
+    width: 220px;
+    height: calc(100vh - 60px); // chiếm phần còn lại dưới navbar
+    background-color: #1a202c;
+    padding-top: 30px;
+    color: #cbd5e0;
+    overflow-y: auto;
+    box-sizing: border-box;
+
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+            margin-bottom: 15px;
+
+            a {
+                color: #cbd5e0;
+                text-decoration: none;
+                font-weight: 600;
+                padding: 10px 20px;
+                display: block;
+                transition: background-color 0.3s ease;
+
+                &:hover {
+                    background-color: #2d3748;
+                    color: white;
+                }
+            }
+        }
+    }
+}
+
+// Nội dung chính nằm bên phải sidebar, có padding và margin top để tránh navbar
+.admin-main {
+    margin-left: 220px; // cách sidebar
+    margin-top: 20px; // cách navbar một chút
+    padding: 20px 30px;
+    background-color: #f9fafb;
+    min-height: calc(100vh - 80px);
+    box-sizing: border-box;
+}
+
+/* ===== Responsive cho màn hình nhỏ ===== */
+@media (max-width: 768px) {
+    .admin-sidebar {
+        position: fixed;
+        top: 60px;
+        left: -220px;  // ẩn sidebar bên trái
+        width: 220px;
+        height: calc(100vh - 60px);
+        transition: left 0.3s ease;
+        z-index: 2000;
+        box-shadow: 2px 0 5px rgb(0 0 0 / 0.2);
+    }
+
+    .admin-sidebar.active {
+        left: 0; // hiện sidebar khi active (bật toggle)
+    }
+
+    .admin-main {
+        margin-left: 0; // nội dung chiếm full ngang
+        margin-top: 80px;
+        padding: 20px;
+        transition: margin-left 0.3s ease;
+    }
+}
+
+/* Nút mở sidebar cho mobile (bạn tự thêm HTML + JS để toggle class .active) */
+.sidebar-toggle-btn {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background-color: #2d3748;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    z-index: 3000;
+}
+
+@media (max-width: 768px) {
+    .sidebar-toggle-btn {
+        display: block;
+    }
+}
