@@ -32,7 +32,7 @@ class AuthController extends Controller
             'vai_tro' => 'admin'
         ])) {
             $request->session()->regenerate();
-            return redirect()->intended('/admin/dashboard');
+            return redirect()->intended('/dashboard');
         }
 
         return back()->withErrors([
