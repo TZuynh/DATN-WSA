@@ -47,13 +47,16 @@
                     <td style="padding: 12px 15px;">{{ $hoiDong->created_at->format('d-m-Y') }}</td>
                     <td style="padding: 12px 15px;">
                         <div style="display: flex; gap: 10px;">
-                            <a href="{{ route('admin.hoi-dong.edit', $hoiDong->id) }}" class="btn-edit" style="color: #3182ce;">
+                            <a href="{{ route('admin.hoi-dong.show', $hoiDong->id) }}" class="btn-view" style="color: #38a169;" title="Xem chi tiết">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ route('admin.hoi-dong.edit', $hoiDong->id) }}" class="btn-edit" style="color: #3182ce;" title="Sửa">
                                 <i class="fas fa-edit"></i>
                             </a>
                             <form action="{{ route('admin.hoi-dong.destroy', $hoiDong->id) }}" method="POST" style="display: inline;">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn-delete" style="background: none; border: none; color: #e53e3e; cursor: pointer;" onclick="return confirm('Bạn có chắc chắn muốn xóa hội đồng này?')">
+                                <button type="submit" class="btn-delete" style="background: none; border: none; color: #e53e3e; cursor: pointer;" onclick="return confirm('Bạn có chắc chắn muốn xóa hội đồng này?')" title="Xóa">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </form>
@@ -70,6 +73,10 @@
     </div>
 
     <style>
+    .btn-view:hover {
+        color: #2f855a !important;
+        transform: scale(1.1);
+    }
     .btn-edit:hover {
         color: #2c5282 !important;
         transform: scale(1.1);
