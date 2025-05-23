@@ -21,7 +21,6 @@ Route::domain('admin.project.test')->group(function () {
     require __DIR__ . '/admin/taikhoan.php';
     require __DIR__ . '/admin/phan-cong-hoi-dong.php';
     require __DIR__ . '/admin/hoi-dong.php';
-    require __DIR__ . '/admin/vai-tro.php';
     require __DIR__ . '/admin/dot-bao-cao.php';
     require __DIR__ . '/admin/cai-dat.php';
     
