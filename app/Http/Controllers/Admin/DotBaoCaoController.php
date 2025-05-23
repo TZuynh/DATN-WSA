@@ -76,7 +76,7 @@ class DotBaoCaoController extends Controller
                 ChiTietDeTaiBaoCao::where('dot_bao_cao_id', $dotBaoCao->id)->delete();
             }
 
-            if (Schema::hasTable('bao_cao_qua_trinhs')) {
+            if (Schema::hasTable('bao_cao_qua_trinh')) {
                 BaoCaoQuaTrinh::where('dot_bao_cao_id', $dotBaoCao->id)->delete();
             }
 

@@ -31,5 +31,10 @@ class HoiDong extends Model
     {
         return $this->hasMany(LichCham::class);
     }
+
+    public function phanCongVaiTros()
+    {
+        return $this->hasMany(PhanCongVaiTro::class);
+    }
 }
 

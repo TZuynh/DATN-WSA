@@ -128,7 +128,9 @@ class HoiDongController extends Controller
             'dotBaoCao',
             'chiTietBaoCaos.deTai.giangVien.taiKhoan',
             'chiTietBaoCaos.deTai.sinhViens',
-            'lichChams'
+            'lichChams',
+            'phanCongVaiTros.taiKhoan',
+            'phanCongVaiTros.vaiTro'
         ]);
 
         // Lấy danh sách đề tài chưa thuộc hội đồng nào

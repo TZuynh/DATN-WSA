@@ -31,7 +31,7 @@
             </div>
         </div>
         <div class="header-actions">
-            <a href="{{ route('admin.hoi-dong.index') }}" class="btn btn-secondary">
+            <a href="{{ route('admin.hoi-dong.index') }}" class="btn btn-outline-primary">
                 <i class="fas fa-arrow-left"></i> Quay lại
             </a>
         </div>
@@ -40,77 +40,71 @@
     <div class="row g-4">
         <!-- Thông tin cơ bản -->
         <div class="col-xl-6">
-            <div class="card h-100">
-                <div class="card-header bg-white">
-                    <h5 class="card-title mb-0">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h2 class="card-title mb-0">
                         <i class="fas fa-info-circle text-primary me-2"></i>
                         Thông tin cơ bản
-                    </h5>
+                    </h2>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-borderless">
                             <tr>
-                                <th style="width: 200px" class="text-muted">Mã hội đồng:</th>
-                                <td>
-                                    <span class="badge bg-primary">{{ $hoiDong->ma_hoi_dong }}</span>
+                                <th style="width: 200px; text-align: left;" class="text-muted text-start">Mã hội đồng:</th>
+                                <td class="text-start">
+                                    <span class="badge bg-primary px-3 py-2">{{ $hoiDong->ma_hoi_dong }}</span>
                                 </td>
                             </tr>
                             <tr>
-                                <th class="text-muted">Tên hội đồng:</th>
-                                <td class="fw-semibold">{{ $hoiDong->ten }}</td>
+                                <th class="text-muted text-start" style="width: 200px; text-align: left;">Tên hội đồng:</th>
+                                <td class="fw-semibold fs-5 text-start">{{ $hoiDong->ten }}</td>
                             </tr>
                             <tr>
-                                <th class="text-muted">Tên Giảng viên:</th>
-                                <td class="fw-semibold">
-                                    @php
-                                        $chiTietBaoCao = $hoiDong->chiTietBaoCaos->first();
-                                        $deTai = $chiTietBaoCao ? $chiTietBaoCao->deTai : null;
-                                        $giangVien = $deTai ? $deTai->giangVien : null;
-                                        $taiKhoan = $giangVien ? $giangVien->taiKhoan : null;
-                                    @endphp
-
-                                    @if($chiTietBaoCao && $deTai && $giangVien && $taiKhoan)
-                                        {{ $taiKhoan->ten }}
-                                        <small class="text-muted d-block">
-                                            <i class="fas fa-envelope me-1"></i>
-                                            {{ $taiKhoan->email }}
-                                        </small>
+                                <th class="text-muted text-start" style="width: 200px; text-align: left;">Thành viên hội đồng:</th>
+                                <td class="fw-semibold text-start">
+                                    @if($hoiDong->phanCongVaiTros->count() > 0)
+                                        <div class="d-flex flex-column gap-2">
+                                            @foreach($hoiDong->phanCongVaiTros as $phanCong)
+                                                <div class="d-inline-flex align-items-center">
+                                                    <i class="fas fa-user-tie text-primary me-2"></i>
+                                                    {{ $phanCong->taiKhoan->ten }} 
+                                                    <span class="text-muted ms-1">({{ $phanCong->vaiTro->ten }})</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     @else
-                                        <div class="text-muted">
-                                            @if(!$chiTietBaoCao)
-                                                <small>Chưa có chi tiết báo cáo</small>
-                                            @elseif(!$deTai)
-                                                <small>Chưa có đề tài</small>
-                                            @elseif(!$giangVien)
-                                                <small>Chưa có giảng viên</small>
-                                            @elseif(!$taiKhoan)
-                                                <small>Chưa có tài khoản</small>
-                                            @endif
+                                        <div class="text-muted" style="width: 200px; text-align: left;">
+                                            <small>Chưa có thành viên nào trong hội đồng</small>
                                         </div>
                                     @endif
                                 </td>
                             </tr>
                             <tr>
-                                <th class="text-muted">Đợt báo cáo:</th>
-                                <td>
-                                    <span class="badge bg-info">
+                                <th class="text-muted text-start" style="width: 200px; text-align: left;">Đợt báo cáo:</th>
+                                <td class="text-start">
+                                    <span class="badge bg-info px-3 py-2">
+                                        <i class="fas fa-calendar-alt me-1"></i>
                                         {{ $hoiDong->dotBaoCao->nam_hoc ?? 'N/A' }}
                                     </span>
                                 </td>
                             </tr>
                             <tr>
-                                <th class="text-muted">Ngày tạo:</th>
-                                <td>
-                                    <i class="far fa-calendar-alt text-muted me-1"></i>
-                                    {{ $hoiDong->created_at->format('d/m/Y H:i') }}
+                                <th class="text-muted text-start" style="width: 200px; text-align: left;">Ngày tạo:</th>
+                                <td class="text-start">
+                                    <div class="d-flex align-items-center text-muted">
+                                        <i class="far fa-calendar-alt me-2"></i>
+                                        {{ $hoiDong->created_at->format('d/m/Y H:i') }}
+                                    </div>
                                 </td>
                             </tr>
                             <tr>
-                                <th class="text-muted">Cập nhật lần cuối:</th>
-                                <td>
-                                    <i class="far fa-clock text-muted me-1"></i>
-                                    {{ $hoiDong->updated_at->format('d/m/Y H:i') }}
+                                <th class="text-muted text-start" style="width: 200px; text-align: left;">Cập nhật lần cuối:</th>
+                                <td class="text-start">
+                                    <div class="d-flex align-items-center text-muted">
+                                        <i class="far fa-clock me-2"></i>
+                                        {{ $hoiDong->updated_at->format('d/m/Y H:i') }}
+                                    </div>
                                 </td>
                             </tr>
                         </table>
