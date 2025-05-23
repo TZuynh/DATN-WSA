@@ -126,7 +126,7 @@ class HoiDongController extends Controller
         // Load các quan hệ cần thiết
         $hoiDong->load([
             'dotBaoCao',
-            'chiTietBaoCaos.deTai.giangVien',
+            'chiTietBaoCaos.deTai.giangVien.taiKhoan',
             'chiTietBaoCaos.deTai.sinhViens',
             'lichChams'
         ]);

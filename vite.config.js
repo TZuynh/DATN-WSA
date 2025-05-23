@@ -10,7 +10,8 @@ export default defineConfig({
                 'resources/scss/admin-style.scss',
                 'resources/scss/navbar.scss',
                 'resources/scss/dashboard.scss',
-                'resources/scss/profile.scss'
+                'resources/scss/profile.scss',
+                'resources/scss/hoi-dong/chi-tiet.scss'
             ],
             refresh: true,
         }),
