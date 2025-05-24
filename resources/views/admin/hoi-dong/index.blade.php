@@ -38,7 +38,7 @@
             </tr>
             </thead>
             <tbody>
-            @foreach ($hoiDongs as $hoiDong)
+            @forelse ($hoiDongs as $hoiDong)
                 <tr style="border-bottom: 1px solid #ddd;">
                     <td style="padding: 12px 15px;">{{ $hoiDong->id }}</td>
                     <td style="padding: 12px 15px;">{{ $hoiDong->ma_hoi_dong }}</td>
@@ -63,7 +63,14 @@
                         </div>
                     </td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="6" style="padding: 20px; text-align: center; color: #718096;">
+                        <i class="fas fa-info-circle" style="margin-right: 5px;"></i>
+                        Chưa có dữ liệu
+                    </td>
+                </tr>
+            @endforelse
             </tbody>
         </table>
         
