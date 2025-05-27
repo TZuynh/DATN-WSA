@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\TaiKhoanController;
 
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/tai-khoan', [TaiKhoanController::class, 'index'])->name('admin.taikhoan.index');
     Route::get('/tai-khoan/create', [TaiKhoanController::class, 'create'])->name('admin.taikhoan.create');
     Route::post('/tai-khoan', [TaiKhoanController::class, 'store'])->name('admin.taikhoan.store');

@@ -1,0 +1,80 @@
+.admin-sidebar {
+    width: 250px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background: #2c3e50;
+    color: white;
+    padding: 20px 0;
+    transition: all 0.3s;
+    z-index: 1000;
+
+    .sidebar-header {
+        padding: 0 20px 20px;
+        text-align: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+        .logo-img {
+            width: 80px;
+            margin-bottom: 10px;
+        }
+
+        h5 {
+            margin: 0;
+            font-size: 16px;
+            color: #fff;
+        }
+    }
+
+    .sidebar-menu {
+        list-style: none;
+        padding: 0;
+        margin: 20px 0 0;
+
+        .menu-item {
+            padding: 0;
+            margin: 0;
+
+            a {
+                display: flex;
+                align-items: center;
+                padding: 12px 20px;
+                color: #fff;
+                text-decoration: none;
+                transition: all 0.3s;
+
+                &:hover {
+                    background: rgba(255, 255, 255, 0.1);
+                }
+
+                i {
+                    width: 20px;
+                    margin-right: 10px;
+                }
+
+                span {
+                    font-size: 14px;
+                }
+            }
+
+            &.active a {
+                background: #3498db;
+            }
+        }
+    }
+
+    @media (max-width: 768px) {
+        transform: translateX(-100%);
+
+        &.active {
+            transform: translateX(0);
+        }
+    }
+}
+
+// General styles for the logout button link
+.btn-logout {
+    text-decoration: none;
+    // Add any other styles for the button here if needed
+}

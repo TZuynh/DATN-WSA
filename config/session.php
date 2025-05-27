@@ -14,7 +14,7 @@
   ),
   'cookie' => 'laravel_session',
   'path' => '/',
-  'domain' => NULL,
+  'domain' => env('SESSION_DOMAIN', '.project.test'),
   'secure' => NULL,
   'http_only' => true,
   'same_site' => 'lax',

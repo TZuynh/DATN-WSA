@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Auth\CommonAuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,8 +15,13 @@ use App\Http\Controllers\Admin\AuthController;
 |
 */
 
+// Common login routes for project.test
+Route::domain('project.test')->group(function () {
+    require __DIR__ . '/auth.php';
+});
+
+// Admin subdomain routes
 Route::domain('admin.project.test')->group(function () {
-    require __DIR__ . '/admin/auth.php';
     require __DIR__ . '/admin/dashboard.php';
     require __DIR__ . '/admin/taikhoan.php';
     require __DIR__ . '/admin/phan-cong-hoi-dong.php';
@@ -28,14 +33,21 @@ Route::domain('admin.project.test')->group(function () {
         if (Auth::check() && Auth::user()->vai_tro === 'admin') {
             return redirect('/dashboard');
         }
-        return redirect()->route('admin.login');
+        return redirect('http://project.test');
     });
 });
 
-//Route::domain('giangvien.project.test')->group(function () {
-//    require __DIR__ . '/giangvien/auth.php';
-//    require __DIR__ . '/giangvien/dashboard.php';
-//});
+// Giang vien subdomain routes
+Route::domain('giangvien.project.test')->group(function () {
+    require __DIR__ . '/giangvien/dashboard.php';
+    
+    Route::get('/', function () {
+        if (Auth::check() && Auth::user()->vai_tro === 'giang_vien') {
+            return redirect('/dashboard');
+        }
+        return redirect('http://project.test');
+    });
+});
 
 Route::get('/', function () {
     return view('welcome');

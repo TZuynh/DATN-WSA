@@ -11,10 +11,7 @@
             @vite('resources/scss/navbar.scss')
         </div>
         <div class="logout">
-            <form action="{{ route('admin.logout') }}" method="POST" style="display:inline;">
-                @csrf
-                <button type="submit" class="btn-logout">Đăng xuất</button>
-            </form>
+            <a href="{{ route('logout') }}" class="btn-logout">Đăng xuất</a>
         </div>
     </div>
 </nav>

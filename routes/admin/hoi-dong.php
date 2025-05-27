@@ -3,7 +3,7 @@
 use App\Http\Controllers\Admin\HoiDongController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/hoi-dong', [HoiDongController::class, 'index'])->name('admin.hoi-dong.index');
     Route::get('/hoi-dong/create', [HoiDongController::class, 'create'])->name('admin.hoi-dong.create');
     Route::post('/hoi-dong', [HoiDongController::class, 'store'])->name('admin.hoi-dong.store');

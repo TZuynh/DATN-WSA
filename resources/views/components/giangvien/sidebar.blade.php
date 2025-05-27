@@ -1,0 +1,45 @@
+<div class="admin-sidebar">
+    <div class="sidebar-header">
+        <img src="{{ asset('images/logo-caothang.png') }}" alt="Logo" class="logo-img" />
+        <h5>Giảng Viên</h5>
+    </div>
+    
+    <ul class="sidebar-menu">
+        <li class="menu-item {{ request()->routeIs('giangvien.dashboard') ? 'active' : '' }}">
+            <a href="{{ route('giangvien.dashboard') }}">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+        <li class="menu-item">
+            <a href="#">
+                <i class="fas fa-book"></i>
+                <span>Lớp Học</span>
+            </a>
+        </li>
+        <li class="menu-item">
+            <a href="#">
+                <i class="fas fa-users"></i>
+                <span>Sinh Viên</span>
+            </a>
+        </li>
+        <li class="menu-item">
+            <a href="#">
+                <i class="fas fa-tasks"></i>
+                <span>Bài Tập</span>
+            </a>
+        </li>
+        <li class="menu-item">
+            <a href="#">
+                <i class="fas fa-chart-bar"></i>
+                <span>Báo Cáo</span>
+            </a>
+        </li>
+        <li class="menu-item">
+            <a href="#">
+                <i class="fas fa-cog"></i>
+                <span>Cài Đặt</span>
+            </a>
+        </li>
+    </ul>
+</div> 

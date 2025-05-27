@@ -3,7 +3,7 @@
 use App\Http\Controllers\Admin\PhanCongHoiDongController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/phan-cong-hoi-dong', [PhanCongHoiDongController::class, 'index'])->name('admin.phan-cong-hoi-dong.index');
     Route::get('/phan-cong-hoi-dong/create', [PhanCongHoiDongController::class, 'create'])->name('admin.phan-cong-hoi-dong.create');
     Route::post('/phan-cong-hoi-dong', [PhanCongHoiDongController::class, 'store'])->name('admin.phan-cong-hoi-dong.store');

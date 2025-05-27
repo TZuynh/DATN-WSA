@@ -49,6 +49,7 @@
         color: white;
         font-weight: 600;
         transition: background-color 0.3s ease;
+        text-decoration: none;
 
         &:hover {
             background-color: #c53030;
@@ -109,7 +110,7 @@
     .admin-sidebar {
         position: fixed;
         top: 60px;
-        left: -220px;  // ẩn sidebar bên trái
+        left: -220px; // ẩn sidebar bên trái
         width: 220px;
         height: calc(100vh - 60px);
         transition: left 0.3s ease;
