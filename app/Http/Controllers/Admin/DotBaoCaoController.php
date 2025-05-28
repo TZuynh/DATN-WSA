@@ -33,8 +33,16 @@ class DotBaoCaoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nam_hoc' => 'required|integer|min:2000|max:2100'
+            'nam_hoc' => 'required|integer|min:2000|max:2100',
+            'ngay_bat_dau' => 'required|date',
+            'ngay_ket_thuc' => 'required|date|after:ngay_bat_dau'
         ]);
+
+        // Kiểm tra năm học có khớp với năm của ngày bắt đầu không
+        $namBatDau = date('Y', strtotime($request->ngay_bat_dau));
+        if ($namBatDau != $request->nam_hoc) {
+            return back()->withErrors(['nam_hoc' => 'Năm học phải khớp với năm của ngày bắt đầu.']);
+        }
 
         DotBaoCao::create($request->all());
 
@@ -50,8 +58,16 @@ class DotBaoCaoController extends Controller
     public function update(Request $request, DotBaoCao $dotBaoCao)
     {
         $request->validate([
-            'nam_hoc' => 'required|integer|min:2000|max:2100'
+            'nam_hoc' => 'required|integer|min:2000|max:2100',
+            'ngay_bat_dau' => 'required|date',
+            'ngay_ket_thuc' => 'required|date|after:ngay_bat_dau'
         ]);
+
+        // Kiểm tra năm học có khớp với năm của ngày bắt đầu không
+        $namBatDau = date('Y', strtotime($request->ngay_bat_dau));
+        if ($namBatDau != $request->nam_hoc) {
+            return back()->withErrors(['nam_hoc' => 'Năm học phải khớp với năm của ngày bắt đầu.']);
+        }
 
         $dotBaoCao->update($request->all());
 
@@ -103,6 +119,40 @@ class DotBaoCaoController extends Controller
             DB::rollBack();
             return redirect()->route('admin.dot-bao-cao.index')
                 ->with('error', 'Có lỗi xảy ra khi xóa đợt báo cáo: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Cập nhật trạng thái và thống kê của tất cả đợt báo cáo
+     */
+    public function updateStatus()
+    {
+        try {
+            DB::beginTransaction();
+
+            $dotBaoCaos = DotBaoCao::all();
+            $now = now();
+
+            foreach ($dotBaoCaos as $dotBaoCao) {
+                // Cập nhật trạng thái
+                $dotBaoCao->updateTrangThai();
+
+                // Cập nhật thống kê
+                $dotBaoCao->updateThongKe();
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật trạng thái và thống kê thành công.'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi cập nhật: ' . $e->getMessage()
+            ], 500);
         }
     }
 } 

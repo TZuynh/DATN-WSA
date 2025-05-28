@@ -13,18 +13,6 @@
         </a>
     </div>
 
-    @if(session('success'))
-        <div style="background-color: #48bb78; color: white; padding: 10px; border-radius: 4px; margin-bottom: 20px;">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div style="background-color: #f56565; color: white; padding: 10px; border-radius: 4px; margin-bottom: 20px;">
-            {{ session('error') }}
-        </div>
-    @endif
-
     <div style="overflow-x:auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);">
         <table style="width: 100%; border-collapse: collapse; min-width: 600px; font-family: Arial, sans-serif;">
             <thead>
