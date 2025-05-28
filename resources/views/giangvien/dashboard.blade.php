@@ -1,5 +1,7 @@
 @extends('components.giangvien.app')
 
+@section('title', 'Dashboard Giảng Viên')
+
 @section('content')
 <div class="container py-4">
     <div class="row">
