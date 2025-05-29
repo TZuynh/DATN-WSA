@@ -1,46 +1,132 @@
-    // Dark mode styles
-    .theme-dark & {
-        .text-gray-800 {
+// Alert styles
+.alert {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+
+    &.alert-success {
+        background-color: #48bb78;
+        color: white;
+        border: none;
+
+        .btn-close {
+            filter: brightness(0) invert(1);
+        }
+    }
+
+    &.alert-danger {
+        background-color: #f56565;
+        color: white;
+        border: none;
+
+        .btn-close {
+            filter: brightness(0) invert(1);
+        }
+    }
+
+    .btn-close {
+        padding: 0.5rem;
+        margin-left: auto;
+        opacity: 0.8;
+        transition: opacity 0.2s ease;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    i {
+        font-size: 1.1rem;
+    }
+}
+
+// Dark mode styles
+.theme-dark {
+    .alert {
+        &.alert-success {
+            background-color: #2f855a;
+        }
+
+        &.alert-danger {
+            background-color: #c53030;
+        }
+    }
+
+    .text-gray-800 {
+        color: #f0f0f0;
+    }
+
+    .card {
+        background-color: #1e1e1e;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-header {
+        background-color: #2d2d2d;
+        border-bottom-color: #333333;
+
+        .text-primary {
+            color: #bb86fc !important;
+        }
+    }
+
+    .table {
+        color: #e0e0e0;
+
+        thead {
+            background-color: #333333;
             color: #f0f0f0;
         }
 
-        .card {
+        tbody tr {
             background-color: #1e1e1e;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        }
 
-        .card-header {
-            background-color: #2d2d2d;
-            border-bottom-color: #333333;
-
-            .text-primary {
-                color: #bb86fc !important;
+            &:nth-of-type(odd) {
+                background-color: #2d2d2d;
             }
         }
 
-        .table {
-            color: #e0e0e0;
+        &.table-bordered {
+            border-color: #333333;
 
-            thead {
-                background-color: #333333;
-                color: #f0f0f0;
-            }
-
-            tbody tr {
-                background-color: #1e1e1e;
-
-                &:nth-of-type(odd) {
-                    background-color: #2d2d2d;
-                }
-            }
-
-            &.table-bordered {
+            th,
+            td {
                 border-color: #333333;
-
-                th,
-                td {
-                    border-color: #333333;
-                }
             }
         }
     }
+}
+
+// Animation for alerts
+@keyframes slideIn {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.alert {
+    animation: slideIn 0.3s ease-out;
+
+    &.fade {
+        animation: fadeOut 0.3s ease-out forwards;
+    }
+}
