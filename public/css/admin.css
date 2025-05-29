@@ -1,0 +1,113 @@
+/* Layout */
+.wrapper {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+}
+
+/* Sidebar */
+.admin-sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    background: #343a40;
+    color: #fff;
+    transition: all 0.3s;
+}
+
+.admin-sidebar.active {
+    margin-left: -250px;
+}
+
+.admin-sidebar .sidebar-header {
+    padding: 20px;
+    background: #2c3136;
+    text-align: center;
+}
+
+.admin-sidebar .sidebar-header .logo-img {
+    width: 80px;
+    margin-bottom: 10px;
+}
+
+.admin-sidebar ul.components {
+    padding: 20px 0;
+}
+
+.admin-sidebar ul li a {
+    padding: 10px 20px;
+    font-size: 1.1em;
+    display: block;
+    color: #fff;
+    text-decoration: none;
+}
+
+.admin-sidebar ul li a:hover {
+    background: #2c3136;
+}
+
+.admin-sidebar ul li.active>a {
+    background: #2c3136;
+}
+
+/* Main Content */
+.main-content {
+    width: 100%;
+    min-height: 100vh;
+    background: #f8f9fa;
+}
+
+.content-wrapper {
+    padding: 20px;
+}
+
+/* Navbar */
+.navbar {
+    padding: 15px 10px;
+    background: #fff;
+    border: none;
+    border-radius: 0;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Cards */
+.card {
+    margin-bottom: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+}
+
+/* Tables */
+.table-responsive {
+    margin-bottom: 0;
+}
+
+/* Badges */
+.badge {
+    padding: 5px 10px;
+    font-size: 0.85em;
+}
+
+/* Buttons */
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .admin-sidebar {
+        margin-left: -250px;
+    }
+
+    .admin-sidebar.active {
+        margin-left: 0;
+    }
+
+    .wrapper.toggled .admin-sidebar {
+        margin-left: 0;
+    }
+}

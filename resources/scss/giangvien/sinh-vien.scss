@@ -1,0 +1,177 @@
+// Fonts
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+// Variables (assuming you have a variables file)
+// @import '../../variables'; // Uncomment if you have a shared variables file
+
+// Bootstrap
+// @import 'bootstrap/scss/bootstrap';
+
+// Font Awesome
+// @import '@fortawesome/fontawesome-free/scss/fontawesome';
+// @import '@fortawesome/fontawesome-free/scss/regular';
+// @import '@fortawesome/fontawesome-free/scss/solid';
+// @import '@fortawesome/fontawesome-free/scss/brands';
+
+// Custom styles for GiangVien Sinh Vien page
+
+// Card styles
+.card {
+    border: none;
+    border-radius: 0.5rem;
+
+    .card-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+    }
+}
+
+// Table styles
+.table {
+    margin-bottom: 0;
+
+    thead {
+        th {
+            font-weight: 600;
+            border-bottom: 2px solid #e9ecef;
+            padding: 1rem;
+            vertical-align: middle;
+        }
+    }
+
+    tbody {
+        td {
+            padding: 1rem;
+            vertical-align: middle;
+
+            .fw-medium {
+                font-weight: 500; // Tùy chỉnh nhẹ cho mã số sinh viên
+            }
+        }
+    }
+}
+
+// Button styles
+.btn {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+
+    &.btn-sm {
+        padding: 0.25rem 0.5rem;
+    }
+
+    i {
+        margin-right: 0.5rem;
+    }
+}
+
+// Alert styles
+.alert {
+    border: none;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+
+    &.alert-success {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+
+    &.alert-danger {
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+}
+
+// Modal styles
+.modal {
+    .modal-content {
+        border: none;
+        border-radius: 0.5rem;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1rem 1.5rem;
+
+        .modal-title {
+            font-weight: 600;
+        }
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1rem 1.5rem;
+    }
+}
+
+// Form styles
+.form-control {
+    border-radius: 0.375rem;
+    border: 1px solid #e5e7eb;
+    padding: 0.5rem 0.75rem;
+
+    &:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+    }
+}
+
+// Style for file input in modal to ensure visibility
+#importModal .modal-body input[type="file"] {
+    display: block;
+    width: 100%;
+}
+
+// Pagination styles
+.pagination {
+    margin-bottom: 0;
+
+    .page-item {
+        .page-link {
+            border: 2px solid red; // Đổi màu viền thành đỏ để dễ nhận biết
+            color: #495057;
+            padding: 0.75rem 1rem;
+            margin: 0 0.15rem;
+            border-radius: 0.25rem;
+            transition: all 0.2s ease-in-out;
+
+            &:hover {
+                background-color: #e9ecef;
+                color: #495057;
+                border-color: darkred; // Màu viền hover đậm hơn
+            }
+        }
+
+        &.active .page-link {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        &.disabled .page-link {
+            color: #6c757d;
+            pointer-events: none;
+            background-color: #fff;
+            border-color: #dee2e6;
+        }
+    }
+}
+
+// Tooltip styles
+.tooltip {
+    .tooltip-inner {
+        background-color: #1f2937;
+        border-radius: 0.375rem;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+    }
+}

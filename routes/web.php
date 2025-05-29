@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Auth\CommonAuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,6 +39,8 @@ Route::domain('admin.project.test')->group(function () {
 // Giang vien subdomain routes
 Route::domain('giangvien.project.test')->group(function () {
     require __DIR__ . '/giangvien/dashboard.php';
+    require __DIR__ . '/giangvien/dang-ky.php';
+    require __DIR__ . '/giangvien/sinh-vien.php';
     
     Route::get('/', function () {
         if (Auth::check() && Auth::user()->vai_tro === 'giang_vien') {

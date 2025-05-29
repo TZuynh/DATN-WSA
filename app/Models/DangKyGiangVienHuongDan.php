@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DangKyGiaoVienHuongDan extends Model
+class DangKyGiangVienHuongDan extends Model
 {
-    protected $table = 'dang_ky_giao_vien_huong_dan';
+    protected $table = 'dang_ky_giang_vien_huong_dans';
 
     protected $fillable = [
         'sinh_vien_id',
@@ -14,12 +15,12 @@ class DangKyGiaoVienHuongDan extends Model
         'trang_thai',
     ];
 
-    public function sinhVien()
+    public function sinhVien(): BelongsTo
     {
-        return $this->belongsTo(SinhVien::class, 'sinh_vien_id');
+        return $this->belongsTo(SinhVien::class);
     }
 
-    public function giaoVien()
+    public function giangVien(): BelongsTo
     {
         return $this->belongsTo(TaiKhoan::class, 'giang_vien_id');
     }

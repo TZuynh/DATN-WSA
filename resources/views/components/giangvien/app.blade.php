@@ -17,9 +17,12 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <!-- Scripts -->
     @vite(['resources/scss/app.scss', 'resources/js/app.js'])
-
+    <!-- Select multiple -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <style>
         body {
             margin: 0;
@@ -55,13 +58,22 @@
         </main>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {{-- <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> --}}
 
     <script>
         // Toggle sidebar on mobile
         document.querySelector('.sidebar-toggle-btn').addEventListener('click', function() {
             document.querySelector('.admin-sidebar').classList.toggle('active');
+        });
+    </script>
+    <script>
+            //Select multiple
+        $(document).ready(function() {
+            $('#sinh_vien_ids').select2({
+                placeholder: 'Chọn sinh viên',
+                allowClear: true
+            });
         });
     </script>
 </body>
