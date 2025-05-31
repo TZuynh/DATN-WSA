@@ -88,8 +88,14 @@
                             </td>
                             <td style="padding: 12px 15px;">
                                 <div style="display: flex; gap: 8px;">
+                                    <a href="{{ route('admin.dot-bao-cao.show', $dotBaoCao->id) }}" 
+                                       style="padding: 6px 12px; background: #48bb78; color: white; border-radius: 4px; text-decoration: none;"
+                                       title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
                                     <a href="{{ route('admin.dot-bao-cao.edit', $dotBaoCao->id) }}" 
-                                       style="padding: 6px 12px; background: #4299e1; color: white; border-radius: 4px; text-decoration: none;">
+                                       style="padding: 6px 12px; background: #4299e1; color: white; border-radius: 4px; text-decoration: none;"
+                                       title="Chỉnh sửa">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <form action="{{ route('admin.dot-bao-cao.destroy', $dotBaoCao->id) }}" 
@@ -99,7 +105,8 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" 
-                                                style="padding: 6px 12px; background: #f56565; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                                style="padding: 6px 12px; background: #f56565; color: white; border: none; border-radius: 4px; cursor: pointer;"
+                                                title="Xóa">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
@@ -125,7 +132,18 @@
 
     @push('scripts')
     <script>
-        // Tự động cập nhật trạng thái và thống kê mỗi phút
+        // Cập nhật trạng thái ngay khi trang được load
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('{{ route("admin.dot-bao-cao.update-status") }}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    }
+                });
+        });
+
+        // Tự động cập nhật trạng thái mỗi phút
         setInterval(function() {
             fetch('{{ route("admin.dot-bao-cao.update-status") }}')
                 .then(response => response.json())

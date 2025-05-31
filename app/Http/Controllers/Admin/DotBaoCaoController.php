@@ -44,7 +44,8 @@ class DotBaoCaoController extends Controller
             return back()->withErrors(['nam_hoc' => 'Năm học phải khớp với năm của ngày bắt đầu.']);
         }
 
-        DotBaoCao::create($request->all());
+        $dotBaoCao = DotBaoCao::create($request->all());
+        $dotBaoCao->updateTrangThai(); // Cập nhật trạng thái sau khi tạo
 
         return redirect()->route('admin.dot-bao-cao.index')
             ->with('success', 'Thêm đợt báo cáo thành công.');
@@ -57,22 +58,41 @@ class DotBaoCaoController extends Controller
 
     public function update(Request $request, DotBaoCao $dotBaoCao)
     {
-        $request->validate([
-            'nam_hoc' => 'required|integer|min:2000|max:2100',
-            'ngay_bat_dau' => 'required|date',
-            'ngay_ket_thuc' => 'required|date|after:ngay_bat_dau'
-        ]);
+        try {
+            DB::beginTransaction();
 
-        // Kiểm tra năm học có khớp với năm của ngày bắt đầu không
-        $namBatDau = date('Y', strtotime($request->ngay_bat_dau));
-        if ($namBatDau != $request->nam_hoc) {
-            return back()->withErrors(['nam_hoc' => 'Năm học phải khớp với năm của ngày bắt đầu.']);
+            $request->validate([
+                'nam_hoc' => 'required|integer|min:2000|max:2100',
+                'ngay_bat_dau' => 'required|date',
+                'ngay_ket_thuc' => 'required|date|after:ngay_bat_dau'
+            ]);
+
+            // Kiểm tra năm học có khớp với năm của ngày bắt đầu không
+            $namBatDau = date('Y', strtotime($request->ngay_bat_dau));
+            if ($namBatDau != $request->nam_hoc) {
+                return back()->withErrors(['nam_hoc' => 'Năm học phải khớp với năm của ngày bắt đầu.']);
+            }
+
+            // Chỉ cập nhật các trường được phép
+            $dotBaoCao->update([
+                'nam_hoc' => $request->nam_hoc,
+                'ngay_bat_dau' => $request->ngay_bat_dau,
+                'ngay_ket_thuc' => $request->ngay_ket_thuc,
+                'mo_ta' => $request->mo_ta,
+                'trang_thai' => $request->trang_thai
+            ]);
+
+            // Cập nhật trạng thái
+            $dotBaoCao->updateTrangThai();
+
+            DB::commit();
+
+            return redirect()->route('admin.dot-bao-cao.index')
+                ->with('success', 'Cập nhật đợt báo cáo thành công.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Có lỗi xảy ra khi cập nhật đợt báo cáo: ' . $e->getMessage()]);
         }
-
-        $dotBaoCao->update($request->all());
-
-        return redirect()->route('admin.dot-bao-cao.index')
-            ->with('success', 'Cập nhật đợt báo cáo thành công.');
     }
 
     public function destroy(DotBaoCao $dotBaoCao)
@@ -154,5 +174,22 @@ class DotBaoCaoController extends Controller
                 'message' => 'Có lỗi xảy ra khi cập nhật: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function show(DotBaoCao $dotBaoCao)
+    {
+        // Lấy thông tin chi tiết của đợt báo cáo
+        $thongTinChiTiet = $dotBaoCao->getThongTinChiTiet();
+        $thongKeChiTiet = $dotBaoCao->getThongKeChiTiet();
+        $danhSachHoiDong = $dotBaoCao->getDanhSachHoiDong();
+        $danhSachDeTai = $dotBaoCao->getDanhSachDeTai();
+
+        return view('admin.dot-bao-cao.show', compact(
+            'dotBaoCao',
+            'thongTinChiTiet',
+            'thongKeChiTiet',
+            'danhSachHoiDong',
+            'danhSachDeTai'
+        ));
     }
 } 
