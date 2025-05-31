@@ -1,4 +1,8 @@
 <aside class="admin-sidebar">
+    <div class="sidebar-header" style="display: flex; flex-direction: column; align-items: center; padding: 15px 0;">
+        <img src="{{ asset('images/logo-caothang.png') }}" alt="Logo" class="logo-img" style="width: 80px; height: auto; object-fit: contain; margin-bottom: 10px;" />
+        <h5 style="margin: 0;">Admin</h5>
+    </div>
     <ul>
         <li><a href="{{ route('admin.dashboard') }}"><i class="fas fa-chart-line"></i> Thống kê</a></li>
         <li><a href="{{ route('admin.taikhoan.index') }}"><i class="fas fa-users"></i> Quản lý tài khoản</a></li>

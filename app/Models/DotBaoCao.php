@@ -88,17 +88,19 @@ class DotBaoCao extends Model
 
     public function updateTrangThai()
     {
-        $now = Carbon::now();
-        
         if ($this->trang_thai === self::TRANG_THAI_DA_HUY) {
             return;
         }
 
-        if ($now < $this->ngay_bat_dau) {
-            $this->trang_thai = self::TRANG_THAI_CHUA_BAT_DAU;
-        } elseif ($now >= $this->ngay_bat_dau && $now <= $this->ngay_ket_thuc) {
+        $now = Carbon::now()->startOfDay(); // Lấy ngày hiện tại, bỏ qua giờ phút giây
+        $ngayBatDau = Carbon::parse($this->ngay_bat_dau)->startOfDay();
+        $ngayKetThuc = Carbon::parse($this->ngay_ket_thuc)->startOfDay();
+
+        if ($now >= $ngayBatDau) {
             $this->trang_thai = self::TRANG_THAI_DANG_DIEN_RA;
-        } else {
+        }
+        
+        if ($now > $ngayKetThuc) {
             $this->trang_thai = self::TRANG_THAI_DA_KET_THUC;
         }
 
@@ -120,6 +122,24 @@ class DotBaoCao extends Model
             : 0;
 
         $this->save();
+    }
+
+    // Boot method để tự động cập nhật trạng thái khi tạo mới hoặc cập nhật
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($dotBaoCao) {
+            if (!$dotBaoCao->trang_thai) {
+                $dotBaoCao->trang_thai = self::TRANG_THAI_CHUA_BAT_DAU;
+            }
+        });
+
+        static::saved(function ($dotBaoCao) {
+            $dotBaoCao->updateTrangThai();
+            // Cập nhật trạng thái cho tất cả đề tài thuộc đợt báo cáo này
+            $dotBaoCao->deTais()->get()->each->updateTrangThai();
+        });
     }
 }
 
