@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Admin\DotBaoCaoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,6 +34,10 @@ Route::domain('admin.project.test')->group(function () {
             return redirect('/dashboard');
         }
         return redirect('http://project.test');
+    });
+
+    Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
+        Route::get('dot-bao-cao/{dotBaoCao}', [DotBaoCaoController::class, 'show'])->name('dot-bao-cao.show');
     });
 });
 

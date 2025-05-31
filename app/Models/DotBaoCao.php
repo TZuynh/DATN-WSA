@@ -92,34 +92,36 @@ class DotBaoCao extends Model
             return;
         }
 
-        $now = Carbon::now()->startOfDay(); // Lấy ngày hiện tại, bỏ qua giờ phút giây
+        $now = Carbon::now()->startOfDay();
         $ngayBatDau = Carbon::parse($this->ngay_bat_dau)->startOfDay();
         $ngayKetThuc = Carbon::parse($this->ngay_ket_thuc)->startOfDay();
 
-        if ($now >= $ngayBatDau) {
-            $this->trang_thai = self::TRANG_THAI_DANG_DIEN_RA;
-        }
-        
-        if ($now > $ngayKetThuc) {
-            $this->trang_thai = self::TRANG_THAI_DA_KET_THUC;
-        }
+        $trangThaiMoi = match(true) {
+            $now < $ngayBatDau => self::TRANG_THAI_CHUA_BAT_DAU,
+            $now > $ngayKetThuc => self::TRANG_THAI_DA_KET_THUC,
+            default => self::TRANG_THAI_DANG_DIEN_RA
+        };
 
-        $this->save();
+        if ($this->trang_thai !== $trangThaiMoi) {
+            $this->trang_thai = $trangThaiMoi;
+            $this->save();
+        }
     }
 
     public function updateThongKe()
     {
+        // Chỉ cập nhật thống kê nếu cần thiết
         $this->so_luong_hoi_dong = $this->hoiDongs()->count();
         $this->so_luong_de_tai = $this->deTais()->count();
         $this->so_luong_nhom = $this->deTais()->whereNotNull('nhom_id')->count();
         
-        // Tính tỷ lệ hoàn thành dựa trên số lượng báo cáo đã nộp
         $tongSoBaoCao = $this->chiTietBaoCaos()->count();
-        $baoCaoDaNop = $this->chiTietBaoCaos()->whereNotNull('ngay_nop')->count();
-        
-        $this->ti_do_hoan_thanh = $tongSoBaoCao > 0 
-            ? round(($baoCaoDaNop / $tongSoBaoCao) * 100, 2) 
-            : 0;
+        if ($tongSoBaoCao > 0) {
+            $baoCaoDaNop = $this->chiTietBaoCaos()->whereNotNull('ngay_nop')->count();
+            $this->ti_do_hoan_thanh = round(($baoCaoDaNop / $tongSoBaoCao) * 100, 2);
+        } else {
+            $this->ti_do_hoan_thanh = 0;
+        }
 
         $this->save();
     }
@@ -140,6 +142,127 @@ class DotBaoCao extends Model
             // Cập nhật trạng thái cho tất cả đề tài thuộc đợt báo cáo này
             $dotBaoCao->deTais()->get()->each->updateTrangThai();
         });
+    }
+
+    // Các phương thức lấy thông tin chi tiết
+    public function getThongTinChiTiet()
+    {
+        // Sử dụng eager loading để tối ưu query
+        return $this->load([
+            'hoiDongs' => function($query) {
+                $query->with([
+                    'phanCongVaiTros' => function($query) {
+                        $query->with('giangVien');
+                    },
+                    'chiTietBaoCaos' => function($query) {
+                        $query->with(['deTai' => function($query) {
+                            $query->with(['nhom', 'giangVien']);
+                        }]);
+                    }
+                ]);
+            }
+        ]);
+    }
+
+    public function getThongKeChiTiet()
+    {
+        return [
+            'tong_so_hoi_dong' => $this->so_luong_hoi_dong,
+            'tong_so_de_tai' => $this->so_luong_de_tai,
+            'tong_so_nhom' => $this->so_luong_nhom,
+            'ti_do_hoan_thanh' => $this->ti_do_hoan_thanh,
+            'thong_ke_hoi_dong' => $this->hoiDongs()
+                ->withCount(['chiTietBaoCaos', 'phanCongVaiTros'])
+                ->get()
+                ->map(function($hoiDong) {
+                    return [
+                        'id' => $hoiDong->id,
+                        'ten' => $hoiDong->ten,
+                        'so_de_tai' => $hoiDong->chi_tiet_bao_caos_count,
+                        'so_thanh_vien' => $hoiDong->phan_cong_vai_tros_count,
+                        'trang_thai' => $hoiDong->trang_thai
+                    ];
+                }),
+            'thong_ke_de_tai' => $this->deTais()
+                ->with(['nhom', 'giangVien'])
+                ->withCount('chiTietBaoCaos')
+                ->get()
+                ->map(function($deTai) {
+                    return [
+                        'id' => $deTai->id,
+                        'ma_de_tai' => $deTai->ma_de_tai,
+                        'tieu_de' => $deTai->tieu_de,
+                        'nhom' => $deTai->nhom ? [
+                            'id' => $deTai->nhom->id,
+                            'ten' => $deTai->nhom->ten
+                        ] : null,
+                        'giang_vien' => $deTai->giangVien ? [
+                            'id' => $deTai->giangVien->id,
+                            'ten' => $deTai->giangVien->ten
+                        ] : null,
+                        'so_bao_cao' => $deTai->chi_tiet_bao_caos_count,
+                        'trang_thai' => $deTai->trang_thai
+                    ];
+                })
+        ];
+    }
+
+    public function getDanhSachHoiDong()
+    {
+        return $this->hoiDongs()
+            ->with(['phanCongVaiTros.giangVien', 'chiTietBaoCaos.deTai'])
+            ->get()
+            ->map(function($hoiDong) {
+                return [
+                    'id' => $hoiDong->id,
+                    'ten' => $hoiDong->ten,
+                    'ma_hoi_dong' => $hoiDong->ma_hoi_dong,
+                    'thanh_vien' => $hoiDong->phanCongVaiTros->map(function($phanCong) {
+                        return [
+                            'id' => $phanCong->giangVien->id,
+                            'ten' => $phanCong->giangVien->ten,
+                            'vai_tro' => $phanCong->vai_tro
+                        ];
+                    }),
+                    'de_tai' => $hoiDong->chiTietBaoCaos->map(function($chiTiet) {
+                        return [
+                            'id' => $chiTiet->deTai->id,
+                            'ma_de_tai' => $chiTiet->deTai->ma_de_tai,
+                            'tieu_de' => $chiTiet->deTai->tieu_de,
+                            'trang_thai' => $chiTiet->trang_thai
+                        ];
+                    })
+                ];
+            });
+    }
+
+    public function getDanhSachDeTai()
+    {
+        return $this->deTais()
+            ->with(['nhom', 'giangVien', 'chiTietBaoCaos.hoiDong'])
+            ->get()
+            ->map(function($deTai) {
+                return [
+                    'id' => $deTai->id,
+                    'ma_de_tai' => $deTai->ma_de_tai,
+                    'tieu_de' => $deTai->tieu_de,
+                    'nhom' => $deTai->nhom ? [
+                        'id' => $deTai->nhom->id,
+                        'ten' => $deTai->nhom->ten
+                    ] : null,
+                    'giang_vien' => $deTai->giangVien ? [
+                        'id' => $deTai->giangVien->id,
+                        'ten' => $deTai->giangVien->ten
+                    ] : null,
+                    'hoi_dong' => $deTai->chiTietBaoCaos->map(function($chiTiet) {
+                        return [
+                            'id' => $chiTiet->hoiDong->id,
+                            'ten' => $chiTiet->hoiDong->ten,
+                            'trang_thai' => $chiTiet->trang_thai
+                        ];
+                    })->first()
+                ];
+            });
     }
 }
 
