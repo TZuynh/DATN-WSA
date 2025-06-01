@@ -30,7 +30,13 @@ class DangKyController extends Controller
                 ->where('giang_vien_id', auth()->id());
         })->get();
 
-        return view('giangvien.dang-ky.index', compact('dangKys', 'sinhViens'));
+        // Lấy danh sách nhóm của giảng viên
+        $nhoms = \App\Models\Nhom::with('sinhViens')
+            ->where('giang_vien_id', auth()->id())
+            ->latest()
+            ->paginate(10);
+
+        return view('giangvien.dang-ky.index', compact('dangKys', 'sinhViens', 'nhoms'));
     }
 
 

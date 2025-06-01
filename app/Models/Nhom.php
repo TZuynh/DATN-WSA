@@ -6,11 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Nhom extends Model
 {
-    protected $fillable = ['ma_nhom', 'ten', 'giang_vien_id', 'de_tai_id', 'sinh_vien_id', 'trang_thai'];
+    protected $fillable = ['ma_nhom', 'ten', 'giang_vien_id', 'de_tai_id', 'trang_thai'];
 
     public function chiTietNhoms()
     {
         return $this->hasMany(ChiTietNhom::class);
+    }
+
+    public function sinhViens()
+    {
+        return $this->belongsToMany(SinhVien::class, 'chi_tiet_nhoms', 'nhom_id', 'sinh_vien_id');
     }
 
     public function deTai()
@@ -26,10 +31,5 @@ class Nhom extends Model
     public function lichChams()
     {
         return $this->hasMany(LichCham::class);
-    }
-
-    public function sinhVien()
-    {
-        return $this->belongsTo(SinhVien::class);
     }
 }

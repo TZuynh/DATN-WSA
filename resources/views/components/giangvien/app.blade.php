@@ -25,6 +25,16 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <style>
+        /* Ẩn thanh cuộn cho toàn bộ trang */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        
+        /* Cho Firefox */
+        * {
+            scrollbar-width: none;
+        }
+        
         body {
             margin: 0;
             padding: 0;

@@ -50,7 +50,7 @@
                         </form>
                         <div style="margin-top: 10px; font-size: 0.875em; color: #718096;">
                             <i class="fas fa-info-circle" style="margin-right: 5px;"></i>
-                            File Excel phải có các cột: mssv, ten
+                            File Excel phải có các cột: mssv, ten, lop, nganh, khoa_hoc
                         </div>
                     </div>
 
@@ -61,6 +61,9 @@
                                     <th class="text-center" style="width: 80px;">STT</th>
                                     <th>Mã số sinh viên</th>
                                     <th>Họ tên</th>
+                                    <th>Lớp</th>
+                                    <th>Ngành</th>
+                                    <th>Khóa học</th>
                                     <th class="text-center" style="width: 120px;">Thao tác</th>
                                 </tr>
                             </thead>
@@ -72,6 +75,9 @@
                                             <span class="fw-medium">{{ $sinhVien->mssv }}</span>
                                         </td>
                                         <td>{{ $sinhVien->ten }}</td>
+                                        <td>{{ $sinhVien->lop }}</td>
+                                        <td>{{ $sinhVien->nganh }}</td>
+                                        <td>{{ $sinhVien->khoa_hoc }}</td>
                                         <td class="text-center">
                                             <a href="{{ route('giangvien.sinh-vien.edit', $sinhVien) }}"
                                                class="btn btn-sm btn-primary me-1"
@@ -94,7 +100,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="text-center py-4">
+                                        <td colspan="7" class="text-center py-4">
                                             <div class="text-muted">
                                                 <i class="fas fa-info-circle me-2"></i>Không có dữ liệu
                                             </div>

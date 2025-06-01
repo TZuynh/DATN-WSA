@@ -28,11 +28,17 @@ class SinhVienController extends Controller
         $validator = Validator::make($request->all(), [
             'mssv' => 'required|string|regex:/^0306\\d{6}$/|unique:sinh_viens,mssv',
             'ten' => 'required|string|max:255',
+            'lop' => 'nullable|string|max:50',
+            'nganh' => 'nullable|string|max:100',
+            'khoa_hoc' => 'nullable|string|max:20',
         ], [
             'mssv.required' => 'Mã số sinh viên không được để trống',
             'mssv.unique' => 'Mã số sinh viên đã tồn tại',
             'mssv.regex' => 'Mã số sinh viên phải bắt đầu bằng 0306 và có đủ 10 chữ số.',
             'ten.required' => 'Tên sinh viên không được để trống',
+            'lop.max' => 'Tên lớp không được vượt quá 50 ký tự',
+            'nganh.max' => 'Tên ngành không được vượt quá 100 ký tự',
+            'khoa_hoc.max' => 'Khóa học không được vượt quá 20 ký tự',
         ]);
 
         if ($validator->fails()) {
@@ -41,7 +47,7 @@ class SinhVienController extends Controller
                         ->withInput();
         }
 
-        SinhVien::create($request->only(['mssv', 'ten']));
+        SinhVien::create($request->only(['mssv', 'ten', 'lop', 'nganh', 'khoa_hoc']));
 
         return redirect()->route('giangvien.sinh-vien.index')
             ->with('success', 'Sinh viên đã được thêm thành công!');
@@ -57,11 +63,17 @@ class SinhVienController extends Controller
         $validator = Validator::make($request->all(), [
             'mssv' => 'required|string|regex:/^0306\\d{6}$/|unique:sinh_viens,mssv,' . $sinhVien->id,
             'ten' => 'required|string|max:255',
+            'lop' => 'nullable|string|max:50',
+            'nganh' => 'nullable|string|max:100',
+            'khoa_hoc' => 'nullable|string|max:20',
         ], [
             'mssv.required' => 'Mã số sinh viên không được để trống',
             'mssv.unique' => 'Mã số sinh viên đã tồn tại',
             'mssv.regex' => 'Mã số sinh viên phải bắt đầu bằng 0306 và có đủ 10 chữ số.',
             'ten.required' => 'Tên sinh viên không được để trống',
+            'lop.max' => 'Tên lớp không được vượt quá 50 ký tự',
+            'nganh.max' => 'Tên ngành không được vượt quá 100 ký tự',
+            'khoa_hoc.max' => 'Khóa học không được vượt quá 20 ký tự',
         ]);
 
          if ($validator->fails()) {
@@ -70,7 +82,7 @@ class SinhVienController extends Controller
                         ->withInput();
         }
 
-        $sinhVien->update($request->only(['mssv', 'ten']));
+        $sinhVien->update($request->only(['mssv', 'ten', 'lop', 'nganh', 'khoa_hoc']));
 
         return redirect()->route('giangvien.sinh-vien.index')
             ->with('success', 'Sinh viên đã được cập nhật thành công!');

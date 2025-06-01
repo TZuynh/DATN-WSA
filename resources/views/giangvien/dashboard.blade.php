@@ -5,8 +5,8 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h4 class="mb-0">Thống kê</h4>
+                    <div class="card-header" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
+                        <h4 class="mb-0 text-white">Thống kê</h4>
                     </div>
                     <div class="card-body">
                         @if (session('status'))
@@ -18,37 +18,37 @@
                         <!-- Thống kê chính -->
                         <div class="row">
                             <div class="col-md-3 mb-4">
-                                <div class="card bg-primary text-white">
-                                    <div class="card-body">
-                                        <h5 class="card-title">Giảng Viên</h5>
-                                        <p class="card-text display-4">{{ $totalLecturers ?? 0 }}</p>
+                                <div class="card" style="background: linear-gradient(135deg, #36b9cc 0%, #1a8997 100%); border: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                                    <div class="card-body text-white">
+                                        <h5 class="card-title" style="font-size: 1.1rem; font-weight: 500;">Giảng Viên</h5>
+                                        <p class="card-text display-4" style="font-size: 2.5rem; font-weight: 600; margin: 0;">{{ $totalLecturers ?? 0 }}</p>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="col-md-3 mb-4">
-                                <div class="card bg-success text-white">
-                                    <div class="card-body">
-                                        <h5 class="card-title">Sinh Viên</h5>
-                                        <p class="card-text display-4">{{ $totalStudents ?? 0 }}</p>
+                                <div class="card" style="background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%); border: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                                    <div class="card-body text-white">
+                                        <h5 class="card-title" style="font-size: 1.1rem; font-weight: 500;">Sinh Viên</h5>
+                                        <p class="card-text display-4" style="font-size: 2.5rem; font-weight: 600; margin: 0;">{{ $totalStudents ?? 0 }}</p>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="col-md-3 mb-4">
-                                <div class="card bg-info text-white">
-                                    <div class="card-body">
-                                        <h5 class="card-title">Đã Duyệt</h5>
-                                        <p class="card-text display-4">{{ $approvedRegistrations ?? 0 }}</p>
+                                <div class="card" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%); border: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                                    <div class="card-body text-white">
+                                        <h5 class="card-title" style="font-size: 1.1rem; font-weight: 500;">Đã Duyệt</h5>
+                                        <p class="card-text display-4" style="font-size: 2.5rem; font-weight: 600; margin: 0;">{{ $approvedRegistrations ?? 0 }}</p>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="col-md-3 mb-4">
-                                <div class="card bg-danger text-white">
-                                    <div class="card-body">
-                                        <h5 class="card-title">Tổng Đăng Ký</h5>
-                                        <p class="card-text display-4">{{ $totalRegistrations ?? 0 }}</p>
+                                <div class="card" style="background: linear-gradient(135deg, #f6c23e 0%, #dda20a 100%); border: none; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                                    <div class="card-body text-white">
+                                        <h5 class="card-title" style="font-size: 1.1rem; font-weight: 500;">Tổng Đăng Ký</h5>
+                                        <p class="card-text display-4" style="font-size: 2.5rem; font-weight: 600; margin: 0;">{{ $totalRegistrations ?? 0 }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -57,9 +57,9 @@
                         <!-- Thống kê đăng ký và sinh viên -->
                         <div class="row mt-4">
                             <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header bg-primary text-white">
-                                        <h5 class="mb-0">Thống Kê Đăng Ký Hướng Dẫn</h5>
+                                <div class="card" style="box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                                    <div class="card-header" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
+                                        <h5 class="mb-0 text-white">Thống Kê Đăng Ký Hướng Dẫn</h5>
                                     </div>
                                     <div class="card-body">
                                         <div class="table-responsive">

@@ -1,20 +1,20 @@
 @extends('components.giangvien.app')
-@section('title', 'Quản lý đăng ký')
+@section('title', content: 'Quản lý đăng ký')
 @section('content')
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
-            <div class="card">
+            <!-- Phần Đăng ký hướng dẫn -->
+            <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">Danh sách đăng ký hướng dẫn</h3>
                     <div>
-                        <!-- Add filter form -->
                         <form action="{{ route('giangvien.dang-ky.index') }}" method="GET" class="form-inline d-inline-flex mb-2">
                             <select name="sinh_vien_id" class="form-select me-2">
                                 <option value="">Tất cả sinh viên</option>
                                 @foreach($sinhViens as $sinhVien)
                                     <option value="{{ $sinhVien->id }}" {{ request('sinh_vien_id') == $sinhVien->id ? 'selected' : '' }}>
-                                        {{ $sinhVien->ten }} - {{ $sinhVien->mssv }}
+                                        {{ $sinhVien->mssv }} - {{ $sinhVien->ten }}
                                     </option>
                                 @endforeach
                             </select>
@@ -48,7 +48,7 @@
                                     <tr>
                                         <td>{{ $key + 1 }}</td>
                                         <td>{{ $dangKy->giangVien->ten }}</td>
-                                        <td>{{ $dangKy->sinhVien->ten }} - {{ $dangKy->sinhVien->mssv }}</td>
+                                        <td>{{ $dangKy->sinhVien->mssv }} - {{ $dangKy->sinhVien->ten }}</td>
                                         <td>{{ $dangKy->created_at->format('d/m/Y H:i') }}</td>
                                         <td>
                                             @if($dangKy->trang_thai == 'cho_duyet')
@@ -92,7 +92,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="text-center">Không có dữ liệu</td>
+                                        <td colspan="6" class="text-center">Không có dữ liệu</td>
                                     </tr>
                                 @endforelse
                             </tbody>

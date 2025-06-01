@@ -8,19 +8,25 @@
         <li class="menu-item {{ request()->routeIs('giangvien.dashboard') ? 'active' : '' }}">
             <a href="{{ route('giangvien.dashboard') }}">
                 <i class="fas fa-tachometer-alt"></i>
-                <span>Dashboard</span>
+                <span>Thống kê</span>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('giangvien.sinh-vien.*') ? 'active' : '' }}">
             <a href="{{ route('giangvien.sinh-vien.index') }}">
                 <i class="fas fa-users"></i>
-                <span>Sinh Viên</span>
+                <span>Sinh viên</span>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('giangvien.dang-ky.*') ? 'active' : '' }}">
             <a href="{{ route('giangvien.dang-ky.index') }}">
                 <i class="fas fa-user-plus"></i>
                 <span>Quản lý đăng ký</span>
+            </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('giangvien.nhom.*') ? 'active' : '' }}">
+            <a href="{{ route('giangvien.nhom.index') }}">
+                <i class="fas fa-user-plus"></i>
+                <span>Quản lý nhóm</span>
             </a>
         </li>
 {{--        <li class="menu-item">--}}

@@ -47,15 +47,18 @@
                             @enderror
                         </div>
                         <div class="mb-3">
-                            <label for="giang_vien_id" class="form-label">Chọn giảng viên</label>
-                            <select name="giang_vien_id" id="giang_vien_id" class="form-select @error('giang_vien_id') is-invalid @enderror" required>
-                                <option value="">-- Chọn giảng viên --</option>
-                                @foreach($giangViens as $giangVien)
-                                    <option value="{{ $giangVien->id }}" {{ old('giang_vien_id') == $giangVien->id ? 'selected' : '' }}>
-                                        {{ $giangVien->ten }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <label for="giang_vien_id" class="form-label">Giảng viên</label>
+                            <input type="text" class="form-control bg-light @error('giang_vien_id') is-invalid @enderror" 
+                                id="giang_vien_id" 
+                                name="giang_vien_id" 
+                                value="{{ auth()->user()->ten }}" 
+                                required 
+                                readonly 
+                                style="cursor: not-allowed;">
+                            <input type="hidden" name="giang_vien_id" value="{{ auth()->user()->id }}">
+                            @error('giang_vien_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="mb-3">
