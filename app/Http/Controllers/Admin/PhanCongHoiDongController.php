@@ -21,13 +21,19 @@ class PhanCongHoiDongController extends Controller
         return view('admin.phan-cong-hoi-dong.index', compact('phanCongVaiTros'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $hoiDongs = HoiDong::all();
         $taiKhoans = TaiKhoan::where('vai_tro', 'giang_vien')->get();
         $vaiTros = VaiTro::all();
-        
-        return view('admin.phan-cong-hoi-dong.create', compact('hoiDongs', 'taiKhoans', 'vaiTros'));
+
+        $selectedHoiDong = $request->get('hoi_dong_id');
+        if ($selectedHoiDong) {
+            $usedVaiTroIds = PhanCongVaiTro::where('hoi_dong_id', $selectedHoiDong)->pluck('vai_tro_id')->toArray();
+            $vaiTros = VaiTro::whereNotIn('id', $usedVaiTroIds)->get();
+        }
+
+        return view('admin.phan-cong-hoi-dong.create', compact('hoiDongs', 'taiKhoans', 'vaiTros', 'selectedHoiDong'));
     }
 
     public function store(Request $request)
@@ -47,6 +53,15 @@ class PhanCongHoiDongController extends Controller
             return back()->withErrors(['tai_khoan_id' => 'Giảng viên này đã được phân công vào hội đồng.']);
         }
 
+        // Kiểm tra xem vai trò đã được phân công cho hội đồng chưa
+        $existsRole = PhanCongVaiTro::where('hoi_dong_id', $request->hoi_dong_id)
+            ->where('vai_tro_id', $request->vai_tro_id)
+            ->exists();
+
+        if ($existsRole) {
+            return back()->withErrors(['vai_tro_id' => 'Vai trò này đã được phân công cho hội đồng.']);
+        }
+
         PhanCongVaiTro::create($request->all());
 
         return redirect()->route('admin.phan-cong-hoi-dong.index')
@@ -57,8 +72,14 @@ class PhanCongHoiDongController extends Controller
     {
         $hoiDongs = HoiDong::all();
         $taiKhoans = TaiKhoan::where('vai_tro', 'giang_vien')->get();
-        $vaiTros = VaiTro::all();
-        
+
+        $usedVaiTroIds = PhanCongVaiTro::where('hoi_dong_id', $phanCongVaiTro->hoi_dong_id)
+            ->where('id', '!=', $phanCongVaiTro->id)
+            ->pluck('vai_tro_id')
+            ->toArray();
+
+        $vaiTros = VaiTro::whereNotIn('id', $usedVaiTroIds)->get();
+
         return view('admin.phan-cong-hoi-dong.edit', compact('phanCongVaiTro', 'hoiDongs', 'taiKhoans', 'vaiTros'));
     }
 
@@ -78,6 +99,16 @@ class PhanCongHoiDongController extends Controller
 
         if ($exists) {
             return back()->withErrors(['tai_khoan_id' => 'Giảng viên này đã được phân công vào hội đồng.']);
+        }
+
+        // Kiểm tra xem vai trò đã được phân công cho hội đồng chưa
+        $existsRole = PhanCongVaiTro::where('hoi_dong_id', $request->hoi_dong_id)
+            ->where('vai_tro_id', $request->vai_tro_id)
+            ->where('id', '!=', $phanCongVaiTro->id)
+            ->exists();
+
+        if ($existsRole) {
+            return back()->withErrors(['vai_tro_id' => 'Vai trò này đã được phân công cho hội đồng.']);
         }
 
         $phanCongVaiTro->update($request->all());

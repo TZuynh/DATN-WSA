@@ -94,7 +94,7 @@
             <div class="mb-3">
                 <label for="email" class="form-label">Email</label>
                 <input type="email" class="form-control @error('email') is-invalid @enderror" 
-                       id="email" name="email" value="{{ old('email') }}" required autofocus>
+                       id="email" name="email" value="{{ old('email') }}" placeholder="Nhập email của bạn" required autofocus>
                 @error('email')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
@@ -104,7 +104,7 @@
                 <label for="mat_khau" class="form-label">Mật khẩu</label>
                 <div class="password-container">
                     <input type="password" class="form-control @error('mat_khau') is-invalid @enderror" 
-                           id="mat_khau" name="mat_khau" required>
+                           id="mat_khau" name="mat_khau" placeholder="Nhập mật khẩu của bạn" required>
                     <span class="toggle-password" onclick="togglePassword()">
                         <i class="fas fa-eye"></i>
                     </span>

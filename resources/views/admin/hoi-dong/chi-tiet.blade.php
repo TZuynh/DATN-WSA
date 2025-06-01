@@ -1,5 +1,7 @@
 @extends('admin.layout')
 
+@section('title', 'Chi tiết hội đồng')
+
 @section('styles')
 @vite(['resources/scss/hoi-dong/chi-tiet.scss'])
 @endsection
@@ -84,8 +86,8 @@
                                 <th class="text-muted text-start" style="width: 200px; text-align: left;">Đợt báo cáo:</th>
                                 <td class="text-start">
                                     <span class="badge bg-info px-3 py-2">
-                                        <i class="fas fa-calendar-alt me-1"></i>
-                                        {{ $hoiDong->dotBaoCao->nam_hoc ?? 'N/A' }}
+                                        <i class="fas fa-calendar-alt me-2"></i>
+                                        <span style="margin-left: 4px;">{{ $hoiDong->dotBaoCao->nam_hoc ?? 'N/A' }}</span>
                                     </span>
                                 </td>
                             </tr>

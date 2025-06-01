@@ -15,34 +15,6 @@
 <x-admin.slidebar />
 
 <main class="admin-main">
-    {{-- Container cho alerts --}}
-    @if(session('success') || session('error'))
-    <div id="alert-box"
-         class="fixed top-5 right-5 z-50 px-4 py-3 rounded-md shadow-md text-white transition-opacity duration-500
-                {{ session('success') ? 'bg-green-500' : 'bg-red-500' }}">
-        <div class="flex items-center justify-between space-x-2">
-            <span>
-                {{ session('success') ?? session('error') }}
-            </span>
-            <button onclick="closeAlert()" class="font-bold text-xl leading-none">&times;</button>
-        </div>
-    </div>
-
-    <script>
-        // Tự động ẩn sau 3 giây
-        setTimeout(() => {
-            closeAlert();
-        }, 3000);
-
-        function closeAlert() {
-            const alertBox = document.getElementById('alert-box');
-            if (alertBox) {
-                alertBox.style.opacity = 0;
-                setTimeout(() => alertBox.remove(), 500); // đợi hiệu ứng mờ rồi xóa
-            }
-        }
-    </script>
-@endif
     @yield('content')
 </main>
 

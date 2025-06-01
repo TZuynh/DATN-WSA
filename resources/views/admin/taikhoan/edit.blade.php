@@ -37,20 +37,20 @@
             <div style="margin-bottom: 20px;">
                 <label for="ten" style="display: block; margin-bottom: 5px; color: #4a5568;">Họ tên</label>
                 <input type="text" name="ten" id="ten" value="{{ old('ten', $taikhoan->ten) }}" required
-                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Nhập họ tên">
             </div>
 
             <div style="margin-bottom: 20px;">
                 <label for="email" style="display: block; margin-bottom: 5px; color: #4a5568;">Email</label>
                 <input type="email" name="email" id="email" value="{{ old('email', $taikhoan->email) }}" required
-                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Nhập email">
             </div>
 
             <div style="margin-bottom: 20px;">
                 <label for="mat_khau" style="display: block; margin-bottom: 5px; color: #4a5568;">Mật khẩu mới (để trống nếu không muốn thay đổi)</label>
                 <div class="password-container">
                     <input type="password" name="mat_khau" id="mat_khau"
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Nhập mật khẩu mới (để trống nếu không đổi)">
                     <span class="toggle-password" onclick="togglePassword()">
                         <i class="fas fa-eye"></i>
                     </span>
@@ -60,7 +60,7 @@
             <div style="margin-bottom: 20px;">
                 <label for="vai_tro" style="display: block; margin-bottom: 5px; color: #4a5568;">Vai trò</label>
                 <select name="vai_tro" id="vai_tro" required
-                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn vai trò">
                     <option value="">Chọn vai trò</option>
                     <option value="admin" {{ old('vai_tro', $taikhoan->vai_tro) == 'admin' ? 'selected' : '' }}>Admin</option>
                     <option value="giang_vien" {{ old('vai_tro', $taikhoan->vai_tro) == 'giang_vien' ? 'selected' : '' }}>Giảng viên</option>

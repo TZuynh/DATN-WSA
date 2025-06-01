@@ -4,6 +4,7 @@
 
 @section('content')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h1 style="color: #2d3748; font-weight: 700;">Quản lý phân công hội đồng</h1>
         <a href="{{ route('admin.phan-cong-hoi-dong.create') }}" style="padding: 10px 20px; background-color: #4299e1; color: white; border: none; border-radius: 4px; text-decoration: none;">
@@ -82,9 +83,11 @@
             @endforelse
             </tbody>
         </table>
-        
+
         <div style="margin-top: 20px;">
             {{ $phanCongVaiTros->links() }}
         </div>
     </div>
-@endsection 
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+@endsection

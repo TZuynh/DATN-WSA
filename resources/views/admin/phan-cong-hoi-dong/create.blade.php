@@ -28,10 +28,10 @@
                 
                 <div style="margin-bottom: 20px;">
                     <label for="hoi_dong_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Hội đồng</label>
-                    <select name="hoi_dong_id" id="hoi_dong_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <select name="hoi_dong_id" id="hoi_dong_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn hội đồng">
                         <option value="">Chọn hội đồng</option>
                         @foreach($hoiDongs as $hoiDong)
-                            <option value="{{ $hoiDong->id }}" {{ old('hoi_dong_id') == $hoiDong->id ? 'selected' : '' }}>
+                            <option value="{{ $hoiDong->id }}" {{ old('hoi_dong_id', $selectedHoiDong ?? '') == $hoiDong->id ? 'selected' : '' }}>
                                 {{ $hoiDong->ten }}
                             </option>
                         @endforeach
@@ -40,7 +40,7 @@
 
                 <div style="margin-bottom: 20px;">
                     <label for="tai_khoan_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Giảng viên</label>
-                    <select name="tai_khoan_id" id="tai_khoan_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <select name="tai_khoan_id" id="tai_khoan_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn giảng viên">
                         <option value="">Chọn giảng viên</option>
                         @foreach($taiKhoans as $taiKhoan)
                             <option value="{{ $taiKhoan->id }}" {{ old('tai_khoan_id') == $taiKhoan->id ? 'selected' : '' }}>
@@ -52,7 +52,7 @@
 
                 <div style="margin-bottom: 20px;">
                     <label for="vai_tro_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Vai trò</label>
-                    <select name="vai_tro_id" id="vai_tro_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <select name="vai_tro_id" id="vai_tro_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn vai trò">
                         <option value="">Chọn vai trò</option>
                         @foreach($vaiTros as $vaiTro)
                             <option value="{{ $vaiTro->id }}" {{ old('vai_tro_id') == $vaiTro->id ? 'selected' : '' }}>
