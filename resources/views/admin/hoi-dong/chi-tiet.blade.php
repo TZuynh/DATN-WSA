@@ -2,10 +2,6 @@
 
 @section('title', 'Chi tiết hội đồng')
 
-@section('styles')
-@vite(['resources/scss/hoi-dong/chi-tiet.scss'])
-@endsection
-
 @section('content')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <div class="container-fluid px-4">

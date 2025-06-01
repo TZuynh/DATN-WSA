@@ -11,7 +11,6 @@ export default defineConfig({
                 'resources/scss/navbar.scss',
                 'resources/scss/dashboard.scss',
                 'resources/scss/profile.scss',
-                'resources/scss/hoi-dong/chi-tiet.scss',
                 'resources/scss/giangvien/sinh-vien.scss'
             ],
             refresh: true,
