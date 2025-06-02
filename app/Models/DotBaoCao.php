@@ -219,16 +219,16 @@ class DotBaoCao extends Model
                     'ma_hoi_dong' => $hoiDong->ma_hoi_dong,
                     'thanh_vien' => $hoiDong->phanCongVaiTros->map(function($phanCong) {
                         return [
-                            'id' => $phanCong->giangVien->id,
-                            'ten' => $phanCong->giangVien->ten,
-                            'vai_tro' => $phanCong->vai_tro
+                            'id' => $phanCong->giangVien ? $phanCong->giangVien->id : null,
+                            'ten' => $phanCong->giangVien ? $phanCong->giangVien->ho_ten : null,
+                            'vai_tro' => $phanCong->vaiTro ? $phanCong->vaiTro->ten : null
                         ];
                     }),
                     'de_tai' => $hoiDong->chiTietBaoCaos->map(function($chiTiet) {
                         return [
-                            'id' => $chiTiet->deTai->id,
-                            'ma_de_tai' => $chiTiet->deTai->ma_de_tai,
-                            'tieu_de' => $chiTiet->deTai->tieu_de,
+                            'id' => $chiTiet->deTai ? $chiTiet->deTai->id : null,
+                            'ma_de_tai' => $chiTiet->deTai ? $chiTiet->deTai->ma_de_tai : null,
+                            'tieu_de' => $chiTiet->deTai ? $chiTiet->deTai->tieu_de : null,
                             'trang_thai' => $chiTiet->trang_thai
                         ];
                     })
@@ -252,12 +252,12 @@ class DotBaoCao extends Model
                     ] : null,
                     'giang_vien' => $deTai->giangVien ? [
                         'id' => $deTai->giangVien->id,
-                        'ten' => $deTai->giangVien->ten
+                        'ten' => $deTai->giangVien->ho_ten
                     ] : null,
                     'hoi_dong' => $deTai->chiTietBaoCaos->map(function($chiTiet) {
                         return [
-                            'id' => $chiTiet->hoiDong->id,
-                            'ten' => $chiTiet->hoiDong->ten,
+                            'id' => $chiTiet->hoiDong ? $chiTiet->hoiDong->id : null,
+                            'ten' => $chiTiet->hoiDong ? $chiTiet->hoiDong->ten : null,
                             'trang_thai' => $chiTiet->trang_thai
                         ];
                     })->first()

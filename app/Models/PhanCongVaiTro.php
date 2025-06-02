@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PhanCongVaiTro extends Model
 {
+    use HasFactory;
+
     protected $table = 'phan_cong_vai_tros';
 
     protected $fillable = [
@@ -27,6 +30,14 @@ class PhanCongVaiTro extends Model
     public function taiKhoan()
     {
         return $this->belongsTo(TaiKhoan::class);
+    }
+
+    /**
+     * Get the giang vien associated with the PhanCongVaiTro.
+     */
+    public function giangVien()
+    {
+        return $this->belongsTo(TaiKhoan::class, 'giang_vien_id');
     }
 }
 

@@ -31,7 +31,7 @@
                         <tr>
                             <th class="w-1/3 text-left">Trạng thái</th>
                             <td>
-                                <span class="px-3 py-1 rounded-full text-sm {{ $dotBaoCao->trang_thai_class }}">
+                                <span class="py-1 rounded-full text-sm {{ $dotBaoCao->trang_thai_class }}">
                                     {{ $dotBaoCao->trang_thai_text }}
                                 </span>
                             </td>

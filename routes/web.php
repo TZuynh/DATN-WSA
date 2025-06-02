@@ -28,16 +28,13 @@ Route::domain('admin.project.test')->group(function () {
     require __DIR__ . '/admin/hoi-dong.php';
     require __DIR__ . '/admin/dot-bao-cao.php';
     require __DIR__ . '/admin/cai-dat.php';
+    require __DIR__ . '/admin/dang-ky.php';
     
     Route::get('/', function () {
         if (Auth::check() && Auth::user()->vai_tro === 'admin') {
             return redirect('/dashboard');
         }
         return redirect('http://project.test');
-    });
-
-    Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
-        Route::get('dot-bao-cao/{dotBaoCao}', [DotBaoCaoController::class, 'show'])->name('dot-bao-cao.show');
     });
 });
 

@@ -11,4 +11,5 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::put('/admin/dot-bao-cao/{dotBaoCao}', [DotBaoCaoController::class, 'update'])->name('admin.dot-bao-cao.update');
     Route::delete('/admin/dot-bao-cao/{dotBaoCao}', [DotBaoCaoController::class, 'destroy'])->name('admin.dot-bao-cao.destroy');
     Route::post('/admin/dot-bao-cao/update-status', [DotBaoCaoController::class, 'updateStatus'])->name('admin.dot-bao-cao.update-status');
+    Route::get('/admin/dot-bao-cao/{dotBaoCao}', [DotBaoCaoController::class, 'show'])->name('dot-bao-cao.show');
 });
