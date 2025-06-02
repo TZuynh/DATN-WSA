@@ -26,6 +26,11 @@
             text-align: center;
             margin-bottom: 30px;
         }
+        .login-header img {
+            width: 120px;
+            height: auto;
+            margin-bottom: 15px;
+        }
         .login-header h1 {
             font-size: 24px;
             color: #333;
@@ -74,6 +79,7 @@
 <body>
     <div class="login-container">
         <div class="login-header">
+            <img src="{{ asset('images/logo.jpg') }}" alt="Logo" class="logo">
             <h1>Đăng nhập hệ thống</h1>
             <p>Vui lòng đăng nhập để tiếp tục</p>
         </div>
