@@ -6,4 +6,5 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'role:giang_vien'])->name('giangvien.')->group(function () {
     Route::resource('/giang-vien/sinh-vien', SinhVienController::class)->except(['show']);
     Route::post('/giang-vien/sinh-vien/import', [SinhVienController::class, 'import'])->name('sinh-vien.import');
+    Route::delete('sinh-vien/bulk-delete', [SinhVienController::class, 'bulkDelete'])->name('sinh-vien.bulkDelete');
 });

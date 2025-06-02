@@ -1,6 +1,5 @@
-@extends('admin.layout')
-
-@section('title', 'Thông tin cá nhân')
+@extends('components.giangvien.app')
+@section('title', 'Thông tin giảng viên')
 
 @vite('resources/scss/profile.scss')
 
@@ -22,7 +21,7 @@
                     <h1 style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.25rem;">{{ $user->ten }}</h1>
                     <p style="color: #6b7280; font-size: 1.1rem; margin-bottom: 0;">{{ $user->email }}</p>
                 </div>
-                <span style="padding: 8px 24px; border-radius: 9999px; background: linear-gradient(to right, #e0e7ff, #bae6fd); color: #3730a3; font-weight: 600; font-size: 1rem;">{{ ucfirst($user->vai_tro) }}</span>
+                <span style="padding: 8px 24px; border-radius: 9999px; background: linear-gradient(to right, #e0e7ff, #bae6fd); color: #3730a3; font-weight: 600; font-size: 1rem;">{{ $user->vai_tro === 'giang_vien' ? 'Giảng Viên' : 'Admin' }}</span>
             </div>
             <div style="margin-top: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
                 <div class="info-card">
@@ -32,7 +31,7 @@
                         </div>
                         <div>
                             <div style="color: #6b7280; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px;">Vai trò</div>
-                            <div style="font-size: 1.3rem; font-weight: 600; color: #22223b; margin-top: 0.5rem;">{{ ucfirst($user->vai_tro) }}</div>
+                            <div style="font-size: 1.3rem; font-weight: 600; color: #22223b; margin-top: 0.5rem;">{{ $user->vai_tro === 'giang_vien' ? 'Giảng Viên' : 'Admin' }}</div>
                         </div>
                     </div>
                 </div>
@@ -48,7 +47,6 @@
                     </div>
                 </div>
             </div>
-        
         </div>
     </div>
 </div>

@@ -4,7 +4,7 @@
             ☰
         </button>
         <div class="logo">
-            <a href="{{ route('admin.profile') }}">
+            <a href="{{ Auth::user()->vai_tro === 'giang_vien' ? route('giangvien.profile') : route('admin.profile') }}">
                 <img src="{{ asset('images/logo-caothang.png') }}" alt="Logo" class="logo-img" />
                 Xin chào! {{ Auth::user()->ten }}
             </a>

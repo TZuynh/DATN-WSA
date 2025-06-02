@@ -142,4 +142,30 @@ class SinhVienController extends Controller
                 ->with('error', 'Có lỗi xảy ra khi import file: ' . $e->getMessage());
         }
     }
+
+    public function bulkDelete(Request $request)
+    {
+        $selectedStudents = $request->input('selected_students', []);
+
+        if (empty($selectedStudents)) {
+            return redirect()->route('giangvien.sinh-vien.index')
+                ->with('error', 'Vui lòng chọn ít nhất một sinh viên để xóa.');
+        }
+
+        try {
+            $deletedCount = SinhVien::whereIn('id', $selectedStudents)->delete();
+
+            if ($deletedCount > 0) {
+                return redirect()->route('giangvien.sinh-vien.index')
+                    ->with('success', "Đã xóa thành công {$deletedCount} sinh viên.");
+            } else {
+                return redirect()->route('giangvien.sinh-vien.index')
+                    ->with('error', 'Không tìm thấy sinh viên nào để xóa.');
+            }
+        } catch (\Exception $e) {
+            Log::error('Bulk delete SinhVien error: ' . $e->getMessage());
+            return redirect()->route('giangvien.sinh-vien.index')
+                ->with('error', 'Có lỗi xảy ra khi xóa sinh viên: ' . $e->getMessage());
+        }
+    }
 } 

@@ -16,4 +16,11 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    server: {
+        hmr: {
+            host: 'localhost',
+        },
+        cors: true,
+        origin: 'http://giangvien.project.test',
+    },
 });

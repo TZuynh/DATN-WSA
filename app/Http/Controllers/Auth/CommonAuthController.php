@@ -22,30 +22,21 @@ class CommonAuthController extends Controller
             'mat_khau' => ['required'],
         ]);
 
-        Log::info('Attempting login with credentials:', ['email' => $credentials['email']]);
-
         $user = \App\Models\TaiKhoan::where('email', $credentials['email'])->first();
 
         if ($user && Hash::check($credentials['mat_khau'], $user->mat_khau)) {
             Auth::login($user);
-            Log::info('Login successful for user:', ['id' => $user->id, 'role' => $user->vai_tro]);
 
             $request->session()->regenerate();
 
             if ($user->vai_tro === 'admin') {
-                Log::info('Redirecting admin to dashboard');
                 return redirect('http://admin.project.test/admin/dashboard');
             } elseif ($user->vai_tro === 'giang_vien') {
-                Log::info('Redirecting giang_vien to dashboard');
                 return redirect('http://giangvien.project.test/giang-vien/dashboard');
             }
 
-            Log::warning('Unknown role for user:', ['role' => $user->vai_tro]);
             return redirect('/');
         }
-
-        Log::warning('Login failed for email:', ['email' => $credentials['email']]);
-
         return back()
             ->withInput($request->only('email'))
             ->withErrors([
