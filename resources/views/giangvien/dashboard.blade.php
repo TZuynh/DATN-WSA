@@ -1,5 +1,5 @@
 @extends('components.giangvien.app')
-@section('title', 'Dashboard Giảng Viên')
+@section('title', 'Thống kê')
 @section('content')
     <div class="container py-4">
         <div class="row">
@@ -161,36 +161,6 @@
 
                         <!-- Thống kê chi tiết -->
                         <div class="row mt-4">
-                            @if(isset($registrationsByLecturer) && count($registrationsByLecturer) > 0)
-                                <div class="col-md-6">
-                                    <div class="card">
-                                        <div class="card-header bg-primary text-white">
-                                            <h5 class="mb-0">Top 5 Giảng Viên Có Nhiều Đăng Ký Nhất</h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="table-responsive">
-                                                <table class="table table-bordered">
-                                                    <thead class="table-light">
-                                                    <tr>
-                                                        <th>Giảng viên</th>
-                                                        <th class="text-center">Số lượng đăng ký</th>
-                                                    </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                    @foreach($registrationsByLecturer as $registration)
-                                                        <tr>
-                                                            <td>{{ $registration->giangVien->ten ?? 'Không xác định' }}</td>
-                                                            <td class="text-center">{{ $registration->count }}</td>
-                                                        </tr>
-                                                    @endforeach
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-
                             @if(isset($latestRegistrations) && count($latestRegistrations) > 0)
                                 <div class="col-md-6">
                                     <div class="card">
