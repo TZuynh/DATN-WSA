@@ -15,6 +15,9 @@
     {{-- Font Awesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    {{-- SweetAlert2 CSS --}}
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
+
     @yield('styles')
 </head>
 <body class="theme-{{ $settings['theme'] ?? 'light' }}">
@@ -48,26 +51,41 @@
 {{-- Bootstrap JS --}}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-@vite('resources/js/app.js') {{-- Giữ lại app.js --}}
+{{-- SweetAlert2 JS --}}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+
+@vite('resources/js/app.js')
 
 @stack('scripts')
+
+@if(session('success'))
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Xử lý thông báo tự động ẩn sau 3 giây
-        const alerts = document.querySelectorAll('.admin-alerts .alert');
-        alerts.forEach(alert => {
-            setTimeout(() => {
-                // Kiểm tra nếu alert chưa bị đóng thủ công
-                if(alert.classList.contains('show')) {
-                     alert.classList.remove('show');
-                     alert.classList.add('fade');
-                     setTimeout(() => {
-                         alert.remove();
-                     }, 300); // Đợi animation fade hoàn thành
-                }
-            }, 3000);
-        });
+    Swal.fire({
+        title: 'Thành công!',
+        text: "{{ session('success') }}",
+        icon: 'success',
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        position: 'top-end',
+        toast: true
     });
 </script>
+@endif
+
+@if(session('error'))
+<script>
+    Swal.fire({
+        title: 'Lỗi!',
+        text: "{{ session('error') }}",
+        icon: 'error',
+        timer: 5000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        position: 'top-end',
+        toast: true
+    });
+</script>
+@endif
 </body>
 </html>

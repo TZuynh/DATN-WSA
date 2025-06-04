@@ -29,6 +29,18 @@
                 <span>Quản lý nhóm</span>
             </a>
         </li>
+        <li class="menu-item {{ request()->routeIs('giangvien.de-tai-mau.*') ? 'active' : '' }}">
+            <a href="{{ route('giangvien.de-tai-mau.index') }}">
+                <i class="fas fa-copy"></i>
+                <span>Quản lý mẫu đề tài</span>
+            </a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('giangvien.de-tai.*') ? 'active' : '' }}">
+            <a href="{{ route('giangvien.de-tai.index') }}">
+                <i class="fas fa-tasks"></i>
+                <span>Quản lý đề tài</span>
+            </a>
+        </li>
 {{--        <li class="menu-item">--}}
 {{--            <a href="#">--}}
 {{--                <i class="fas fa-book"></i>--}}

@@ -21,6 +21,8 @@
         </li>
         <li><a href="{{ route('admin.phan-cong-hoi-dong.index') }}"><i class="fas fa-user-plus"></i> Phân công</a></li>
         <li><a href="{{ route('admin.dang-ky.index') }}"><i class="fas fa-clipboard-list"></i> Quản lý đăng ký</a></li>
+        <li><a href="{{ route('admin.de-tai-mau.index') }}"><i class="fas fa-copy"></i> Quản lý đề tài mẫu</a></li>
+        <li><a href="{{ route('admin.de-tai.index') }}"><i class="fas fa-book"></i> Quản lý đề tài</a></li>
         <li><a href="{{ route('admin.cai-dat.index') }}"><i class="fas fa-cog"></i> Cài đặt</a></li>
     </ul>
 </aside>

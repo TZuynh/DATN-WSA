@@ -8,7 +8,7 @@ use Carbon\Carbon;
 class DeTai extends Model
 {
     protected $fillable = [
-        'ma_de_tai', 'tieu_de', 'mo_ta', 'ngay_bat_dau', 'ngay_ket_thuc',
+        'ma_de_tai', 'de_tai_mau_id', 'mo_ta', 'ngay_bat_dau', 'ngay_ket_thuc',
         'nhom_id', 'giang_vien_id', 'dot_bao_cao_id', 'trang_thai'
     ];
 
@@ -46,6 +46,11 @@ class DeTai extends Model
     public function dotDeTai()
     {
         return $this->hasMany(DotDeTai::class);
+    }
+
+    public function deTaiMau()
+    {
+        return $this->belongsTo(DeTaiMau::class);
     }
 
     // Các phương thức hỗ trợ

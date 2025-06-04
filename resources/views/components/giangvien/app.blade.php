@@ -18,6 +18,9 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
+
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <!-- Scripts -->
     @vite(['resources/scss/app.scss', 'resources/js/app.js'])
@@ -65,12 +68,32 @@
         @include('components.admin.navbar')
         
         <main>
+            {{-- Thông báo success/error --}}
+            <div class="admin-alerts px-3">
+                @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+            </div>
+
             @yield('content')
         </main>
     </div>
 
-    {{-- <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> --}}
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 
     <script>
         // Toggle sidebar on mobile
@@ -79,7 +102,7 @@
         });
     </script>
     <script>
-            //Select multiple
+        //Select multiple
         $(document).ready(function() {
             $('#sinh_vien_ids').select2({
                 placeholder: 'Chọn sinh viên',
@@ -87,5 +110,35 @@
             });
         });
     </script>
+
+    @if(session('success'))
+    <script>
+        Swal.fire({
+            title: 'Thành công!',
+            text: "{{ session('success') }}",
+            icon: 'success',
+            timer: 3000,
+            timerProgressBar: true,
+            showConfirmButton: false,
+            position: 'top-end',
+            toast: true
+        });
+    </script>
+    @endif
+
+    @if(session('error'))
+    <script>
+        Swal.fire({
+            title: 'Lỗi!',
+            text: "{{ session('error') }}",
+            icon: 'error',
+            timer: 5000,
+            timerProgressBar: true,
+            showConfirmButton: false,
+            position: 'top-end',
+            toast: true
+        });
+    </script>
+    @endif
 </body>
 </html> 
