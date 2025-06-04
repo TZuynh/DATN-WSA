@@ -7,7 +7,7 @@
             <!-- Phần Đăng ký hướng dẫn -->
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title">Danh sách đăng ký hướng dẫn</h3>
+                    <h3 class="card-title">Danh sách đăng ký giảng viên hướng dẫn</h3>
                     <div>
                         <form action="{{ route('giangvien.dang-ky.index') }}" method="GET" class="form-inline d-inline-flex mb-2">
                             <select name="sinh_vien_id" class="form-select me-2">
