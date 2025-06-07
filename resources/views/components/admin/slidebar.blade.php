@@ -4,9 +4,13 @@
         <h5 style="margin: 0;">Quản Trị Viên</h5>
     </div>
     <ul>
-        <li><a href="{{ route('admin.dashboard') }}"><i class="fas fa-chart-line"></i> Thống kê</a></li>
-        <li><a href="{{ route('admin.taikhoan.index') }}"><i class="fas fa-users"></i> Quản lý tài khoản</a></li>
-        <li class="has-submenu">
+        <li class="menu-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+            <a href="{{ route('admin.dashboard') }}"><i class="fas fa-chart-line"></i> Thống kê</a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.taikhoan.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.taikhoan.index') }}"><i class="fas fa-users"></i> Quản lý tài khoản</a>
+        </li>
+        <li class="menu-item has-submenu {{ request()->routeIs('admin.hoi-dong.*') || request()->routeIs('admin.dot-bao-cao.*') ? 'active' : '' }}">
             <a href="javascript:void(0)" style="display: flex; align-items: center; justify-content: space-between;">
                 <div style="display: flex; align-items: center;">
                     <i class="fas fa-sitemap"></i> 
@@ -15,14 +19,44 @@
                 <i class="fas fa-chevron-down arrow"></i>
             </a>
             <ul class="submenu">
-                <li><a href="{{ route('admin.hoi-dong.index') }}"><i class="fas fa-list"></i> Danh sách hội đồng</a></li>
-                <li><a href="{{ route('admin.dot-bao-cao.index') }}"><i class="fas fa-calendar-alt"></i> Đợt báo cáo</a></li>
+                <li class="menu-item {{ request()->routeIs('admin.hoi-dong.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.hoi-dong.index') }}"><i class="fas fa-list"></i> Danh sách hội đồng</a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('admin.dot-bao-cao.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.dot-bao-cao.index') }}"><i class="fas fa-calendar-alt"></i> Đợt báo cáo</a>
+                </li>
             </ul>
         </li>
-        <li><a href="{{ route('admin.phan-cong-hoi-dong.index') }}"><i class="fas fa-user-plus"></i> Phân công</a></li>
+        <li class="menu-item {{ request()->routeIs('admin.phan-cong-hoi-dong.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.phan-cong-hoi-dong.index') }}"><i class="fas fa-user-plus"></i> Phân công</a>
+        </li>
         {{-- <li><a href="{{ route('admin.dang-ky.index') }}"><i class="fas fa-clipboard-list"></i> Quản lý đăng ký</a></li> --}}
         {{-- <li><a href="{{ route('admin.de-tai-mau.index') }}"><i class="fas fa-copy"></i> Quản lý đề tài mẫu</a></li> --}}
-        <li><a href="{{ route('admin.de-tai.index') }}"><i class="fas fa-book"></i> Quản lý đề tài</a></li>
-        <li><a href="{{ route('admin.cai-dat.index') }}"><i class="fas fa-cog"></i> Cài đặt</a></li>
+        <li class="menu-item {{ request()->routeIs('admin.de-tai.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.de-tai.index') }}"><i class="fas fa-book"></i> Quản lý đề tài</a>
+        </li>
+        <li class="menu-item {{ request()->routeIs('admin.cai-dat.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.cai-dat.index') }}"><i class="fas fa-cog"></i> Cài đặt</a>
+        </li>
     </ul>
 </aside>
+
+<style>
+.admin-sidebar .menu-item.active > a {
+    background-color: #4299e1;
+    color: white;
+}
+
+.admin-sidebar .menu-item.active > a i {
+    color: white;
+}
+
+.admin-sidebar .submenu .menu-item.active > a {
+    background-color: #4299e1;
+    color: white;
+}
+
+.admin-sidebar .submenu .menu-item.active > a i {
+    color: white;
+}
+</style>
