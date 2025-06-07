@@ -45,6 +45,16 @@ class DeTai extends Model
         return $this->belongsTo(DotBaoCao::class);
     }
 
+    // Phương thức tạo mã đề tài tự động
+    public static function generateMaDeTai()
+    {
+        do {
+            $randomNumber = str_pad(mt_rand(0, 99999), 5, '0', STR_PAD_LEFT);
+            $maDeTai = 'MDT-' . $randomNumber;
+        } while (self::where('ma_de_tai', $maDeTai)->exists());
+
+        return $maDeTai;
+    }
 
     // Các phương thức hỗ trợ
     public function getTrangThaiTextAttribute()
@@ -106,6 +116,9 @@ class DeTai extends Model
         static::creating(function ($deTai) {
             if (!isset($deTai->trang_thai)) {
                 $deTai->trang_thai = self::TRANG_THAI_CHUA_BAT_DAU;
+            }
+            if (!isset($deTai->ma_de_tai)) {
+                $deTai->ma_de_tai = self::generateMaDeTai();
             }
         });
 

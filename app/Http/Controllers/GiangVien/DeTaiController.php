@@ -28,7 +28,6 @@ class DeTaiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'ma_de_tai' => 'required|string|max:255|unique:de_tais',
             'ten_de_tai' => 'required|string',
             'mo_ta' => 'nullable|string',
             'y_kien_giang_vien' => 'nullable|string',
@@ -40,7 +39,6 @@ class DeTaiController extends Controller
         try {
             // Tạo mảng dữ liệu với các trường cần thiết
             $data = [
-                'ma_de_tai' => $request->ma_de_tai,
                 'ten_de_tai' => $request->ten_de_tai,
                 'mo_ta' => $request->mo_ta,
                 'y_kien_giang_vien' => $request->y_kien_giang_vien,
@@ -53,21 +51,30 @@ class DeTaiController extends Controller
             DeTai::create($data);
             return redirect()->route('giangvien.de-tai.index')->with('success', 'Thêm đề tài thành công');
         } catch (\Exception $e) {
-            Log::error('Lỗi khi thêm đề tài: ' . $e->getMessage());
+            Log::error('Error creating de tai: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi thêm đề tài');
         }
     }
 
     public function edit(DeTai $deTai)
     {
+        if ($deTai->giang_vien_id !== auth()->id()) {
+            return redirect()->route('giangvien.de-tai.index')
+                ->with('error', 'Bạn không có quyền chỉnh sửa đề tài này.');
+        }
+
         $nhoms = Nhom::all();
         return view('giangvien.de-tai.edit', compact('deTai', 'nhoms'));
     }
 
     public function update(Request $request, DeTai $deTai)
     {
+        if ($deTai->giang_vien_id !== auth()->id()) {
+            return redirect()->route('giangvien.de-tai.index')
+                ->with('error', 'Bạn không có quyền cập nhật đề tài này.');
+        }
+
         $request->validate([
-            'ma_de_tai' => 'required|string|max:255|unique:de_tais,ma_de_tai,' . $deTai->id,
             'ten_de_tai' => 'required|string',
             'mo_ta' => 'nullable|string',
             'y_kien_giang_vien' => 'nullable|string',
@@ -78,22 +85,40 @@ class DeTaiController extends Controller
         ]);
 
         try {
-            $deTai->update($request->all());
-            return redirect()->route('giangvien.de-tai.index')->with('success', 'Cập nhật đề tài thành công');
+            $deTai->update([
+                'ten_de_tai' => $request->ten_de_tai,
+                'mo_ta' => $request->mo_ta,
+                'y_kien_giang_vien' => $request->y_kien_giang_vien,
+                'ngay_bat_dau' => $request->ngay_bat_dau,
+                'ngay_ket_thuc' => $request->ngay_ket_thuc,
+                'nhom_id' => $request->nhom_id,
+                'trang_thai' => $request->trang_thai
+            ]);
+
+            return redirect()->route('giangvien.de-tai.index')
+                ->with('success', 'Cập nhật đề tài thành công');
         } catch (\Exception $e) {
-            Log::error('Lỗi khi cập nhật đề tài: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Có lỗi xảy ra khi cập nhật đề tài');
+            Log::error('Error updating de tai: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Có lỗi xảy ra khi cập nhật đề tài');
         }
     }
 
     public function destroy(DeTai $deTai)
     {
+        if ($deTai->giang_vien_id !== auth()->id()) {
+            return redirect()->route('giangvien.de-tai.index')
+                ->with('error', 'Bạn không có quyền xóa đề tài này.');
+        }
+
         try {
             $deTai->delete();
-            return redirect()->route('giangvien.de-tai.index')->with('success', 'Xóa đề tài thành công');
+            return redirect()->route('giangvien.de-tai.index')
+                ->with('success', 'Xóa đề tài thành công');
         } catch (\Exception $e) {
-            Log::error('Lỗi khi xóa đề tài: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Có lỗi xảy ra khi xóa đề tài');
+            Log::error('Error deleting de tai: ' . $e->getMessage());
+            return redirect()->route('giangvien.de-tai.index')
+                ->with('error', 'Có lỗi xảy ra khi xóa đề tài');
         }
     }
 

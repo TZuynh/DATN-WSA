@@ -37,7 +37,7 @@
                         id="ma_de_tai" name="ma_de_tai" 
                         value="{{ old('ma_de_tai', $deTai->ma_de_tai) }}" 
                         placeholder="Nhập mã đề tài" required
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" readonly>
                     @error('ma_de_tai')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror

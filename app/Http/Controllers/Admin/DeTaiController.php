@@ -7,13 +7,21 @@ use App\Models\DeTai;
 use App\Models\Nhom;
 use App\Models\TaiKhoan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class DeTaiController extends Controller
 {
     public function index()
     {
-        $deTais = DeTai::with(['nhom', 'giangVien'])->latest()->paginate(10);
-        return view('admin.de-tai.index', compact('deTais'));
+        try {
+            $deTais = DeTai::with(['nhom', 'giangVien'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+            return view('admin.de-tai.index', compact('deTais'));
+        } catch (\Exception $e) {
+            Log::error('Error loading đề tài list: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi tải danh sách đề tài');
+        }
     }
 
     public function create()
@@ -26,21 +34,32 @@ class DeTaiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'ma_de_tai' => 'required|string|unique:de_tais',
             'ten_de_tai' => 'required|string',
             'mo_ta' => 'nullable|string',
             'y_kien_giang_vien' => 'nullable|string',
-            'ngay_bat_dau' => 'nullable|date',
-            'ngay_ket_thuc' => 'nullable|date|after_or_equal:ngay_bat_dau',
+            'ngay_bat_dau' => 'required|date',
+            'ngay_ket_thuc' => 'required|date|after:ngay_bat_dau',
             'nhom_id' => 'nullable|exists:nhoms,id',
-            'giang_vien_id' => 'nullable|exists:tai_khoans,id',
-            'trang_thai' => 'required|integer|in:0,1,2,3,4'
+            'giang_vien_id' => 'required|exists:tai_khoans,id'
         ]);
 
-        DeTai::create($request->all());
+        try {
+            $data = [
+                'ten_de_tai' => $request->ten_de_tai,
+                'mo_ta' => $request->mo_ta,
+                'y_kien_giang_vien' => $request->y_kien_giang_vien,
+                'ngay_bat_dau' => $request->ngay_bat_dau,
+                'ngay_ket_thuc' => $request->ngay_ket_thuc,
+                'nhom_id' => $request->nhom_id,
+                'giang_vien_id' => $request->giang_vien_id
+            ];
 
-        return redirect()->route('admin.de-tai.index')
-            ->with('success', 'Đề tài đã được tạo thành công.');
+            DeTai::create($data);
+            return redirect()->route('admin.de-tai.index')->with('success', 'Thêm đề tài thành công');
+        } catch (\Exception $e) {
+            Log::error('Error creating de tai: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi thêm đề tài');
+        }
     }
 
     public function edit(DeTai $deTai)
@@ -53,33 +72,47 @@ class DeTaiController extends Controller
     public function update(Request $request, DeTai $deTai)
     {
         $request->validate([
-            'ma_de_tai' => 'required|string|unique:de_tais,ma_de_tai,' . $deTai->id,
             'ten_de_tai' => 'required|string',
             'mo_ta' => 'nullable|string',
             'y_kien_giang_vien' => 'nullable|string',
-            'ngay_bat_dau' => 'nullable|date',
-            'ngay_ket_thuc' => 'nullable|date|after_or_equal:ngay_bat_dau',
+            'ngay_bat_dau' => 'required|date',
+            'ngay_ket_thuc' => 'required|date|after:ngay_bat_dau',
             'nhom_id' => 'nullable|exists:nhoms,id',
-            'giang_vien_id' => 'nullable|exists:tai_khoans,id',
+            'giang_vien_id' => 'required|exists:tai_khoans,id',
             'trang_thai' => 'required|integer|in:0,1,2,3,4'
         ]);
 
-        $data = $request->all();
-        
-        // Xử lý ngày tháng
-        $data['ngay_bat_dau'] = $data['ngay_bat_dau'] ? date('Y-m-d', strtotime($data['ngay_bat_dau'])) : null;
-        $data['ngay_ket_thuc'] = $data['ngay_ket_thuc'] ? date('Y-m-d', strtotime($data['ngay_ket_thuc'])) : null;
+        try {
+            $deTai->update([
+                'ten_de_tai' => $request->ten_de_tai,
+                'mo_ta' => $request->mo_ta,
+                'y_kien_giang_vien' => $request->y_kien_giang_vien,
+                'ngay_bat_dau' => $request->ngay_bat_dau,
+                'ngay_ket_thuc' => $request->ngay_ket_thuc,
+                'nhom_id' => $request->nhom_id,
+                'giang_vien_id' => $request->giang_vien_id,
+                'trang_thai' => $request->trang_thai
+            ]);
 
-        $deTai->update($data);
-
-        return redirect()->route('admin.de-tai.index')
-            ->with('success', 'Đề tài đã được cập nhật thành công.');
+            return redirect()->route('admin.de-tai.index')
+                ->with('success', 'Cập nhật đề tài thành công');
+        } catch (\Exception $e) {
+            Log::error('Error updating de tai: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Có lỗi xảy ra khi cập nhật đề tài');
+        }
     }
 
     public function destroy(DeTai $deTai)
     {
-        $deTai->delete();
-        return redirect()->route('admin.de-tai.index')
-            ->with('success', 'Đề tài đã được xóa thành công.');
+        try {
+            $deTai->delete();
+            return redirect()->route('admin.de-tai.index')
+                ->with('success', 'Xóa đề tài thành công');
+        } catch (\Exception $e) {
+            Log::error('Error deleting de tai: ' . $e->getMessage());
+            return redirect()->route('admin.de-tai.index')
+                ->with('error', 'Có lỗi xảy ra khi xóa đề tài');
+        }
     }
 }
