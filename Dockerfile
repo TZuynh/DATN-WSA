@@ -1,34 +1,35 @@
 FROM php:8.2-apache
 
-# Cài extension cần thiết
+# Cài đặt extension
 RUN apt-get update && apt-get install -y \
     git zip unzip libpng-dev libjpeg-dev libfreetype6-dev \
     libonig-dev libxml2-dev curl \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
 
-# Enable mod_rewrite cho Apache
 RUN a2enmod rewrite
 
-# Cài composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Thiết lập thư mục làm việc
 WORKDIR /var/www/html
 
-# ✅ Copy toàn bộ source code vào
+# Copy source code
 COPY . .
 
-# ✅ Cài đặt PHP dependencies
-RUN composer install --no-dev --optimize-autoloader
+# ✅ Tạo .env trước khi cài composer
+RUN if [ -f .env.example ]; then cp .env.example .env; fi
 
-# Chỉnh quyền cho storage và cache
+# ✅ Cài đặt composer dependencies, tạm thời bỏ qua script
+RUN composer install --no-dev --optimize-autoloader --no-scripts
+
+# ✅ Sau đó thực hiện script thủ công
+RUN php artisan package:discover --ansi || true
+
+# Phân quyền cho storage
 RUN chown -R www-data:www-data storage bootstrap/cache
 
-# Mở cổng 80
 EXPOSE 80
 
-# Start Apache + generate key nếu cần
 CMD ["/bin/bash", "-c", "\
   if [ ! -f .env ] && [ -f .env.example ]; then cp .env.example .env; fi && \
   if ! grep -q 'APP_KEY=' .env || grep -q 'APP_KEY=$' .env; then php artisan key:generate; fi && \
