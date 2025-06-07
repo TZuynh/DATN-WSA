@@ -35,14 +35,15 @@ class NhomController extends Controller
         $validator = Validator::make($request->all(), [
             'ma_nhom' => 'required|string|unique:nhoms,ma_nhom',
             'ten' => 'required|string|max:255',
-            'sinh_vien_ids' => 'required|array|min:2',
+            'sinh_vien_ids' => 'required|array|min:1|max:3',
             'sinh_vien_ids.*' => 'exists:sinh_viens,id',
         ], [
             'ma_nhom.required' => 'Mã nhóm không được để trống',
             'ma_nhom.unique' => 'Mã nhóm đã tồn tại',
             'ten.required' => 'Tên nhóm không được để trống',
-            'sinh_vien_ids.required' => 'Vui lòng chọn ít nhất 2 sinh viên',
-            'sinh_vien_ids.min' => 'Vui lòng chọn ít nhất 2 sinh viên',
+            'sinh_vien_ids.required' => 'Vui lòng chọn ít nhất 1 sinh viên',
+            'sinh_vien_ids.min' => 'Vui lòng chọn ít nhất 1 sinh viên',
+            'sinh_vien_ids.max' => 'Chỉ được chọn tối đa 3 sinh viên',
             'sinh_vien_ids.*.exists' => 'Sinh viên không tồn tại',
         ]);
 
@@ -91,15 +92,16 @@ class NhomController extends Controller
         $validator = Validator::make($request->all(), [
             'ma_nhom' => 'required|string|unique:nhoms,ma_nhom,' . $nhom->id,
             'ten' => 'required|string|max:255',
-            'sinh_vien_ids' => 'required|array|min:2',
+            'sinh_vien_ids' => 'required|array|min:1|max:3',
             'sinh_vien_ids.*' => 'exists:sinh_viens,id',
             'trang_thai' => 'required|in:hoat_dong,khong_hoat_dong',
         ], [
             'ma_nhom.required' => 'Mã nhóm không được để trống',
             'ma_nhom.unique' => 'Mã nhóm đã tồn tại',
             'ten.required' => 'Tên nhóm không được để trống',
-            'sinh_vien_ids.required' => 'Vui lòng chọn ít nhất 2 sinh viên',
-            'sinh_vien_ids.min' => 'Vui lòng chọn ít nhất 2 sinh viên',
+            'sinh_vien_ids.required' => 'Vui lòng chọn ít nhất 1 sinh viên',
+            'sinh_vien_ids.min' => 'Vui lòng chọn ít nhất 1 sinh viên',
+            'sinh_vien_ids.max' => 'Chỉ được chọn tối đa 3 sinh viên',
             'sinh_vien_ids.*.exists' => 'Sinh viên không tồn tại',
             'trang_thai.required' => 'Vui lòng chọn trạng thái',
             'trang_thai.in' => 'Trạng thái không hợp lệ',
@@ -132,23 +134,27 @@ class NhomController extends Controller
         }
 
         try {
+            // Kiểm tra xem nhóm có đang được sử dụng trong đề tài không
+            if ($nhom->deTais()->exists()) {
+                return redirect()->route('giangvien.nhom.index')
+                    ->with('error', 'Không thể xóa nhóm này vì đang có đề tài được gán cho nhóm. Vui lòng xóa hoặc gỡ liên kết đề tài trước.');
+            }
+
             // Xóa các bản ghi liên quan trong bảng chi_tiet_nhoms
             $nhom->chiTietNhoms()->delete();
 
-            // TODO: Cần xem xét xử lý các mối quan hệ khác như DeTai, LichCham, BaoCaoQuaTrinh...
-            // Tùy thuộc vào logic nghiệp vụ, bạn có thể cần xóa hoặc gỡ liên kết các bản ghi này.
-            // Ví dụ:
-            // $nhom->deTai()->delete(); // Nếu muốn xóa đề tài khi xóa nhóm
-            // $nhom->lichChams()->delete(); // Nếu muốn xóa lịch chấm khi xóa nhóm
-            // $nhom->baoCaoQuaTrinh()->delete(); // Nếu muốn xóa báo cáo khi xóa nhóm
+            // Xóa các liên kết với sinh viên
+            $nhom->sinhViens()->detach();
 
+            // Xóa nhóm
             $nhom->delete();
+
             return redirect()->route('giangvien.nhom.index')
                 ->with('success', 'Xóa nhóm thành công!');
         } catch (\Exception $e) {
             Log::error('Delete Nhom error: ' . $e->getMessage());
             return redirect()->route('giangvien.nhom.index')
-                ->with('error', 'Có lỗi xảy ra khi xóa nhóm này do ràng buộc dữ liệu liên quan: ' . $e->getMessage());
+                ->with('error', 'Có lỗi xảy ra khi xóa nhóm. Vui lòng kiểm tra lại các ràng buộc dữ liệu.');
         }
     }
 

@@ -53,7 +53,7 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <small class="form-text text-muted">Chọn ít nhất 2 sinh viên</small>
+                            <small class="form-text text-muted">Tối thiểu: 1 sinh viên, Tối đa: 3 sinh viên</small>
                             @error('sinh_vien_ids')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

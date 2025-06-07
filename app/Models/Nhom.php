@@ -18,9 +18,9 @@ class Nhom extends Model
         return $this->belongsToMany(SinhVien::class, 'chi_tiet_nhoms', 'nhom_id', 'sinh_vien_id');
     }
 
-    public function deTai()
+    public function deTais()
     {
-        return $this->hasOne(DeTai::class);
+        return $this->hasMany(DeTai::class, 'nhom_id');
     }
 
     public function giangVien()
