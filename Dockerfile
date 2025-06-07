@@ -1,37 +1,39 @@
-FROM php:8.2-fpm
+FROM php:8.2-apache
 
-# Cài đặt các dependencies
+# Cài các PHP extension thường dùng trong Laravel
 RUN apt-get update && apt-get install -y \
-  git \
-  curl \
-  libpng-dev \
-  libonig-dev \
-  libxml2-dev \
-  zip \
-  unzip
+    git unzip zip curl libpng-dev libjpeg-dev libfreetype6-dev libonig-dev libxml2-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
 
-# Cài đặt PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+# Bật mod_rewrite để hỗ trợ Laravel route đẹp
+RUN a2enmod rewrite
 
-# Cài đặt Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Cài đặt Composer (copy từ image composer chính thức)
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Tạo thư mục làm việc
-WORKDIR /var/www
+# Đặt thư mục làm việc
+WORKDIR /var/www/html
 
-# Copy composer files
-COPY composer.json composer.lock ./
-
-# Cài đặt dependencies
-RUN composer install --no-interaction --no-dev --optimize-autoloader --no-scripts
-
-# Copy toàn bộ source code
+# Copy toàn bộ mã nguồn Laravel
 COPY . .
 
-# Cấp quyền cho storage và cache
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+# Copy file .env nếu chưa có
+RUN if [ ! -f .env ] && [ -f .env.example ]; then cp .env.example .env; fi
 
-# Expose port 9000
-EXPOSE 9000
+# Cài composer dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-CMD ["php-fpm"]
+# Tạo các thư mục cần thiết và gán quyền
+RUN mkdir -p storage bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
+
+# EXPOSE cổng mặc định của Apache
+EXPOSE 80
+
+# Lệnh mặc định: tạo APP_KEY nếu chưa có rồi start Apache
+CMD ["/bin/bash", "-c", "\
+  if ! grep -q '^APP_KEY=' .env || grep -q 'APP_KEY=$' .env; then php artisan key:generate; fi && \
+  apache2-foreground \
+"]
