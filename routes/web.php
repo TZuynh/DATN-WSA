@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Admin\DotBaoCaoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +28,7 @@ Route::domain('admin.project.test')->group(function () {
     require __DIR__ . '/admin/dot-bao-cao.php';
     require __DIR__ . '/admin/cai-dat.php';
     require __DIR__ . '/admin/de-tai.php';
+    require __DIR__ . '/admin/api-doc.php';
     
     Route::get('/', function () {
         if (Auth::check() && Auth::user()->vai_tro === 'admin') {
