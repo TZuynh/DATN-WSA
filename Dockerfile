@@ -1,27 +1,30 @@
 FROM php:8.2-fpm
 
+# Cài extension cho Laravel
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
+    build-essential \
     libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
     libonig-dev \
     libxml2-dev \
     zip \
-    unzip
+    unzip \
+    curl \
+    git \
+    nano \
+    libzip-dev \
+    && docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl bcmath gd
 
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
-
+# Cài Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
-COPY composer.json composer.lock ./
-RUN composer install --no-interaction --no-dev --optimize-autoloader --no-scripts
-
 COPY . .
 
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+RUN composer install
 
-EXPOSE 9000
-
-CMD ["php-fpm"]
+# Phân quyền cho Laravel
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R 755 /var/www/storage
