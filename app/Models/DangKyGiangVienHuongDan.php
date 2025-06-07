@@ -2,26 +2,29 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DangKyGiangVienHuongDan extends Model
 {
-    protected $table = 'dang_ky_giang_vien_huong_dans';
+    use HasFactory;
+
+    protected $table = 'dang_ky_giang_vien_huong_dan';
 
     protected $fillable = [
-        'sinh_vien_id',
         'giang_vien_id',
+        'nhom_id',
         'trang_thai',
+        'ghi_chu'
     ];
 
-    public function sinhVien(): BelongsTo
-    {
-        return $this->belongsTo(SinhVien::class);
-    }
-
-    public function giangVien(): BelongsTo
+    public function giangVien()
     {
         return $this->belongsTo(TaiKhoan::class, 'giang_vien_id');
     }
-}
+
+    public function nhom()
+    {
+        return $this->belongsTo(Nhom::class, 'nhom_id');
+    }
+} 

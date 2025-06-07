@@ -17,53 +17,29 @@
                 <span>Sinh viên</span>
             </a>
         </li>
-        <li class="menu-item {{ request()->routeIs('giangvien.dang-ky.*') ? 'active' : '' }}">
+        {{-- <li class="menu-item {{ request()->routeIs('giangvien.dang-ky.*') ? 'active' : '' }}">
             <a href="{{ route('giangvien.dang-ky.index') }}">
                 <i class="fas fa-user-plus"></i>
                 <span>Quản lý đăng ký</span>
             </a>
-        </li>
+        </li> --}}
         <li class="menu-item {{ request()->routeIs('giangvien.nhom.*') ? 'active' : '' }}">
             <a href="{{ route('giangvien.nhom.index') }}">
                 <i class="fas fa-user-plus"></i>
                 <span>Quản lý nhóm</span>
             </a>
         </li>
-        <li class="menu-item {{ request()->routeIs('giangvien.de-tai-mau.*') ? 'active' : '' }}">
+        {{-- <li class="menu-item {{ request()->routeIs('giangvien.de-tai-mau.*') ? 'active' : '' }}">
             <a href="{{ route('giangvien.de-tai-mau.index') }}">
                 <i class="fas fa-copy"></i>
                 <span>Quản lý mẫu đề tài</span>
             </a>
-        </li>
+        </li> --}}
         <li class="menu-item {{ request()->routeIs('giangvien.de-tai.*') ? 'active' : '' }}">
             <a href="{{ route('giangvien.de-tai.index') }}">
                 <i class="fas fa-tasks"></i>
                 <span>Quản lý đề tài</span>
             </a>
         </li>
-{{--        <li class="menu-item">--}}
-{{--            <a href="#">--}}
-{{--                <i class="fas fa-book"></i>--}}
-{{--                <span>Lớp Học</span>--}}
-{{--            </a>--}}
-{{--        </li>--}}
-{{--        <li class="menu-item">--}}
-{{--            <a href="#">--}}
-{{--                <i class="fas fa-tasks"></i>--}}
-{{--                <span>Bài Tập</span>--}}
-{{--            </a>--}}
-{{--        </li>--}}
-{{--        <li class="menu-item">--}}
-{{--            <a href="#">--}}
-{{--                <i class="fas fa-chart-bar"></i>--}}
-{{--                <span>Báo Cáo</span>--}}
-{{--            </a>--}}
-{{--        </li>--}}
-{{--        <li class="menu-item">--}}
-{{--            <a href="#">--}}
-{{--                <i class="fas fa-cog"></i>--}}
-{{--                <span>Cài Đặt</span>--}}
-{{--            </a>--}}
-{{--        </li>--}}
     </ul>
 </div>

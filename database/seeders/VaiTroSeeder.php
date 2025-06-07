@@ -11,19 +11,24 @@ class VaiTroSeeder extends Seeder
     {
         $vaiTros = [
             [
-                'ten' => 'Chủ tịch',
+                'ten' => 'Chủ tịch hội đồng',
                 'created_at' => now(),
                 'updated_at' => now()
             ],
             [
-                'ten' => 'Giáo viên phản biện',
+                'ten' => 'Giảng viên phản biện',
                 'created_at' => now(),
                 'updated_at' => now()
             ],
             [
-                'ten' => 'Giáo viên hướng dẫn',
+                'ten' => 'Giảng viên hướng dẫn',
                 'created_at' => now(),
                 'updated_at' => now()
+            ],
+            [
+            'ten' => 'Giảng viên khác',
+            'created_at' => now(),
+            'updated_at' => now()
             ]
         ];
 
@@ -34,4 +39,4 @@ class VaiTroSeeder extends Seeder
             );
         }
     }
-} 
+}

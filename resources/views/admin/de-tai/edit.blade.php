@@ -23,16 +23,9 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="de_tai_mau_id">Chọn mẫu đề tài</label>
-                            <select name="de_tai_mau_id" id="de_tai_mau_id" class="form-control @error('de_tai_mau_id') is-invalid @enderror" required>
-                                <option value="">-- Chọn mẫu đề tài --</option>
-                                @foreach($deTaiMaus as $deTaiMau)
-                                <option value="{{ $deTaiMau->id }}" {{ old('de_tai_mau_id', $deTai->de_tai_mau_id) == $deTaiMau->id ? 'selected' : '' }}>
-                                    {{ $deTaiMau->ten }}
-                                </option>
-                                @endforeach
-                            </select>
-                            @error('de_tai_mau_id')
+                            <label for="ten_de_tai">Tên đề tài</label>
+                            <input type="text" class="form-control @error('ten_de_tai') is-invalid @enderror" id="ten_de_tai" name="ten_de_tai" value="{{ old('ten_de_tai', $deTai->ten_de_tai) }}" placeholder="Nhập tên đề tài" required>
+                            @error('ten_de_tai')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -41,6 +34,14 @@
                             <label for="mo_ta">Mô tả</label>
                             <textarea class="form-control @error('mo_ta') is-invalid @enderror" id="mo_ta" name="mo_ta" rows="3" placeholder="Nhập mô tả đề tài">{{ old('mo_ta', $deTai->mo_ta) }}</textarea>
                             @error('mo_ta')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+ 
+                        <div class="form-group">
+                            <label for="y_kien_giang_vien">Ý kiến giảng viên</label>
+                            <textarea class="form-control @error('y_kien_giang_vien') is-invalid @enderror" id="y_kien_giang_vien" name="y_kien_giang_vien" rows="3" placeholder="Nhập ý kiến giảng viên">{{ old('y_kien_giang_vien', $deTai->y_kien_giang_vien) }}</textarea>
+                            @error('y_kien_giang_vien')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -87,6 +88,20 @@
                                 @endforeach
                             </select>
                             @error('giang_vien_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label for="trang_thai">Trạng thái</label>
+                            <select name="trang_thai" id="trang_thai" class="form-control @error('trang_thai') is-invalid @enderror" required>
+                                <option value="0" {{ old('trang_thai', $deTai->trang_thai) == 0 ? 'selected' : '' }}>Chưa bắt đầu</option>
+                                <option value="1" {{ old('trang_thai', $deTai->trang_thai) == 1 ? 'selected' : '' }}>Đang diễn ra</option>
+                                <option value="2" {{ old('trang_thai', $deTai->trang_thai) == 2 ? 'selected' : '' }}>Đã kết thúc</option>
+                                <option value="3" {{ old('trang_thai', $deTai->trang_thai) == 3 ? 'selected' : '' }}>Đã hủy</option>
+                                <option value="4" {{ old('trang_thai', $deTai->trang_thai) == 4 ? 'selected' : '' }}>Đang chờ duyệt</option>
+                            </select>
+                            @error('trang_thai')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

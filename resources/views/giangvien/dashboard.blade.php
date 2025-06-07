@@ -55,7 +55,7 @@
                         </div>
 
                         <!-- Thống kê đăng ký và sinh viên -->
-                        <div class="row mt-4">
+                        {{-- <div class="row mt-4">
                             <div class="col-md-6">
                                 <div class="card" style="box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                                     <div class="card-header" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
@@ -157,10 +157,10 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
 
                         <!-- Thống kê chi tiết -->
-                        <div class="row mt-4">
+                        {{-- <div class="row mt-4">
                             @if(isset($latestRegistrations) && count($latestRegistrations) > 0)
                                 <div class="col-md-6">
                                     <div class="card">
@@ -191,7 +191,7 @@
                                     </div>
                                 </div>
                             @endif
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>

@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('de_tais', function (Blueprint $table) {
             $table->id();
             $table->string('ma_de_tai')->unique();
-            $table->foreignId('de_tai_mau_id')->nullable()->constrained('de_tai_maus');
             $table->text('mo_ta')->nullable();
             $table->date('ngay_bat_dau')->nullable();
             $table->date('ngay_ket_thuc')->nullable();

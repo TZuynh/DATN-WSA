@@ -28,8 +28,6 @@ Route::domain('admin.project.test')->group(function () {
     require __DIR__ . '/admin/hoi-dong.php';
     require __DIR__ . '/admin/dot-bao-cao.php';
     require __DIR__ . '/admin/cai-dat.php';
-    require __DIR__ . '/admin/dang-ky.php';
-    require __DIR__ . '/admin/de-tai-mau.php';
     require __DIR__ . '/admin/de-tai.php';
     
     Route::get('/', function () {
@@ -43,12 +41,10 @@ Route::domain('admin.project.test')->group(function () {
 // Giang vien subdomain routes
 Route::domain('giangvien.project.test')->group(function () {
     require __DIR__ . '/giangvien/dashboard.php';
-    require __DIR__ . '/giangvien/dang-ky.php';
     require __DIR__ . '/giangvien/sinh-vien.php';
     require __DIR__ . '/giangvien/nhom.php';
     require __DIR__ . '/giangvien/profile.php';
     require __DIR__ . '/giangvien/de-tai.php';
-    require __DIR__ . '/giangvien/de-tai-mau.php';
     
     Route::get('/', function () {
         if (Auth::check() && Auth::user()->vai_tro === 'giang_vien') {

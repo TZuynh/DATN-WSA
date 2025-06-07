@@ -6,6 +6,7 @@
     <title>Đăng nhập - Hệ thống Quản lý</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -21,6 +22,7 @@
             background: white;
             border-radius: 15px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative;
         }
         .login-header {
             text-align: center;
@@ -73,6 +75,29 @@
             border-radius: 8px;
             padding: 12px;
             margin-bottom: 20px;
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            z-index: 1000;
+            animation: slideDown 0.5s ease-out;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .alert.fade-out {
+            opacity: 0;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translate(-50%, -100%);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
@@ -84,7 +109,7 @@
             <p>Vui lòng đăng nhập để tiếp tục</p>
         </div>
 
-        @if ($errors->any())
+        {{-- @if ($errors->any())
             <div class="alert alert-danger">
                 <i class="fas fa-exclamation-circle me-2"></i>
                 <ul class="mb-0">
@@ -93,7 +118,7 @@
                     @endforeach
                 </ul>
             </div>
-        @endif
+        @endif --}}
 
         <form method="POST" action="{{ route('common.login') }}">
             @csrf
@@ -129,6 +154,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
     <script>
         function togglePassword() {
             const passwordInput = document.getElementById('mat_khau');
@@ -144,6 +170,25 @@
                 toggleIcon.classList.add('fa-eye');
             }
         }
+
+        // Hiển thị thông báo lỗi bằng SweetAlert2
+        @if ($errors->any())
+            Swal.fire({
+                title: 'Lỗi!',
+                html: `
+                    <ul class="text-start">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                `,
+                icon: 'error',
+                confirmButtonText: 'Đóng',
+                confirmButtonColor: '#667eea',
+                timer: 3000,
+                timerProgressBar: true
+            });
+        @endif
     </script>
 </body>
 </html> 

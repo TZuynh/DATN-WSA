@@ -45,7 +45,9 @@
         @endif
     </div>
 
-    @yield('content')
+    <div style="padding-top: 20px">
+        @yield(section: 'content')
+    </div>
 </main>
 
 {{-- Bootstrap JS --}}

@@ -8,19 +8,21 @@ use Carbon\Carbon;
 class DeTai extends Model
 {
     protected $fillable = [
-        'ma_de_tai', 'de_tai_mau_id', 'mo_ta', 'ngay_bat_dau', 'ngay_ket_thuc',
-        'nhom_id', 'giang_vien_id', 'dot_bao_cao_id', 'trang_thai'
+        'ma_de_tai', 'ten_de_tai', 'mo_ta', 'ngay_bat_dau', 'ngay_ket_thuc',
+        'nhom_id', 'giang_vien_id', 'dot_bao_cao_id', 'trang_thai', 'y_kien_giang_vien'
     ];
 
     // Các trạng thái có thể có của đề tài
-    const TRANG_THAI_CHUA_BAT_DAU = 'chua_bat_dau';
-    const TRANG_THAI_DANG_DIEN_RA = 'dang_dien_ra';
-    const TRANG_THAI_DA_KET_THUC = 'da_ket_thuc';
-    const TRANG_THAI_DA_HUY = 'da_huy';
+    const TRANG_THAI_CHUA_BAT_DAU = 0;
+    const TRANG_THAI_DANG_DIEN_RA = 1;
+    const TRANG_THAI_DA_KET_THUC = 2;
+    const TRANG_THAI_DA_HUY = 3;
+    const TRANG_THAI_DANG_CHO_DUYET = 4;
 
     protected $casts = [
         'ngay_bat_dau' => 'date',
-        'ngay_ket_thuc' => 'date'
+        'ngay_ket_thuc' => 'date',
+        'trang_thai' => 'integer'
     ];
 
     public function nhom()
@@ -43,15 +45,6 @@ class DeTai extends Model
         return $this->belongsTo(DotBaoCao::class);
     }
 
-    public function dotDeTai()
-    {
-        return $this->hasMany(DotDeTai::class);
-    }
-
-    public function deTaiMau()
-    {
-        return $this->belongsTo(DeTaiMau::class);
-    }
 
     // Các phương thức hỗ trợ
     public function getTrangThaiTextAttribute()
@@ -61,6 +54,7 @@ class DeTai extends Model
             self::TRANG_THAI_DANG_DIEN_RA => 'Đang diễn ra',
             self::TRANG_THAI_DA_KET_THUC => 'Đã kết thúc',
             self::TRANG_THAI_DA_HUY => 'Đã hủy',
+            self::TRANG_THAI_DANG_CHO_DUYET => 'Đang chờ duyệt',
             default => 'Không xác định'
         };
     }
@@ -68,11 +62,12 @@ class DeTai extends Model
     public function getTrangThaiClassAttribute()
     {
         return match($this->trang_thai) {
-            self::TRANG_THAI_CHUA_BAT_DAU => 'bg-gray-100 text-gray-800',
-            self::TRANG_THAI_DANG_DIEN_RA => 'bg-blue-100 text-blue-800',
-            self::TRANG_THAI_DA_KET_THUC => 'bg-green-100 text-green-800',
-            self::TRANG_THAI_DA_HUY => 'bg-red-100 text-red-800',
-            default => 'bg-gray-100 text-gray-800'
+            self::TRANG_THAI_CHUA_BAT_DAU => 'badge bg-warning',
+            self::TRANG_THAI_DANG_DIEN_RA => 'badge bg-info',
+            self::TRANG_THAI_DA_KET_THUC => 'badge bg-success',
+            self::TRANG_THAI_DA_HUY => 'badge bg-danger',
+            self::TRANG_THAI_DANG_CHO_DUYET => 'badge bg-warning',
+            default => 'badge bg-secondary'
         };
     }
 
@@ -109,7 +104,7 @@ class DeTai extends Model
         parent::boot();
 
         static::creating(function ($deTai) {
-            if (!$deTai->trang_thai) {
+            if (!isset($deTai->trang_thai)) {
                 $deTai->trang_thai = self::TRANG_THAI_CHUA_BAT_DAU;
             }
         });
