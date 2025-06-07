@@ -19,13 +19,10 @@ COPY . .
 # ✅ Tạo .env trước khi cài composer
 RUN if [ -f .env.example ]; then cp .env.example .env; fi
 
-# ✅ Cài đặt composer dependencies, tạm thời bỏ qua script
-RUN composer install --no-dev --optimize-autoloader --no-scripts
+# ✅ Cài đặt composer dependencies
+RUN composer install --no-interaction --no-dev --optimize-autoloader
 
-# ✅ Sau đó thực hiện script thủ công
-RUN php artisan package:discover --ansi || true
-
-# Phân quyền cho storage
+# ✅ Phân quyền cho storage
 RUN chown -R www-data:www-data storage bootstrap/cache
 
 EXPOSE 80
