@@ -36,15 +36,25 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-12">
                                 <div class="mb-3">
-                                    <label for="lop" class="form-label">Lớp</label>
-                                    <input type="text" class="form-control @error('lop') is-invalid @enderror" id="lop" name="lop" value="{{ old('lop') }}" placeholder="Nhập tên lớp (VD: DCT1234)">
-                                    @error('lop')
+                                    <label for="lop_id" class="form-label">Lớp (<span class="text-danger">*</span>)</label>
+                                    <select class="form-select @error('lop_id') is-invalid @enderror" id="lop_id" name="lop_id" required>
+                                        <option value="">Chọn lớp</option>
+                                        @foreach($lops as $lop)
+                                            <option value="{{ $lop->id }}" {{ old('lop_id') == $lop->id ? 'selected' : '' }}>
+                                                {{ $lop->ten_lop }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('lop_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label for="nganh" class="form-label">Ngành</label>

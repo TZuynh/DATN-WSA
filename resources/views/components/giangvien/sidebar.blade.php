@@ -11,6 +11,12 @@
                 <span>Thống kê</span>
             </a>
         </li>
+        <li class="menu-item {{ request()->routeIs('giangvien.lop.*') ? 'active' : '' }}">
+            <a href="{{ route('giangvien.lop.index') }}">
+                <i class="fas fa-chalkboard"></i>
+                <span>Quản lý lớp</span>
+            </a>
+        </li>
         <li class="menu-item {{ request()->routeIs('giangvien.sinh-vien.*') ? 'active' : '' }}">
             <a href="{{ route('giangvien.sinh-vien.index') }}">
                 <i class="fas fa-users"></i>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\GiangVien;
 
 use App\Http\Controllers\Controller;
 use App\Models\SinhVien;
+use App\Models\Lop;
 use App\Imports\SinhVienImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -14,13 +15,14 @@ class SinhVienController extends Controller
 {
     public function index()
     {
-        $sinhViens = SinhVien::paginate(10);
+        $sinhViens = SinhVien::with('lop')->paginate(10);
         return view('giangvien.sinh-vien.index', compact('sinhViens'));
     }
 
     public function create()
     {
-        return view('giangvien.sinh-vien.create');
+        $lops = Lop::all();
+        return view('giangvien.sinh-vien.create', compact('lops'));
     }
 
     public function store(Request $request)
@@ -28,17 +30,14 @@ class SinhVienController extends Controller
         $validator = Validator::make($request->all(), [
             'mssv' => 'required|string|regex:/^0306\\d{6}$/|unique:sinh_viens,mssv',
             'ten' => 'required|string|max:255',
-            'lop' => 'nullable|string|max:50',
-            'nganh' => 'nullable|string|max:100',
-            'khoa_hoc' => 'nullable|string|max:20',
+            'lop_id' => 'required|exists:lops,id',
         ], [
             'mssv.required' => 'Mã số sinh viên không được để trống',
             'mssv.unique' => 'Mã số sinh viên đã tồn tại',
             'mssv.regex' => 'Mã số sinh viên phải bắt đầu bằng 0306 và có đủ 10 chữ số.',
             'ten.required' => 'Tên sinh viên không được để trống',
-            'lop.max' => 'Tên lớp không được vượt quá 50 ký tự',
-            'nganh.max' => 'Tên ngành không được vượt quá 100 ký tự',
-            'khoa_hoc.max' => 'Khóa học không được vượt quá 20 ký tự',
+            'lop_id.required' => 'Vui lòng chọn lớp',
+            'lop_id.exists' => 'Lớp không tồn tại',
         ]);
 
         if ($validator->fails()) {
@@ -47,7 +46,7 @@ class SinhVienController extends Controller
                         ->withInput();
         }
 
-        SinhVien::create($request->only(['mssv', 'ten', 'lop', 'nganh', 'khoa_hoc']));
+        SinhVien::create($request->only(['mssv', 'ten', 'lop_id']));
 
         return redirect()->route('giangvien.sinh-vien.index')
             ->with('success', 'Sinh viên đã được thêm thành công!');
@@ -55,7 +54,8 @@ class SinhVienController extends Controller
 
     public function edit(SinhVien $sinhVien)
     {
-        return view('giangvien.sinh-vien.edit', compact('sinhVien'));
+        $lops = Lop::all();
+        return view('giangvien.sinh-vien.edit', compact('sinhVien', 'lops'));
     }
 
     public function update(Request $request, SinhVien $sinhVien)
@@ -63,26 +63,23 @@ class SinhVienController extends Controller
         $validator = Validator::make($request->all(), [
             'mssv' => 'required|string|regex:/^0306\\d{6}$/|unique:sinh_viens,mssv,' . $sinhVien->id,
             'ten' => 'required|string|max:255',
-            'lop' => 'nullable|string|max:50',
-            'nganh' => 'nullable|string|max:100',
-            'khoa_hoc' => 'nullable|string|max:20',
+            'lop_id' => 'required|exists:lops,id',
         ], [
             'mssv.required' => 'Mã số sinh viên không được để trống',
             'mssv.unique' => 'Mã số sinh viên đã tồn tại',
             'mssv.regex' => 'Mã số sinh viên phải bắt đầu bằng 0306 và có đủ 10 chữ số.',
             'ten.required' => 'Tên sinh viên không được để trống',
-            'lop.max' => 'Tên lớp không được vượt quá 50 ký tự',
-            'nganh.max' => 'Tên ngành không được vượt quá 100 ký tự',
-            'khoa_hoc.max' => 'Khóa học không được vượt quá 20 ký tự',
+            'lop_id.required' => 'Vui lòng chọn lớp',
+            'lop_id.exists' => 'Lớp không tồn tại',
         ]);
 
-         if ($validator->fails()) {
+        if ($validator->fails()) {
             return redirect()->back()
                         ->withErrors($validator)
                         ->withInput();
         }
 
-        $sinhVien->update($request->only(['mssv', 'ten', 'lop', 'nganh', 'khoa_hoc']));
+        $sinhVien->update($request->only(['mssv', 'ten', 'lop_id']));
 
         return redirect()->route('giangvien.sinh-vien.index')
             ->with('success', 'Sinh viên đã được cập nhật thành công!');

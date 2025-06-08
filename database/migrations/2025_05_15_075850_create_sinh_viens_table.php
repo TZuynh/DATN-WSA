@@ -15,9 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('mssv')->unique();
             $table->string('ten');
-            $table->string('lop')->nullable();
-            $table->string('nganh')->nullable();
-            $table->string('khoa_hoc')->nullable();
+            $table->foreignId('lop_id')->constrained('lops');
             $table->timestamps();
         });
     }

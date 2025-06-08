@@ -37,29 +37,18 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-12">
                                 <div class="mb-3">
-                                    <label for="lop" class="form-label">Lớp</label>
-                                    <input type="text" class="form-control @error('lop') is-invalid @enderror" id="lop" name="lop" value="{{ old('lop', $sinhVien->lop) }}" placeholder="Nhập tên lớp (VD: DCT1234)">
-                                    @error('lop')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="nganh" class="form-label">Ngành</label>
-                                    <input type="text" class="form-control @error('nganh') is-invalid @enderror" id="nganh" name="nganh" value="{{ old('nganh', $sinhVien->nganh) }}" placeholder="Nhập tên ngành học">
-                                    @error('nganh')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="khoa_hoc" class="form-label">Khóa học</label>
-                                    <input type="text" class="form-control @error('khoa_hoc') is-invalid @enderror" id="khoa_hoc" name="khoa_hoc" value="{{ old('khoa_hoc', $sinhVien->khoa_hoc) }}" placeholder="Nhập khóa học (VD: 2020-2024)">
-                                    @error('khoa_hoc')
+                                    <label for="lop_id" class="form-label">Lớp (<span class="text-danger">*</span>)</label>
+                                    <select class="form-select @error('lop_id') is-invalid @enderror" id="lop_id" name="lop_id" required>
+                                        <option value="">Chọn lớp</option>
+                                        @foreach($lops as $lop)
+                                            <option value="{{ $lop->id }}" {{ old('lop_id', $sinhVien->lop_id) == $lop->id ? 'selected' : '' }}>
+                                                {{ $lop->ten_lop }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('lop_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>

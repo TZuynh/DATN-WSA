@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SinhVien extends Model
 {
@@ -17,9 +18,7 @@ class SinhVien extends Model
     protected $fillable = [
         'mssv',
         'ten',
-        'lop',
-        'nganh',
-        'khoa_hoc'
+        'lop_id',
     ];
 
     public function nhom()
@@ -50,6 +49,11 @@ class SinhVien extends Model
     public function dangKyGiangVienHuongDan(): HasOne
     {
         return $this->hasOne(DangKyGiangVienHuongDan::class);
+    }
+
+    public function lop()
+    {
+        return $this->belongsTo(Lop::class, 'lop_id');
     }
 }
 
