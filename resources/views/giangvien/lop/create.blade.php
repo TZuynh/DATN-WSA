@@ -1,5 +1,7 @@
 @extends('components.giangvien.app')
 
+@section('title', 'Thêm lớp mới')
+
 @section('content')
 <div class="container">
     <div class="row justify-content-center">

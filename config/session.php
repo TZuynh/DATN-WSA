@@ -3,7 +3,7 @@
   'lifetime' => '30',
   'expire_on_close' => false,
   'encrypt' => false,
-  'files' => 'D:\\laragon\\www\\project\\storage\\framework/sessions',
+  'files' => storage_path('framework/sessions'),
   'connection' => NULL,
   'table' => 'sessions',
   'store' => NULL,

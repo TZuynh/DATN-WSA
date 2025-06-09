@@ -7,6 +7,8 @@ use App\Models\Lop;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use App\Imports\LopImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class LopController extends Controller
 {
@@ -121,6 +123,48 @@ class LopController extends Controller
             Log::error('Bulk delete Lop error: ' . $e->getMessage());
             return redirect()->route('giangvien.lop.index')
                 ->with('error', 'Có lỗi xảy ra khi xóa lớp: ' . $e->getMessage());
+        }
+    }
+
+    public function import(Request $request)
+    {
+        try {
+            $request->validate([
+                'file' => 'required|file|mimes:xlsx,xls|max:2048'
+            ]);
+
+            if (!$request->hasFile('file')) {
+                throw new \Exception('Không tìm thấy file upload');
+            }
+
+            $file = $request->file('file');
+            if (!$file->isValid()) {
+                throw new \Exception('File upload không hợp lệ');
+            }
+
+            $tmpPath = storage_path('app/imports/import_' . time() . '.' . $file->getClientOriginalExtension());
+            $file->move(storage_path('app/imports'), basename($tmpPath));
+
+            Excel::import(new LopImport, $tmpPath);
+
+            if (file_exists($tmpPath)) {
+                unlink($tmpPath);
+            }
+
+            return redirect()->route('giangvien.lop.index')
+                ->with('success', 'Dữ liệu đã được nhập thành công!');
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $errors = [];
+            foreach ($failures as $failure) {
+                $errors[] = "Dòng {$failure->row()}: {$failure->errors()[0]}";
+            }
+            return redirect()->route('giangvien.lop.index')
+                ->with('error', 'Lỗi validate dữ liệu: ' . implode(', ', $errors));
+        } catch (\Exception $e) {
+            Log::error('Import error: ' . $e->getMessage());
+            return redirect()->route('giangvien.lop.index')
+                ->with('error', 'Có lỗi xảy ra khi import file: ' . $e->getMessage());
         }
     }
 } 

@@ -53,28 +53,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="nganh" class="form-label">Ngành</label>
-                                    <input type="text" class="form-control @error('nganh') is-invalid @enderror" id="nganh" name="nganh" value="{{ old('nganh') }}" placeholder="Nhập tên ngành học">
-                                    @error('nganh')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="khoa_hoc" class="form-label">Khóa học</label>
-                                    <input type="text" class="form-control @error('khoa_hoc') is-invalid @enderror" id="khoa_hoc" name="khoa_hoc" value="{{ old('khoa_hoc') }}" placeholder="Nhập khóa học (VD: 2020-2024)">
-                                    @error('khoa_hoc')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-
                         <div class="mt-4">
                             <button type="submit" class="btn btn-primary me-2">
                                 <i class="fas fa-save me-2"></i>Lưu
