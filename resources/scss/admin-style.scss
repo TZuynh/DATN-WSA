@@ -83,7 +83,7 @@ $dark-color: #5a5c69;
 }
 
 // Import các file SCSS
-@import '../_user-management.scss';
+@import '_user-management.scss';
 
 // Styles chung cho admin
 .admin-main {
@@ -134,6 +134,7 @@ $dark-color: #5a5c69;
                 top: 0.5rem;
                 right: 0.5rem;
                 color: rgba(255, 255, 255, 0.9);
+
                 &:hover {
                     background: rgba(255, 255, 255, 0.2);
                 }
@@ -158,6 +159,7 @@ $dark-color: #5a5c69;
                 top: 0.5rem;
                 right: 0.5rem;
                 color: rgba(255, 255, 255, 0.9);
+
                 &:hover {
                     background: rgba(255, 255, 255, 0.2);
                 }
@@ -219,6 +221,7 @@ $dark-color: #5a5c69;
         transform: translate(-50%, -100%);
         opacity: 0;
     }
+
     to {
         transform: translate(-50%, 0);
         opacity: 1;
@@ -284,7 +287,8 @@ $dark-color: #5a5c69;
         border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         padding: 1rem 1.25rem;
 
-        h5, h6 {
+        h5,
+        h6 {
             margin: 0;
             font-weight: 600;
         }
@@ -339,7 +343,8 @@ $dark-color: #5a5c69;
         background: rgba(0, 0, 0, 0.02);
     }
 
-    td, th {
+    td,
+    th {
         padding: 0.75rem 1rem;
         vertical-align: middle;
     }
