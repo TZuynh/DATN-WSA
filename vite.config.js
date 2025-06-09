@@ -17,10 +17,13 @@ export default defineConfig({
         }),
     ],
     server: {
+        host: 'localhost',
+        port: 5173, // Port mặc định của Vite
+        strictPort: true, // Không tự động tìm port khác nếu port bị chiếm
+        cors: true, // Bật CORS cho tất cả domain trong development
         hmr: {
             host: 'localhost',
+            protocol: 'ws',
         },
-        cors: true,
-        origin: 'http://giangvien.project.test',
     },
 });
