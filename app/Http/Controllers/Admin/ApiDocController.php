@@ -24,8 +24,8 @@ class ApiDocController extends Controller
                         ],
                         'response' => [
                             'success' => [
-                                'token' => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...',
-                                'tai_khoan' => [
+                                'token_access' => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...',
+                                'data' => [
                                     'id' => 1,
                                     'ten' => 'Nguyễn Văn A',
                                     'email' => 'nguyenvana@example.com',
