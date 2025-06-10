@@ -9,7 +9,7 @@
             <!-- Phần Test API -->
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
-                    <h3 class="card-title mb-0">Test API Trực tiếp</h3>
+                    <h3 class="card-title mb-0">Test API Login</h3>
                 </div>
                 <div class="card-body">
                     <div class="row">
