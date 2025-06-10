@@ -6,6 +6,39 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
+            <!-- Phần Test API -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Test API Trực tiếp</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>Request Body</h4>
+                            <textarea id="requestBody" class="form-control mb-3" rows="5" style="font-family: monospace;">{
+    "email": "",
+    "mat_khau": ""
+}</textarea>
+                            <button onclick="testApi()" class="btn btn-primary">Test API</button>
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Response</h4>
+                            <div class="response-box p-3 bg-light rounded">
+                                <div id="tokenBox" class="mb-2" style="display: none;">
+                                    <strong>Token:</strong>
+                                    <div class="d-flex align-items-center mt-1">
+                                        <code id="tokenValue" class="flex-grow-1"></code>
+                                        <button onclick="copyToken()" class="btn btn-sm btn-outline-primary ms-2">Copy</button>
+                                    </div>
+                                </div>
+                                <pre><code id="responseBody">Chưa có response</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tài liệu API -->
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">Tài liệu API</h3>
@@ -15,6 +48,9 @@
                         @foreach($apis as $category => $api)
                             <div class="api-category mb-5">
                                 <h2 class="mb-4">{{ $api['title'] }}</h2>
+                                @if(isset($api['description']))
+                                    <p class="text-muted mb-4">{{ $api['description'] }}</p>
+                                @endif
                                 
                                 @foreach($api['endpoints'] as $endpoint)
                                     <div class="api-endpoint mb-4">
@@ -97,6 +133,64 @@
     </div>
 </div>
 
+@push('scripts')
+<script>
+async function testApi() {
+    try {
+        // Lấy và parse JSON từ textarea
+        const requestBody = JSON.parse(document.getElementById('requestBody').value);
+        
+        // Chuẩn bị headers
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        };
+
+        // Thêm CSRF token nếu có
+        const csrfToken = document.querySelector('meta[name="csrf-token"]');
+        if (csrfToken) {
+            headers['X-CSRF-TOKEN'] = csrfToken.getAttribute('content');
+        }
+        
+        // Gửi request
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+        
+        // Hiển thị response
+        document.getElementById('responseBody').textContent = JSON.stringify(data, null, 2);
+        
+        // Hiển thị token nếu có
+        if (data.token) {
+            document.getElementById('tokenBox').style.display = 'block';
+            document.getElementById('tokenValue').textContent = data.token;
+            // Lưu token
+            localStorage.setItem('api_token', data.token);
+        } else {
+            document.getElementById('tokenBox').style.display = 'none';
+        }
+    } catch (error) {
+        document.getElementById('responseBody').textContent = JSON.stringify({
+            error: error.message
+        }, null, 2);
+        document.getElementById('tokenBox').style.display = 'none';
+    }
+}
+
+function copyToken() {
+    const token = document.getElementById('tokenValue').textContent;
+    if (token) {
+        navigator.clipboard.writeText(token).then(() => {
+            alert('Đã copy token vào clipboard!');
+        });
+    }
+}
+</script>
+
 <style>
 .method-badge {
     padding: 5px 10px;
@@ -139,6 +233,18 @@
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
+.response-box {
+    min-height: 200px;
+    border: 1px solid #dee2e6;
+}
+
+#tokenValue {
+    background: #f8f9fa;
+    padding: 5px;
+    border-radius: 4px;
+    word-break: break-all;
+}
+
 pre {
     margin: 0;
     white-space: pre-wrap;
@@ -147,5 +253,11 @@ pre {
 code {
     color: #e83e8c;
 }
+
+textarea {
+    font-size: 14px;
+    line-height: 1.5;
+}
 </style>
+@endpush
 @endsection 

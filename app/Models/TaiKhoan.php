@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class TaiKhoan extends Authenticatable
 {
+    use HasApiTokens;
     use Notifiable;
 
     protected $table = 'tai_khoans';

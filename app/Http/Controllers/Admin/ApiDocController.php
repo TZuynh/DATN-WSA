@@ -11,29 +11,40 @@ class ApiDocController extends Controller
     {
         $apis = [
             'auth' => [
-                'title' => 'Xác thực',
+                'title' => 'Authentication API (project.test)',
+                'description' => 'Các API xác thực chung cho toàn bộ hệ thống',
                 'endpoints' => [
                     [
                         'method' => 'POST',
-                        'url' => '/api/auth/login',
-                        'description' => 'Đăng nhập vào hệ thống',
+                        'url' => 'http://project.test/api/auth/login',
+                        'description' => 'Đăng nhập vào hệ thống và lấy token',
                         'params' => [
-                            'email' => 'Email người dùng',
-                            'password' => 'Mật khẩu'
+                            'email' => 'Email của tài khoản',
+                            'mat_khau' => 'Mật khẩu của tài khoản'
                         ],
                         'response' => [
                             'success' => [
-                                'token' => 'JWT token',
-                                'user' => 'Thông tin người dùng'
+                                'token' => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...',
+                                'tai_khoan' => [
+                                    'id' => 1,
+                                    'ten' => 'Nguyễn Văn A',
+                                    'email' => 'nguyenvana@example.com',
+                                    'vai_tro' => 'admin',
+                                    'created_at' => '2024-03-15T08:00:00.000000Z',
+                                    'updated_at' => '2024-03-15T08:00:00.000000Z'
+                                ]
                             ],
                             'error' => [
-                                'message' => 'Thông báo lỗi'
+                                'message' => 'Thông tin đăng nhập không chính xác.',
+                                'errors' => [
+                                    'email' => ['Thông tin đăng nhập không chính xác.']
+                                ]
                             ]
                         ]
                     ],
                     [
                         'method' => 'POST',
-                        'url' => '/api/auth/logout',
+                        'url' => 'http://project.test/api/auth/logout',
                         'description' => 'Đăng xuất khỏi hệ thống',
                         'headers' => [
                             'Authorization' => 'Bearer {token}'
@@ -41,9 +52,47 @@ class ApiDocController extends Controller
                         'response' => [
                             'success' => [
                                 'message' => 'Đăng xuất thành công'
+                            ],
+                            'error' => [
+                                'message' => 'Unauthenticated.'
+                            ]
+                        ]
+                    ],
+                    [
+                        'method' => 'GET',
+                        'url' => 'http://project.test/api/auth/user',
+                        'description' => 'Lấy thông tin tài khoản hiện tại',
+                        'headers' => [
+                            'Authorization' => 'Bearer {token}'
+                        ],
+                        'response' => [
+                            'success' => [
+                                'id' => 1,
+                                'ten' => 'Nguyễn Văn A',
+                                'email' => 'nguyenvana@example.com',
+                                'vai_tro' => 'admin',
+                                'created_at' => '2024-03-15T08:00:00.000000Z',
+                                'updated_at' => '2024-03-15T08:00:00.000000Z'
+                            ],
+                            'error' => [
+                                'message' => 'Unauthenticated.'
                             ]
                         ]
                     ]
+                ]
+            ],
+            'admin' => [
+                'title' => 'Admin API (admin.project.test)',
+                'description' => 'Các API dành riêng cho quản trị viên',
+                'endpoints' => [
+                    // Thêm các endpoint API cho admin ở đây
+                ]
+            ],
+            'giangvien' => [
+                'title' => 'Giảng viên API (giangvien.project.test)',
+                'description' => 'Các API dành riêng cho giảng viên',
+                'endpoints' => [
+                    // Thêm các endpoint API cho giảng viên ở đây
                 ]
             ],
             'de-tai' => [
