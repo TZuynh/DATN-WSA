@@ -33,8 +33,14 @@
         }
         .header h2 {
             font-size: 18px;
-            margin: 10px 0;
+            margin: 5px 0;
             color: #0d47a1;
+            font-weight: bold;
+        }
+        .header h3 {
+            font-size: 18px;
+            margin: 1px 0;
+            color: #00296c;
             font-weight: bold;
         }
         .header p {
@@ -59,6 +65,13 @@
             max-height: 100%;
             object-fit: contain;
         }
+        .export-date {
+            font-size: 5px;
+            color: #666;
+            font-style: italic;
+            text-align: right;
+            margin-top: 5px;
+        }          
         .info-section {
             margin-bottom: 30px;
             background-color: #f5f5f5;
@@ -111,10 +124,10 @@
             letter-spacing: 0.5px;
         }
         .status-0 { background-color: #ffa000; } /* Đang thực hiện */
-        .status-1 { background-color: #43a047; } /* GV đồng ý */
-        .status-2 { background-color: #1e88e5; } /* GVPB đồng ý */
+        .status-1 { background-color: #1e88e5; } /* GV đồng ý */
+        .status-2 { background-color: #43a047; } /* GVPB đồng ý */
         .status-3 { background-color: #e53935; } /* Không được GVHD đồng ý */
-        .status-4 { background-color: #d32f2f; } /* Không được GVPB đồng ý */
+        .status-4 { background-color: #ffa000; } /* Không được GVPB đồng ý */
         .footer {
             margin-top: 50px;
             text-align: right;
@@ -143,7 +156,8 @@
         <div class="header-content">
             <h1>MẪU ĐĂNG KÝ</h1>
             <h2>TRƯỜNG CAO ĐẲNG KỸ THUẬT CAO THẮNG</h2>
-            <p>KHOA CÔNG NGHỆ THÔNG TIN</p>
+            <h3>KHOA CÔNG NGHỆ THÔNG TIN</h3>
+            <p class="export-date">Ngày xuất: {{ now()->format('d/m/Y H:i') }}</p>
         </div>
     </div>
 
@@ -199,19 +213,19 @@
                 <span class="status-badge status-{{ $deTai->trang_thai }}">
                     @switch($deTai->trang_thai)
                         @case(0)
-                            Đang thực hiện
+                            Chưa bắt đầu
                             @break
                         @case(1)
-                            Giảng viên đồng ý báo cáo
+                            Đang diễn ra
                             @break
                         @case(2)
-                            Giảng viên phản biện đồng ý báo cáo
+                            Đã kết thúc
                             @break
                         @case(3)
-                            Không được giảng viên hướng dẫn đồng ý
+                            Đã hủy
                             @break
                         @case(4)
-                            Không được giảng viên phản biện đồng ý
+                            Đang chờ duyệt
                             @break
                     @endswitch
                 </span>
@@ -220,7 +234,6 @@
     </div>
 
     <div class="footer">
-        <p>Ngày xuất: {{ now()->format('d/m/Y H:i:s') }}</p>
         <p>Giảng viên: {{ auth()->user()->ten }}</p>
     </div>
 </body>
