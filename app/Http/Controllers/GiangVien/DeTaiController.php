@@ -7,15 +7,18 @@ use App\Models\DeTai;
 use App\Models\Nhom;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class DeTaiController extends Controller
 {
     public function index()
     {
-        $deTais = DeTai::with(['nhom'])
-            ->where('giang_vien_id', auth()->id())
-            ->latest()
+        $giangVienId = auth()->user()->id;
+        $deTais = DeTai::with('nhom')
+            ->where('giang_vien_id', $giangVienId)
+            ->orderBy('created_at', 'desc')
             ->get();
+
         return view('giangvien.de-tai.index', compact('deTais'));
     }
 
@@ -135,5 +138,26 @@ class DeTaiController extends Controller
             Log::error('Lỗi khi cập nhật trạng thái đề tài: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi cập nhật trạng thái đề tài');
         }
+    }
+
+    public function exportPdfDetail(DeTai $deTai)
+    {
+        // Kiểm tra quyền truy cập
+        if ($deTai->giang_vien_id !== auth()->user()->id) {
+            abort(403);
+        }
+
+        // Load thông tin nhóm liên quan
+        $deTai->load('nhom');
+
+        $pdf = PDF::loadView('giangvien.de-tai.detail-pdf', compact('deTai'));
+        $pdf->setPaper('a4');
+        $pdf->setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true,
+            'defaultFont' => 'DejaVu Sans'
+        ]);
+
+        return $pdf->download('chi-tiet-de-tai-' . $deTai->id . '.pdf');
     }
 } 

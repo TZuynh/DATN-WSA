@@ -10,7 +10,7 @@
                 <div class="card-header">
                     <h3 class="card-title">Danh sách đề tài</h3>
                     <div class="card-tools">
-                        <a href="{{ route('giangvien.de-tai.create') }}" class="btn btn-primary">
+                        <a href="{{ route('giangvien.de-tai.create') }}" class="btn btn-primary btn-sm">
                             <i class="fas fa-plus"></i> Thêm mới
                         </a>
                     </div>
@@ -49,8 +49,11 @@
                                         </span>
                                     </td>
                                     <td style="display: flex; gap: 5px; justify-content: center;">
-                                        <a href="{{ route('giangvien.de-tai.edit', $deTai) }}" class="btn btn-sm btn-info">
+                                        <a href="{{ route('giangvien.de-tai.edit', $deTai) }}" class="btn btn-sm btn-primary">
                                             <i class="fas fa-edit"></i> Sửa
+                                        </a>
+                                        <a href="{{ route('giangvien.de-tai.export-pdf-detail', $deTai) }}" class="btn btn-sm btn-success">
+                                            <i class="fas fa-file-pdf"></i> PDF
                                         </a>
                                         <form action="{{ route('giangvien.de-tai.destroy', $deTai) }}" method="POST" class="d-inline">
                                             @csrf
