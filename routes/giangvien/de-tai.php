@@ -11,4 +11,5 @@ Route::middleware(['auth', 'role:giang_vien'])->name('giangvien.')->group(functi
     Route::put('/giang-vien/de-tai/{deTai}', [DeTaiController::class, 'update'])->name('de-tai.update');
     Route::delete('/giang-vien/de-tai/{deTai}', [DeTaiController::class, 'destroy'])->name('de-tai.destroy');
     Route::get('/giang-vien/de-tai/{deTai}/export-pdf', [DeTaiController::class, 'exportPdfDetail'])->name('de-tai.export-pdf-detail');
+    Route::get('/giang-vien/de-tai/{deTai}/preview-pdf', [DeTaiController::class, 'previewPdfDetail'])->name('de-tai.preview-pdf-detail');
 }); 

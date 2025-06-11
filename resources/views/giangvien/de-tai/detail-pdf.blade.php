@@ -2,239 +2,283 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Chi Tiết Đề Tài</title>
+    <title>Đăng ký đề tài tốt nghiệp</title>
     <style>
         body {
-            font-family: DejaVu Sans, sans-serif;
-            font-size: 12px;
-            line-height: 1.6;
-            color: #333;
-            background-color: #fff;
+            font-family: 'DejaVu Sans', 'Times New Roman', serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #000;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        @page {
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 760px;
+            margin: 40px auto;
+            padding: 0 20px 0 30px;
+            box-sizing: border-box;
         }
         .header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             position: relative;
-            padding: 20px 0;
-            border-bottom: 2px solid #1a237e;
+            width: 100%;
+        }
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        .header-table td {
+            width: 30%;
+            font-size: 16px;
+            padding: 0;
+        }
+        .header-table td:first-child {
+            padding-right: 20px;
+        }
+        .header-table td:last-child {
+            padding-left: 20px;
+        }
+        .header-title {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .header-subtitle {
+            text-align: center;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .content-section {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .content-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .content-table td {
+            padding: 0;
+            vertical-align: top;
+        }
+        .section-title {
+            width: 10px;
+            white-space: nowrap;
+            padding-right: 10px;
+        }
+        .section-content {
+            font-weight: bold;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .student-list {
+            margin: 10px 0 0 0;
+            padding: 0;
+            list-style: none;
+        }
+        .student-item {
+            margin-bottom: 10px;
+            padding: 0;
+        }
+        .student-info {
+            display: inline-block;
+            margin-right: 20px;
+        }
+        .student-name {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .student-detail {
+            font-weight: normal;
+            margin-right: 10px;
+        }
+        .topic-title {
+            text-transform: uppercase;
+        }
+        .topic-content {
+            margin: 20px 0;
+            min-height: 200px;
+        }
+        .topic-content-description {
+            font-style: italic;
+            font-weight: normal;
+            text-transform: none;
+            white-space: pre-wrap;
+            display: block;
+            margin-top: 10px;
+        }
+        .content-table td.section-content.topic-content-description {
+            display: block;
+            width: 100%;
+        }
+        .signature-section {
+            margin-top: 50px;
+            width: 100%;
+        }
+        .signature-table {
+            width: 100%;
+        }
+        .signature-table td {
+            width: 33.33%;
+            text-align: center;
+            vertical-align: top;
+            padding: 0 10px;
+        }
+        .signature-title {
+            margin-bottom: 50px;
+        }
+        .signature-line {
+            margin-top: -50px;
+            text-align: center;
+        }
+        .date-text {
+            text-transform: lowercase;
+            font-weight: normal;
         }
         .header-content {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .header h1 {
-            font-size: 24px;
-            margin-bottom: 8px;
-            color: #1a237e;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-        .header h2 {
-            font-size: 18px;
-            margin: 5px 0;
-            color: #0d47a1;
-            font-weight: bold;
-        }
-        .header h3 {
-            font-size: 18px;
-            margin: 1px 0;
-            color: #00296c;
-            font-weight: bold;
-        }
-        .header p {
-            font-size: 14px;
-            margin: 5px 0;
-            color: #424242;
-        }
-        .logo-container {
-            position: absolute;
-            top: 0;
-            width: 100px;
-            height: 100px;
-        }
-        .logo-left {
-            left: 0;
-        }
-        .logo-right {
-            right: 0;
-        }
-        .logo-container img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-        .export-date {
-            font-size: 5px;
-            color: #666;
-            font-style: italic;
-            text-align: right;
-            margin-top: 5px;
-        }          
-        .info-section {
-            margin-bottom: 30px;
-            background-color: #f5f5f5;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .info-section h3 {
-            font-size: 16px;
-            margin-bottom: 15px;
-            color: #1a237e;
-            border-bottom: 2px solid #1a237e;
-            padding-bottom: 8px;
-            font-weight: bold;
-        }
-        .info-row {
-            margin-bottom: 12px;
             display: flex;
-            align-items: flex-start;
-            border-bottom: 1px dashed #e0e0e0;
-            padding-bottom: 8px;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
         }
-        .info-row:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
+        .content-table td.section-content .student-list {
+            display: block;
+            width: 100%;
         }
-        .info-label {
-            width: 180px;
-            font-weight: bold;
-            display: inline-block;
-            vertical-align: top;
-            color: #424242;
-        }
-        .info-value {
-            flex: 1;
-            display: inline-block;
-            vertical-align: top;
-            padding-left: 15px;
-            color: #212121;
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: bold;
-            color: #fff;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .status-0 { background-color: #ffa000; } /* Đang thực hiện */
-        .status-1 { background-color: #1e88e5; } /* GV đồng ý */
-        .status-2 { background-color: #43a047; } /* GVPB đồng ý */
-        .status-3 { background-color: #e53935; } /* Không được GVHD đồng ý */
-        .status-4 { background-color: #ffa000; } /* Không được GVPB đồng ý */
-        .footer {
-            margin-top: 50px;
-            text-align: right;
-            border-top: 2px solid #1a237e;
-            padding-top: 15px;
-            color: #424242;
-        }
-        .footer p {
-            margin: 5px 0;
-            font-size: 12px;
-        }
-        .footer p:last-child {
-            font-weight: bold;
-            color: #1a237e;
+        .content-text {
+            font-weight: normal;
+            text-transform: none;
+            white-space: pre-wrap;
+            display: block;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="logo-container logo-left">
-            <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(public_path('images/logo.jpg'))) }}" alt="Logo trái">
+    <div class="container">
+        <div class="header">
+            <table class="header-table">
+                <tr>
+                    <td>Trường CĐ Kỹ Thuật Cao Thắng</td>
+                    <td style="text-align: center;">Cộng hòa xã hội chủ nghĩa Việt Nam</td>
+                </tr>
+                <tr>
+                    <td>Khoa Công Nghệ Thông Tin</td>
+                    <td style="text-align: center;">Độc lập - Tự do - Hạnh phúc</td>
+                </tr>
+            </table>
+            <div class="header-title">ĐĂNG KÝ ĐỀ TÀI TỐT NGHIỆP</div>
+            <div class="header-subtitle">Niên khóa: 2022 - 2025</div>
         </div>
-        <div class="logo-container logo-right">
-            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/logo-caothang.png'))) }}" alt="Logo phải">
-        </div>
-        <div class="header-content">
-            <h1>MẪU ĐĂNG KÝ</h1>
-            <h2>TRƯỜNG CAO ĐẲNG KỸ THUẬT CAO THẮNG</h2>
-            <h3>KHOA CÔNG NGHỆ THÔNG TIN</h3>
-            <p class="export-date">Ngày xuất: {{ now()->format('d/m/Y H:i') }}</p>
-        </div>
-    </div>
 
-    <div class="info-section">
-        <h3>Thông tin đề tài</h3>
-        <div class="info-row">
-            <div class="info-label">Mã đề tài:</div>
-            <div class="info-value">{{ $deTai->ma_de_tai }}</div>
+        <div class="content-section">
+            <table class="content-table">
+                <tr>
+                    <td class="section-title">GIẢNG VIÊN HƯỚNG DẪN:</td>
+                    <td class="section-content">{{ $deTai->giangVien->ten ?? 'Chưa có giảng viên' }}</td>
+                </tr>
+            </table>
         </div>
-        <div class="info-row">
-            <div class="info-label">Tên đề tài:</div>
-            <div class="info-value">{{ $deTai->ten_de_tai }}</div>
-        </div>
-        <div class="info-row">
-            <div class="info-label">Mô tả:</div>
-            <div class="info-value">{{ $deTai->mo_ta ?? 'Chưa có mô tả' }}</div>
-        </div>
-        <div class="info-row">
-            <div class="info-label">Ý kiến giảng viên:</div>
-            <div class="info-value">{{ $deTai->y_kien_giang_vien ?? 'Chưa có ý kiến giảng viên' }}</div>
-        </div>
-    </div>
 
-    <div class="info-section">
-        <h3>Thông tin thời gian</h3>
-        <div class="info-row">
-            <div class="info-label">Ngày bắt đầu:</div>
-            <div class="info-value">{{ $deTai->ngay_bat_dau ? $deTai->ngay_bat_dau->format('d/m/Y') : 'N/A' }}</div>
+        <div class="content-section">
+            <table class="content-table">
+                <tr>
+                    <td class="section-title">SINH VIÊN THỰC HIỆN:</td>
+                    <td class="section-content">
+                        @if($deTai->nhom && $deTai->nhom->sinhViens->count() > 0)
+                            <ul class="student-list">
+                                @foreach($deTai->nhom->sinhViens as $index => $sinhVien)
+                                    <li class="student-item">
+                                        {{ $index + 1 }}. 
+                                        <span class="student-name">{{ $sinhVien->ten }}</span>
+                                        <span class="student-detail">MSSV: {{ $sinhVien->mssv }}</span>
+                                        <span class="student-detail">Lớp: {{ $sinhVien->lop->ten_lop ?? 'N/A' }}</span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <div class="student-item">Chưa có sinh viên thực hiện</div>
+                        @endif
+                    </td>
+                </tr>
+            </table>
         </div>
-        <div class="info-row">
-            <div class="info-label">Ngày kết thúc:</div>
-            <div class="info-value">{{ $deTai->ngay_ket_thuc ? $deTai->ngay_ket_thuc->format('d/m/Y') : 'N/A' }}</div>
-        </div>
-    </div>
 
-    <div class="info-section">
-        <h3>Thông tin nhóm thực hiện</h3>
-        <div class="info-row">
-            <div class="info-label">Mã nhóm:</div>
-            <div class="info-value">{{ $deTai->nhom->ma_nhom ?? 'N/A' }}</div>
+        <div class="content-section">
+            <table class="content-table">
+                <tr>
+                    <td class="section-title">TÊN ĐỀ TÀI:</td>
+                    <td class="section-content topic-title">{{ $deTai->ten_de_tai }}</td>
+                </tr>
+            </table>
         </div>
-        <div class="info-row">
-            <div class="info-label">Tên nhóm:</div>
-            <div class="info-value">{{ $deTai->nhom->ten ?? 'N/A' }}</div>
-        </div>
-    </div>
 
-    <div class="info-section">
-        <h3>Trạng thái đề tài</h3>
-        <div class="info-row">
-            <div class="info-label">Trạng thái:</div>
-            <div class="info-value">
-                <span class="status-badge status-{{ $deTai->trang_thai }}">
-                    @switch($deTai->trang_thai)
-                        @case(0)
-                            Chưa bắt đầu
-                            @break
-                        @case(1)
-                            Đang diễn ra
-                            @break
-                        @case(2)
-                            Đã kết thúc
-                            @break
-                        @case(3)
-                            Đã hủy
-                            @break
-                        @case(4)
-                            Đang chờ duyệt
-                            @break
-                    @endswitch
-                </span>
-            </div>
+        <div class="content-section">
+            <table class="content-table">
+                <tr>
+                    <td class="section-title">NỘI DUNG YÊU CẦU CỦA ĐỀ TÀI:</td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <div class="content-text">{{ $deTai->mo_ta ?? 'Chưa có nội dung yêu cầu' }}</div>
+                    </td>
+                </tr>
+            </table>
         </div>
-    </div>
 
-    <div class="footer">
-        <p>Giảng viên: {{ auth()->user()->ten }}</p>
+        <div class="content-section">
+            <table class="content-table">
+                <tr>
+                    <td class="section-title" style="font-size: 16px;">Thời gian thực hiện đề tài:</td>
+                    <td class="section-content">
+                        <span class="date-text">từ ngày</span> {{ $deTai->ngay_bat_dau ? $deTai->ngay_bat_dau->format('d/m/Y') : 'N/A' }} 
+                        <span class="date-text">đến ngày</span> {{ $deTai->ngay_ket_thuc ? $deTai->ngay_ket_thuc->format('d/m/Y') : 'N/A' }}
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="content-section">
+            <table class="content-table">
+                <tr>
+                    <td class="section-title">Ý KIẾN CỦA GIẢNG VIÊN HƯỚNG DẪN:</td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <div class="content-text">{{ $deTai->y_kien_giang_vien ?? 'Chưa có ý kiến' }}</div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="signature-section">
+            <table class="signature-table">
+                <tr>
+                    <td>
+                        <div class="signature-title">Giám Hiệu</div>
+                        <div class="signature-line"></div>
+                    </td>
+                    <td>
+                        <div class="signature-title">Khoa Công Nghệ Thông Tin</div>
+                        <div class="signature-line"></div>
+                    </td>
+                    <td>
+                        <div class="signature-title">GV Hướng dẫn</div>
+                        <div class="signature-line">(Ký và ghi rõ họ tên)</div>
+                    </td>
+                </tr>
+            </table>
+        </div>
     </div>
 </body>
 </html> 

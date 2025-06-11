@@ -142,22 +142,38 @@ class DeTaiController extends Controller
 
     public function exportPdfDetail(DeTai $deTai)
     {
-        // Kiểm tra quyền truy cập
-        if ($deTai->giang_vien_id !== auth()->user()->id) {
-            abort(403);
+        // Kiểm tra quyền xem chi tiết đề tài
+        if ($deTai->giang_vien_id !== auth()->id()) {
+            abort(403, 'Bạn không có quyền xem chi tiết đề tài này.');
         }
 
-        // Load thông tin nhóm liên quan
-        $deTai->load('nhom');
+        // Load dữ liệu liên quan
+        $deTai->load('nhom.sinhViens.lop', 'giangVien');
 
+        // Tạo PDF
         $pdf = PDF::loadView('giangvien.de-tai.detail-pdf', compact('deTai'));
-        $pdf->setPaper('a4');
-        $pdf->setOptions([
-            'isHtml5ParserEnabled' => true,
-            'isRemoteEnabled' => true,
-            'defaultFont' => 'DejaVu Sans'
-        ]);
+        
+        // Cấu hình PDF
+        $pdf->setPaper('a4', 'landscape');
+        $pdf->setOption('isHtml5ParserEnabled', true);
+        $pdf->setOption('isRemoteEnabled', true);
+        $pdf->setOption('defaultFont', 'DejaVu Sans');
 
-        return $pdf->download('chi-tiet-de-tai-' . $deTai->id . '.pdf');
+        // Trả về file PDF để tải xuống
+        return $pdf->download('de-tai-' . $deTai->id . '.pdf');
+    }
+
+    public function previewPdfDetail(DeTai $deTai)
+    {
+        // Kiểm tra quyền xem chi tiết đề tài
+        if ($deTai->giang_vien_id !== auth()->id()) {
+            abort(403, 'Bạn không có quyền xem chi tiết đề tài này.');
+        }
+
+        // Load dữ liệu liên quan
+        $deTai->load('nhom.sinhViens.lop', 'giangVien');
+
+        // Trả về view trực tiếp
+        return view('giangvien.de-tai.detail-pdf', compact('deTai'));
     }
 } 

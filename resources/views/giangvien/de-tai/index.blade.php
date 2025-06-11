@@ -48,20 +48,25 @@
                                             {{ $deTai->trang_thai_text }}
                                         </span>
                                     </td>
-                                    <td style="display: flex; gap: 5px; justify-content: center;">
-                                        <a href="{{ route('giangvien.de-tai.edit', $deTai) }}" class="btn btn-sm btn-primary">
-                                            <i class="fas fa-edit"></i> Sửa
-                                        </a>
-                                        <a href="{{ route('giangvien.de-tai.export-pdf-detail', $deTai) }}" class="btn btn-sm btn-success">
-                                            <i class="fas fa-file-pdf"></i> PDF
-                                        </a>
-                                        <form action="{{ route('giangvien.de-tai.destroy', $deTai) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa đề tài này?')">
-                                                <i class="fas fa-trash"></i> Xóa
-                                            </button>
-                                        </form>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-1">
+                                            <a href="{{ route('giangvien.de-tai.preview-pdf-detail', $deTai) }}" class="btn btn-sm btn-info" target="_blank">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ route('giangvien.de-tai.export-pdf-detail', $deTai) }}" class="btn btn-sm btn-success">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </a>
+                                            <a href="{{ route('giangvien.de-tai.edit', $deTai) }}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form action="{{ route('giangvien.de-tai.destroy', $deTai) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa đề tài này?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                                 @empty
