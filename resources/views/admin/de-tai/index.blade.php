@@ -50,17 +50,28 @@
                                             {{ $deTai->trang_thai_text }}
                                         </span>
                                     </td>
-                                    <td style="display: flex; gap: 5px; justify-content: center;">
-                                        <a href="{{ route('admin.de-tai.edit', $deTai) }}" class="btn btn-warning btn-sm">
-                                            <i class="fas fa-edit"></i> Sửa
-                                        </a>
-                                        <form action="{{ route('admin.de-tai.destroy', $deTai) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">
-                                                <i class="fas fa-trash"></i> Xóa
-                                            </button>
-                                        </form>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-1">
+                                            <a href="{{ route('admin.de-tai.edit', $deTai) }}" class="btn btn-warning btn-sm">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{{ route('admin.de-tai.preview-pdf', $deTai) }}" class="btn btn-info btn-sm" target="_blank">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ route('admin.de-tai.export-pdf', $deTai) }}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </a>
+                                            <a href="{{ route('admin.de-tai.export-word', $deTai) }}" class="btn btn-success btn-sm">
+                                                <i class="fas fa-file-word"></i>
+                                            </a>
+                                            <form action="{{ route('admin.de-tai.destroy', $deTai) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                                 @endforeach
