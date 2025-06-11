@@ -56,7 +56,10 @@
                                             <a href="{{ route('giangvien.de-tai.export-pdf-detail', $deTai) }}" class="btn btn-sm btn-success">
                                                 <i class="fas fa-file-pdf"></i>
                                             </a>
-                                            <a href="{{ route('giangvien.de-tai.edit', $deTai) }}" class="btn btn-sm btn-primary">
+                                            <a href="{{ route('giangvien.de-tai.export-word-detail', $deTai) }}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-file-word"></i>
+                                            </a>
+                                            <a href="{{ route('giangvien.de-tai.edit', $deTai) }}" class="btn btn-sm btn-warning">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             <form action="{{ route('giangvien.de-tai.destroy', $deTai) }}" method="POST" class="d-inline">
