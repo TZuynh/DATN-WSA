@@ -28,6 +28,9 @@
                 <li class="menu-item {{ request()->routeIs('admin.phan-cong-hoi-dong.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.phan-cong-hoi-dong.index') }}"><i class="fas fa-user-plus"></i> Phân công</a>
                 </li>
+                <li class="menu-item {{ request()->routeIs('admin.lich-cham.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.lich-cham.index') }}"><i class="fas fa-clock"></i> Lịch chấm</a>
+                </li>
             </ul>
         </li>
         <li class="menu-item {{ request()->routeIs('admin.de-tai.*') ? 'active' : '' }}">
