@@ -57,39 +57,114 @@
 </aside>
 
 <style>
-.admin-sidebar .menu-item.active > a {
-    background-color: #4299e1;
-    color: white;
+.admin-sidebar {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    width: 250px;
+    height: calc(100vh - 60px);
+    background: #1a202c;
+    overflow-y: auto;
+    z-index: 999;
+    /* Ẩn scrollbar cho Chrome, Safari và Opera */
+    &::-webkit-scrollbar {
+        display: none;
+    }
+    /* Ẩn scrollbar cho IE, Edge và Firefox */
+    -ms-overflow-style: none;  /* IE và Edge */
+    scrollbar-width: none;  /* Firefox */
 }
 
-.admin-sidebar .menu-item.active > a i {
-    color: white;
+.sidebar-header {
+    padding: 15px 0;
+    text-align: center;
+    border-bottom: 1px solid #333;
 }
 
-.admin-sidebar .submenu .menu-item.active > a {
-    background-color: #4299e1;
-    color: white;
+.logo-img {
+    width: 80px;
+    height: auto;
+    object-fit: contain;
+    margin-bottom: 10px;
 }
 
-.admin-sidebar .submenu .menu-item.active > a i {
-    color: white;
+.admin-sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
-.admin-sidebar .submenu {
+.menu-item a {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #e5e7eb; /* Màu chữ sáng */
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.menu-item a:hover {
+    background-color: #2d2d2d; /* Màu hover tối hơn */
+}
+
+.menu-item a i {
+    width: 20px;
+    margin-right: 10px;
+    font-size: 16px;
+    color: #9ca3af; /* Màu icon xám nhạt */
+}
+
+.menu-item.has-submenu > a {
+    justify-content: space-between;
+}
+
+.menu-item.has-submenu > a .arrow {
+    transition: transform 0.3s;
+    color: #9ca3af; /* Màu arrow xám nhạt */
+}
+
+.menu-item.has-submenu.active > a .arrow {
+    transform: rotate(180deg);
+}
+
+.submenu {
     display: none;
-    padding-left: 20px;
+    background-color: #242424; /* Màu nền submenu tối hơn */
 }
 
-.admin-sidebar .menu-item.has-submenu.active .submenu {
+.menu-item.has-submenu.active .submenu {
     display: block;
 }
 
-.admin-sidebar .menu-item.has-submenu > a .arrow {
-    transition: transform 0.3s;
+.submenu .menu-item a {
+    padding-left: 50px;
 }
 
-.admin-sidebar .menu-item.has-submenu.active > a .arrow {
-    transform: rotate(180deg);
+.menu-item.active > a {
+    background-color: #4299e1; /* Giữ nguyên màu active */
+    color: #fff;
+}
+
+.menu-item.active > a i {
+    color: #fff;
+}
+
+.submenu .menu-item.active > a {
+    background-color: #4299e1; /* Giữ nguyên màu active */
+    color: #fff;
+}
+
+.submenu .menu-item.active > a i {
+    color: #fff;
+}
+
+/* Điều chỉnh main content */
+.main-content {
+    margin-left: 250px;
+    margin-top: 60px;
+    padding: 20px;
+    min-height: calc(100vh - 60px);
+    background-color: #f9fafb; /* Màu nền sáng cho main content */
 }
 </style>
 
