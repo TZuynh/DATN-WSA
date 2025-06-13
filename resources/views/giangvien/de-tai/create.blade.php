@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vi.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/40.1.0/classic/ckeditor.js"></script>
 
     <div class="container-fluid">
         <div class="row">
@@ -26,7 +27,7 @@
                             </div>
                         @endif
 
-                        <form action="{{ route('giangvien.de-tai.store') }}" method="POST">
+                        <form action="{{ route('giangvien.de-tai.store') }}" method="POST" id="createForm">
                             @csrf
                             <div class="form-group mb-4">
                                 <label for="ten_de_tai" class="form-label">Tên đề tài <span class="text-danger">*</span></label>
@@ -107,6 +108,69 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Khởi tạo CKEditor cho các trường văn bản
+            ClassicEditor
+                .create(document.querySelector('#mo_ta'), {
+                    toolbar: {
+                        items: [
+                            'heading',
+                            '|',
+                            'bold',
+                            'italic',
+                            'link',
+                            'bulletedList',
+                            'numberedList',
+                            '|',
+                            'blockQuote',
+                            'insertTable',
+                            'undo',
+                            'redo'
+                        ]
+                    },
+                    language: 'vi',
+                    table: {
+                        contentToolbar: [
+                            'tableColumn',
+                            'tableRow',
+                            'mergeTableCells'
+                        ]
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+
+            ClassicEditor
+                .create(document.querySelector('#y_kien_giang_vien'), {
+                    toolbar: {
+                        items: [
+                            'heading',
+                            '|',
+                            'bold',
+                            'italic',
+                            'link',
+                            'bulletedList',
+                            'numberedList',
+                            '|',
+                            'blockQuote',
+                            'insertTable',
+                            'undo',
+                            'redo'
+                        ]
+                    },
+                    language: 'vi',
+                    table: {
+                        contentToolbar: [
+                            'tableColumn',
+                            'tableRow',
+                            'mergeTableCells'
+                        ]
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+
             // Cấu hình Flatpickr cho ngày bắt đầu
             const ngayBatDau = flatpickr("#ngay_bat_dau", {
                 locale: "vi",

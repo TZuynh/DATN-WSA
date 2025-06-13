@@ -38,8 +38,8 @@
                                     <td>{{ $deTai->id }}</td>
                                     <td>{{ $deTai->ma_de_tai }}</td>
                                     <td>{{ Str::limit($deTai->ten_de_tai, 20) }}</td>
-                                    <td>{{ Str::limit($deTai->mo_ta, 40) }}</td>
-                                    <td>{{ Str::limit($deTai->y_kien_giang_vien, 40) }}</td>
+                                    <td>{!! Str::limit($deTai->mo_ta, 40) !!}</td>
+                                    <td>{!! Str::limit($deTai->y_kien_giang_vien, 40) !!}</td>
                                     <td>{{ $deTai->ngay_bat_dau ? $deTai->ngay_bat_dau->format('d/m/Y') : 'N/A' }}</td>
                                     <td>{{ $deTai->ngay_ket_thuc ? $deTai->ngay_ket_thuc->format('d/m/Y') : 'N/A' }}</td>
                                     <td>{{ Str::limit($deTai->nhom->ten ?? 'N/A', 15) }}</td>

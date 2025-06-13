@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vi.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/40.1.0/classic/ckeditor.js"></script>
 
     <div style="padding: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -58,9 +59,8 @@
                 <div style="margin-bottom: 20px;">
                     <label for="y_kien_giang_vien" style="display: block; margin-bottom: 5px; color: #4a5568;">Ý kiến giảng viên</label>
                     <textarea class="form-control @error('y_kien_giang_vien') is-invalid @enderror"
-                        id="y_kien_giang_vien" name="y_kien_giang_vien" rows="3"
-                        placeholder="Nhập ý kiến của giảng viên"
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">{{ old('y_kien_giang_vien', $deTai->y_kien_giang_vien) }}</textarea>
+                        id="y_kien_giang_vien" name="y_kien_giang_vien"
+                        placeholder="Nhập ý kiến của giảng viên">{{ old('y_kien_giang_vien', $deTai->y_kien_giang_vien) }}</textarea>
                     @error('y_kien_giang_vien')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -69,9 +69,8 @@
                 <div style="margin-bottom: 20px;">
                     <label for="mo_ta" style="display: block; margin-bottom: 5px; color: #4a5568;">Mô tả</label>
                     <textarea class="form-control @error('mo_ta') is-invalid @enderror"
-                        id="mo_ta" name="mo_ta" rows="3"
-                        placeholder="Nhập mô tả đề tài"
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">{{ old('mo_ta', $deTai->mo_ta) }}</textarea>
+                        id="mo_ta" name="mo_ta"
+                        placeholder="Nhập mô tả đề tài">{{ old('mo_ta', $deTai->mo_ta) }}</textarea>
                     @error('mo_ta')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -123,11 +122,11 @@
                     <select name="trang_thai" id="trang_thai"
                         class="form-control @error('trang_thai') is-invalid @enderror" required
                         style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                        <option value="0" {{ old('trang_thai', $deTai->trang_thai) == 0 ? 'selected' : '' }}>Chưa bắt đầu</option>
-                        <option value="1" {{ old('trang_thai', $deTai->trang_thai) == 1 ? 'selected' : '' }}>Đang diễn ra</option>
-                        <option value="2" {{ old('trang_thai', $deTai->trang_thai) == 2 ? 'selected' : '' }}>Đã kết thúc</option>
-                        <option value="3" {{ old('trang_thai', $deTai->trang_thai) == 3 ? 'selected' : '' }}>Đã hủy</option>
-                        <option value="4" {{ old('trang_thai', $deTai->trang_thai) == 4 ? 'selected' : '' }}>Đang chờ duyệt</option>
+                        <option value="0" {{ old('trang_thai', $deTai->trang_thai) == 0 ? 'selected' : '' }}>Đang chờ duyệt</option>
+                        <option value="1" {{ old('trang_thai', $deTai->trang_thai) == 1 ? 'selected' : '' }}>Đang thực hiện (giảng viên hướng dẫn đồng ý báo cáo)</option>
+                        <option value="2" {{ old('trang_thai', $deTai->trang_thai) == 2 ? 'selected' : '' }}>Đang thực hiện (giảng viên phản biện đồng ý báo cáo)</option>
+                        <option value="3" {{ old('trang_thai', $deTai->trang_thai) == 3 ? 'selected' : '' }}>Không xảy ra (giảng viên hướng dẫn không đồng ý)</option>
+                        <option value="4" {{ old('trang_thai', $deTai->trang_thai) == 4 ? 'selected' : '' }}>Không xảy ra (giảng viên phản biện không đồng ý)</option>
                     </select>
                     @error('trang_thai')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -145,6 +144,31 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Cấu hình CKEditor
+            ClassicEditor
+                .create(document.querySelector('#y_kien_giang_vien'), {
+                    toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'outdent', 'indent', '|', 'blockQuote', 'insertTable', 'undo', 'redo'],
+                    language: 'vi',
+                    table: {
+                        contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+
+            ClassicEditor
+                .create(document.querySelector('#mo_ta'), {
+                    toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'outdent', 'indent', '|', 'blockQuote', 'insertTable', 'undo', 'redo'],
+                    language: 'vi',
+                    table: {
+                        contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+
             // Cấu hình Flatpickr cho ngày bắt đầu
             const ngayBatDau = flatpickr("#ngay_bat_dau", {
                 locale: "vi",

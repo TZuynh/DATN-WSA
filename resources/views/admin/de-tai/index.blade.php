@@ -9,11 +9,11 @@
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">Danh sách đề tài</h3>
-                    <div class="card-tools">
+                    {{-- <div class="card-tools">
                         <a href="{{ route('admin.de-tai.create') }}" class="btn btn-success btn-sm">
                             <i class="fas fa-plus"></i> Thêm mới
                         </a>
-                    </div>
+                    </div> --}}
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -39,8 +39,8 @@
                                     <td>{{ $deTai->id }}</td>
                                     <td>{{ $deTai->ma_de_tai }}</td>
                                     <td>{{ Str::limit($deTai->ten_de_tai, 20) }}</td>
-                                    <td>{{ Str::limit($deTai->mo_ta, 40) }}</td>
-                                    <td>{{ Str::limit($deTai->y_kien_giang_vien, 40) }}</td>
+                                    <td>{!! Str::limit(strip_tags($deTai->mo_ta), 40) !!}</td>
+                                    <td>{!! Str::limit(strip_tags($deTai->y_kien_giang_vien), 40) !!}</td>
                                     <td>{{ $deTai->ngay_bat_dau ? $deTai->ngay_bat_dau->format('d/m/Y') : 'N/A' }}</td>
                                     <td>{{ $deTai->ngay_ket_thuc ? $deTai->ngay_ket_thuc->format('d/m/Y') : 'N/A' }}</td>
                                     <td>{{ Str::limit($deTai->nhom ? $deTai->nhom->ten : 'N/A', 15) }}</td>

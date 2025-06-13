@@ -162,6 +162,34 @@
             display: block;
             margin-top: 10px;
         }
+        .content-text i {
+            font-style: italic;
+        }
+        .content-text p {
+            margin: 0 0 10px 0;
+        }
+        .content-text ul, .content-text ol {
+            margin: 0 0 10px 20px;
+            padding: 0;
+        }
+        .content-text li {
+            margin-bottom: 5px;
+        }
+        .content-text table {
+            border-collapse: collapse;
+            margin: 10px 0;
+            width: 100%;
+        }
+        .content-text table td, .content-text table th {
+            border: 1px solid #000;
+            padding: 5px;
+        }
+        .content-text blockquote {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 3px solid #000;
+            background-color: #f9f9f9;
+        }
     </style>
 </head>
 <body>
@@ -230,7 +258,7 @@
                 </tr>
                 <tr>
                     <td colspan="2">
-                        <div class="content-text">{{ $deTai->mo_ta ?? 'Chưa có nội dung yêu cầu' }}</div>
+                        <div class="content-text">{!! $deTai->mo_ta ?? 'Chưa có nội dung yêu cầu' !!}</div>
                     </td>
                 </tr>
             </table>
@@ -255,7 +283,7 @@
                 </tr>
                 <tr>
                     <td colspan="2">
-                        <div class="content-text">{{ $deTai->y_kien_giang_vien ?? 'Chưa có ý kiến' }}</div>
+                        <div class="content-text">{!! $deTai->y_kien_giang_vien ?? 'Chưa có ý kiến' !!}</div>
                     </td>
                 </tr>
             </table>

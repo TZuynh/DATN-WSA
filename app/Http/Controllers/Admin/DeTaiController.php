@@ -81,6 +81,18 @@ class DeTaiController extends Controller
             'nhom_id' => 'nullable|exists:nhoms,id',
             'giang_vien_id' => 'required|exists:tai_khoans,id',
             'trang_thai' => 'required|integer|in:0,1,2,3,4'
+        ], [
+            'ten_de_tai.required' => 'Vui lòng nhập tên đề tài',
+            'ngay_bat_dau.required' => 'Vui lòng chọn ngày bắt đầu',
+            'ngay_bat_dau.date' => 'Ngày bắt đầu không hợp lệ',
+            'ngay_ket_thuc.required' => 'Vui lòng chọn ngày kết thúc',
+            'ngay_ket_thuc.date' => 'Ngày kết thúc không hợp lệ',
+            'ngay_ket_thuc.after' => 'Ngày kết thúc phải sau ngày bắt đầu',
+            'giang_vien_id.required' => 'Vui lòng chọn giảng viên',
+            'giang_vien_id.exists' => 'Giảng viên không tồn tại',
+            'trang_thai.required' => 'Vui lòng chọn trạng thái',
+            'trang_thai.integer' => 'Trạng thái không hợp lệ',
+            'trang_thai.in' => 'Trạng thái không hợp lệ'
         ]);
 
         try {

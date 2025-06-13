@@ -31,13 +31,22 @@
                 @csrf
                 @method('PUT')
                 
+                <input type="hidden" name="ngay_bat_dau" value="{{ old('ngay_bat_dau', $deTai->ngay_bat_dau ? $deTai->ngay_bat_dau->format('Y-m-d') : '') }}">
+                <input type="hidden" name="ngay_ket_thuc" value="{{ old('ngay_ket_thuc', $deTai->ngay_ket_thuc ? $deTai->ngay_ket_thuc->format('Y-m-d') : '') }}">
+                <input type="hidden" name="giang_vien_id" value="{{ old('giang_vien_id', $deTai->giang_vien_id) }}">
+                <input type="hidden" name="trang_thai" value="{{ old('trang_thai', $deTai->trang_thai) }}">
+                <input type="hidden" name="mo_ta" value="{{ old('mo_ta', $deTai->mo_ta) }}">
+                <input type="hidden" name="y_kien_giang_vien" value="{{ old('y_kien_giang_vien', $deTai->y_kien_giang_vien) }}">
+                <input type="hidden" name="nhom_id" value="{{ old('nhom_id', $deTai->nhom_id) }}">
+                <input type="hidden" name="ma_de_tai" value="{{ old('ma_de_tai', $deTai->ma_de_tai) }}">
+
                 <div style="margin-bottom: 20px;">
                     <label for="ma_de_tai" style="display: block; margin-bottom: 5px; color: #4a5568;">Mã đề tài</label>
                     <input type="text" class="form-control @error('ma_de_tai') is-invalid @enderror" 
                         id="ma_de_tai" name="ma_de_tai" 
                         value="{{ old('ma_de_tai', $deTai->ma_de_tai) }}" 
                         placeholder="Nhập mã đề tài" required
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" readonly>
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background-color: #f3f4f6;" disabled>
                     @error('ma_de_tai')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -57,10 +66,10 @@
 
                 <div style="margin-bottom: 20px;">
                     <label for="mo_ta" style="display: block; margin-bottom: 5px; color: #4a5568;">Mô tả</label>
-                    <textarea class="form-control @error('mo_ta') is-invalid @enderror" 
-                        id="mo_ta" name="mo_ta" rows="3" 
-                        placeholder="Nhập mô tả đề tài"
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">{{ old('mo_ta', $deTai->mo_ta) }}</textarea>
+                    <div class="form-control" 
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background-color: #f3f4f6; overflow-y: auto; max-height: 200px; min-height: 100px;">
+                        {{ strip_tags(old('mo_ta', $deTai->mo_ta)) }}
+                    </div>
                     @error('mo_ta')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -68,34 +77,34 @@
 
                 <div style="margin-bottom: 20px;">
                     <label for="y_kien_giang_vien" style="display: block; margin-bottom: 5px; color: #4a5568;">Ý kiến giảng viên</label>
-                    <textarea class="form-control @error('y_kien_giang_vien') is-invalid @enderror" 
-                        id="y_kien_giang_vien" name="y_kien_giang_vien" rows="3" 
-                        placeholder="Nhập ý kiến giảng viên"
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">{{ old('y_kien_giang_vien', $deTai->y_kien_giang_vien) }}</textarea>
+                    <div class="form-control" 
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background-color: #f3f4f6; overflow-y: auto; max-height: 200px; min-height: 100px;">
+                        {{ strip_tags(old('y_kien_giang_vien', $deTai->y_kien_giang_vien)) }}
+                    </div>
                     @error('y_kien_giang_vien')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label for="ngay_bat_dau" style="display: block; margin-bottom: 5px; color: #4a5568;">Ngày bắt đầu</label>
+                    <label for="ngay_bat_dau" style="display: block; margin-bottom: 5px; color: #4a5568;">Ngày bắt đầu <span style="color: red;">*</span></label>
                     <input type="text" class="form-control @error('ngay_bat_dau') is-invalid @enderror" 
                         id="ngay_bat_dau" name="ngay_bat_dau" 
-                        value="{{ old('ngay_bat_dau', $deTai->ngay_bat_dau) }}"
+                        value="{{ old('ngay_bat_dau', $deTai->ngay_bat_dau ? $deTai->ngay_bat_dau->format('Y-m-d') : '') }}"
                         placeholder="Chọn ngày bắt đầu" required
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background-color: #f3f4f6;" disabled>
                     @error('ngay_bat_dau')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label for="ngay_ket_thuc" style="display: block; margin-bottom: 5px; color: #4a5568;">Ngày kết thúc</label>
+                    <label for="ngay_ket_thuc" style="display: block; margin-bottom: 5px; color: #4a5568;">Ngày kết thúc <span style="color: red;">*</span></label>
                     <input type="text" class="form-control @error('ngay_ket_thuc') is-invalid @enderror" 
                         id="ngay_ket_thuc" name="ngay_ket_thuc" 
-                        value="{{ old('ngay_ket_thuc', $deTai->ngay_ket_thuc) }}"
+                        value="{{ old('ngay_ket_thuc', $deTai->ngay_ket_thuc ? $deTai->ngay_ket_thuc->format('Y-m-d') : '') }}"
                         placeholder="Chọn ngày kết thúc" required
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background-color: #f3f4f6;" disabled>
                     @error('ngay_ket_thuc')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -105,7 +114,7 @@
                     <label for="nhom_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Chọn nhóm</label>
                     <select name="nhom_id" id="nhom_id" 
                         class="form-control @error('nhom_id') is-invalid @enderror"
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background-color: #f3f4f6;" disabled>
                         <option value="">-- Chọn nhóm --</option>
                         @foreach($nhoms as $nhom)
                         <option value="{{ $nhom->id }}" {{ old('nhom_id', $deTai->nhom_id) == $nhom->id ? 'selected' : '' }}>
@@ -119,10 +128,10 @@
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label for="giang_vien_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Chọn giảng viên</label>
+                    <label for="giang_vien_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Chọn giảng viên <span style="color: red;">*</span></label>
                     <select name="giang_vien_id" id="giang_vien_id" 
-                        class="form-control @error('giang_vien_id') is-invalid @enderror"
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        class="form-control @error('giang_vien_id') is-invalid @enderror" required
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background-color: #f3f4f6;" disabled>
                         <option value="">-- Chọn giảng viên --</option>
                         @foreach($giangViens as $giangVien)
                         <option value="{{ $giangVien->id }}" {{ old('giang_vien_id', $deTai->giang_vien_id) == $giangVien->id ? 'selected' : '' }}>
@@ -136,15 +145,16 @@
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label for="trang_thai" style="display: block; margin-bottom: 5px; color: #4a5568;">Trạng thái</label>
+                    <label for="trang_thai" style="display: block; margin-bottom: 5px; color: #4a5568;">Trạng thái <span style="color: red;">*</span></label>
                     <select name="trang_thai" id="trang_thai" 
                         class="form-control @error('trang_thai') is-invalid @enderror" required
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                        <option value="0" {{ old('trang_thai', $deTai->trang_thai) == 0 ? 'selected' : '' }}>Chưa bắt đầu</option>
-                        <option value="1" {{ old('trang_thai', $deTai->trang_thai) == 1 ? 'selected' : '' }}>Đang diễn ra</option>
-                        <option value="2" {{ old('trang_thai', $deTai->trang_thai) == 2 ? 'selected' : '' }}>Đã kết thúc</option>
-                        <option value="3" {{ old('trang_thai', $deTai->trang_thai) == 3 ? 'selected' : '' }}>Đã hủy</option>
-                        <option value="4" {{ old('trang_thai', $deTai->trang_thai) == 4 ? 'selected' : '' }}>Đang chờ duyệt</option>
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background-color: #f3f4f6;" disabled>
+                        <option value="">-- Chọn trạng thái --</option>
+                        <option value="0" {{ old('trang_thai', $deTai->trang_thai) == 0 ? 'selected' : '' }}>Đang chờ duyệt</option>
+                        <option value="1" {{ old('trang_thai', $deTai->trang_thai) == 1 ? 'selected' : '' }}>Đang thực hiện (giảng viên hướng dẫn đồng ý báo cáo)</option>
+                        <option value="2" {{ old('trang_thai', $deTai->trang_thai) == 2 ? 'selected' : '' }}>Đang thực hiện (gi viên phản biện đồng ý báo cáo)</option>
+                        <option value="3" {{ old('trang_thai', $deTai->trang_thai) == 3 ? 'selected' : '' }}>Không xảy ra (giảng viên hướng dẫn không đồng ý)</option>
+                        <option value="4" {{ old('trang_thai', $deTai->trang_thai) == 4 ? 'selected' : '' }}>Không xảy ra (giảng viên phản biện không đồng ý)</option>
                     </select>
                     @error('trang_thai')
                     <div class="invalid-feedback">{{ $message }}</div>
