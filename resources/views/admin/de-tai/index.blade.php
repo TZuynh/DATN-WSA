@@ -34,7 +34,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($deTais as $deTai)
+                                @forelse($deTais as $deTai)
                                 <tr>
                                     <td>{{ $deTai->id }}</td>
                                     <td>{{ $deTai->ma_de_tai }}</td>
@@ -74,7 +74,11 @@
                                         </div>
                                     </td>
                                 </tr>
-                                @endforeach
+                                @empty
+                                <tr>
+                                    <td colspan="11" class="text-center">Chưa có dữ liệu</td>
+                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>

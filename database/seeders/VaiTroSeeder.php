@@ -11,25 +11,20 @@ class VaiTroSeeder extends Seeder
     {
         $vaiTros = [
             [
-                'ten' => 'Chủ tịch hội đồng',
+                'ten' => 'Trưởng tiểu ban',
                 'created_at' => now(),
                 'updated_at' => now()
             ],
             [
-                'ten' => 'Giảng viên phản biện',
+                'ten' => 'Thư ký',
                 'created_at' => now(),
                 'updated_at' => now()
             ],
             [
-                'ten' => 'Giảng viên hướng dẫn',
+                'ten' => 'Thành viên',
                 'created_at' => now(),
                 'updated_at' => now()
             ],
-            [
-            'ten' => 'Giảng viên khác',
-            'created_at' => now(),
-            'updated_at' => now()
-            ]
         ];
 
         foreach ($vaiTros as $vaiTro) {

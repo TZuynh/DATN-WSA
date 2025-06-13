@@ -1,5 +1,6 @@
-@extends('components.giangvien.app')
+@extends('admin.layout')
 @section('title', 'Danh sách nhóm')
+
 @section('content')
 <div class="container-fluid">
     <div class="row">
@@ -8,8 +9,8 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">Danh sách nhóm</h3>
                     <div class="card-tools d-flex flex-column flex-md-row align-items-end align-items-md-center">
-                        {{-- <div class="mb-2 mb-md-0 me-md-2">
-                            <form action="{{ route('giangvien.nhom.import') }}" method="POST" enctype="multipart/form-data" class="d-inline-flex">
+                        <div class="mb-2 mb-md-0 me-md-2">
+                            <form action="{{ route('admin.nhom.import') }}" method="POST" enctype="multipart/form-data" class="d-inline-flex">
                                 @csrf
                                 <div class="input-group">
                                     <input type="file" class="form-control" name="file" accept=".xlsx, .xls" required>
@@ -18,12 +19,12 @@
                                     </button>
                                 </div>
                             </form>
-                        </div> --}}
-                        {{-- <div>
-                            <a href="{{ route('giangvien.nhom.create') }}" class="btn btn-primary">
+                        </div>
+                        <div>
+                            <a href="{{ route('admin.nhom.create') }}" class="btn btn-primary">
                                 <i class="fas fa-plus"></i> Thêm mới
                             </a>
-                        </div> --}}
+                        </div>
                     </div>
                 </div>
                 <div class="card-body">
@@ -36,7 +37,7 @@
                                     <th>Tên nhóm</th>
                                     <th>Sinh viên</th>
                                     <th>Trạng thái</th>
-                                    {{-- <th>Thao tác</th> --}}
+                                    <th>Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -61,18 +62,18 @@
                                                 <span class="badge bg-danger">Không hoạt động</span>
                                             @endif
                                         </td>
-                                        {{-- <td>
-                                            <a href="{{ route('giangvien.nhom.edit', $nhom) }}" class="btn btn-info btn-sm">
+                                        <td>
+                                            <a href="{{ route('admin.nhom.edit', $nhom) }}" class="btn btn-info btn-sm">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <form action="{{ route('giangvien.nhom.destroy', $nhom) }}" method="POST" class="d-inline">
+                                            <form action="{{ route('admin.nhom.destroy', $nhom) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa nhóm này?')">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
-                                        </td> --}}
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>

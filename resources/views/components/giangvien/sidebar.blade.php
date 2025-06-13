@@ -14,13 +14,13 @@
         <li class="menu-item {{ request()->routeIs('giangvien.lop.*') ? 'active' : '' }}">
             <a href="{{ route('giangvien.lop.index') }}">
                 <i class="fas fa-chalkboard"></i>
-                <span>Quản lý lớp</span>
+                <span>Danh sách lớp</span>
             </a>
         </li>
         <li class="menu-item {{ request()->routeIs('giangvien.sinh-vien.*') ? 'active' : '' }}">
             <a href="{{ route('giangvien.sinh-vien.index') }}">
                 <i class="fas fa-users"></i>
-                <span>Sinh viên</span>
+                <span>Danh sách sinh viên</span>
             </a>
         </li>
         {{-- <li class="menu-item {{ request()->routeIs('giangvien.dang-ky.*') ? 'active' : '' }}">
@@ -32,7 +32,7 @@
         <li class="menu-item {{ request()->routeIs('giangvien.nhom.*') ? 'active' : '' }}">
             <a href="{{ route('giangvien.nhom.index') }}">
                 <i class="fas fa-user-plus"></i>
-                <span>Quản lý nhóm</span>
+                <span>Danh sách nhóm</span>
             </a>
         </li>
         {{-- <li class="menu-item {{ request()->routeIs('giangvien.de-tai-mau.*') ? 'active' : '' }}">

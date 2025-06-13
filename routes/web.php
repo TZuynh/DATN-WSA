@@ -30,6 +30,9 @@ Route::domain('admin.project.test')->group(function () {
     require __DIR__ . '/admin/de-tai.php';
     require __DIR__ . '/admin/api-doc.php';
     require __DIR__ . '/admin/lich-cham.php';
+    require __DIR__ . '/admin/sinh-vien.php';
+    require __DIR__ . '/admin/nhom.php';
+    require __DIR__ . '/admin/lop.php';
     
     Route::get('/', function () {
         if (Auth::check() && Auth::user()->vai_tro === 'admin') {

@@ -33,6 +33,26 @@
                 </li>
             </ul>
         </li>
+        <li class="menu-item has-submenu {{ request()->routeIs('admin.sinh-vien.*') || request()->routeIs('admin.nhom.*') || request()->routeIs('admin.lop.*') ? 'active' : '' }}">
+            <a href="javascript:void(0)" style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center;">
+                    <i class="fas fa-users"></i>
+                    <span>Quản lý sinh viên</span>
+                </div>
+                <i class="fas fa-chevron-down arrow"></i>
+            </a>
+            <ul class="submenu">
+                <li class="menu-item {{ request()->routeIs('admin.lop.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.lop.index') }}"><i class="fas fa-chalkboard"></i> Lớp</a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('admin.sinh-vien.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.sinh-vien.index') }}"><i class="fas fa-user-graduate"></i> Sinh viên</a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('admin.nhom.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.nhom.index') }}"><i class="fas fa-users-cog"></i> Nhóm</a>
+                </li>
+            </ul>
+        </li>
         <li class="menu-item {{ request()->routeIs('admin.de-tai.*') ? 'active' : '' }}">
             <a href="{{ route('admin.de-tai.index') }}"><i class="fas fa-book"></i> Quản lý đề tài</a>
         </li>

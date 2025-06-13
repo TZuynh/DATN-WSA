@@ -1,6 +1,5 @@
-@extends('components.giangvien.app')
-@section('title', 'Danh sách sinh viên')
-@vite(['resources/scss/giangvien/sinh-vien.scss', 'resources/js/app.js'])
+@extends('admin.layout')
+@section('title', 'Quản lý sinh viên')
 @section('content')
 <div class="container-fluid">
     <div class="row">
@@ -11,21 +10,21 @@
                         <h3 class="card-title mb-0 text-primary">
                             <i class="fas fa-users me-2"></i>Danh sách sinh viên
                         </h3>
-                        {{-- <div>
+                        <div>
                             <button type="submit" form="bulk-delete-form" class="btn btn-danger me-2" id="bulk-delete-btn">
                                 <i class="fas fa-trash-alt me-2"></i>Xóa đã chọn
                             </button>
-                            <a href="{{ route('giangvien.sinh-vien.create') }}" class="btn btn-success">
+                            <a href="{{ route('admin.sinh-vien.create') }}" class="btn btn-success">
                                 <i class="fas fa-plus me-2"></i>Thêm sinh viên mới
                             </a>
-                        </div> --}}
+                        </div>
                     </div>
                 </div>
                 <div class="card-body">
                     <!-- Form Import Excel (Styled like TaiKhoan Import) -->
-                    {{-- <div style="margin-bottom: 20px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+                    <div style="margin-bottom: 20px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
                         <h4 style="margin-bottom: 15px; color: #2d3748; font-size: 1.2rem;">Import danh sách sinh viên</h4>
-                        <form action="{{ route('giangvien.sinh-vien.import') }}" method="POST" enctype="multipart/form-data">
+                        <form action="{{ route('admin.sinh-vien.import') }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <input type="file" name="import_file" accept=".xlsx, .xls" required
@@ -43,42 +42,45 @@
                             <i class="fas fa-info-circle" style="margin-right: 5px;"></i>
                             File Excel phải có các cột: mssv, ten, lop, nganh, khoa_hoc
                         </div>
-                    </div> --}}
+                    </div>
 
-                    {{-- <form id="bulk-delete-form" action="{{ route('giangvien.sinh-vien.bulkDelete') }}" method="POST"> --}}
+                    <form id="bulk-delete-form" action="{{ route('admin.sinh-vien.bulkDelete') }}" method="POST">
                         @csrf
                         @method('DELETE')
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead class="table-light">
                                     <tr>
+                                        <th class="text-center" style="width: 50px;">
+                                            Chọn
+                                        </th>
                                         <th class="text-center" style="width: 80px;">STT</th>
                                         <th>Mã số sinh viên</th>
                                         <th>Họ tên</th>
                                         <th>Lớp</th>
-                                        {{-- <th class="text-center" style="width: 120px;">Thao tác</th> --}}
+                                        <th class="text-center" style="width: 120px;">Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse($sinhViens as $key => $sinhVien)
                                         <tr>
-                                            {{-- <td class="text-center">
+                                            <td class="text-center">
                                                 <input type="checkbox" name="selected_students[]" value="{{ $sinhVien->id }}" class="student-checkbox">
-                                            </td> --}}
+                                            </td>
                                             <td class="text-center">{{ ($sinhViens->currentPage() - 1) * $sinhViens->perPage() + $key + 1 }}</td>
                                             <td>
                                                 <span class="fw-medium">{{ $sinhVien->mssv }}</span>
                                             </td>
                                             <td>{{ $sinhVien->ten }}</td>
                                             <td>{{ $sinhVien->lop->ten_lop }}</td>
-                                            {{-- <td class="text-center">
-                                                <a href="{{ route('giangvien.sinh-vien.edit', $sinhVien) }}"
+                                            <td class="text-center">
+                                                <a href="{{ route('admin.sinh-vien.edit', $sinhVien) }}"
                                                    class="btn btn-sm btn-primary me-1"
                                                    data-bs-toggle="tooltip"
                                                    title="Sửa">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                <form action="{{ route('giangvien.sinh-vien.destroy', $sinhVien) }}" method="POST" style="display: inline-block;">
+                                                <form action="{{ route('admin.sinh-vien.destroy', $sinhVien) }}" method="POST" style="display: inline-block;">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
@@ -89,7 +91,7 @@
                                                         <i class="fas fa-trash-alt"></i>
                                                     </button>
                                                 </form>
-                                            </td> --}}
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
@@ -103,7 +105,7 @@
                                 </tbody>
                             </table>
                         </div>
-                    {{-- </form> --}}
+                    </form>
 
                     <div class="d-flex justify-content-center mt-4">
                         {{ $sinhViens->links() }}
