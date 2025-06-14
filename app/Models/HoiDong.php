@@ -14,12 +14,18 @@ class HoiDong extends Model
     protected $fillable = [
         'ma_hoi_dong',
         'ten',
-        'dot_bao_cao_id'
+        'dot_bao_cao_id',
+        'de_tai_id'
     ];
 
     public function dotBaoCao()
     {
         return $this->belongsTo(DotBaoCao::class);
+    }
+
+    public function deTai()
+    {
+        return $this->belongsTo(DeTai::class);
     }
 
     public function chiTietBaoCaos()
@@ -35,6 +41,34 @@ class HoiDong extends Model
     public function phanCongVaiTros()
     {
         return $this->hasMany(PhanCongVaiTro::class);
+    }
+
+    /**
+     * Thêm tất cả đề tài của giảng viên vào hội đồng
+     */
+    public function themDeTaiCuaGiangVien($giangVienId)
+    {
+        // Lấy tất cả đề tài của giảng viên
+        $deTais = DeTai::where('giang_vien_id', $giangVienId)
+            ->where('trang_thai', '!=', DeTai::TRANG_THAI_KHONG_XAY_RA_GVHD)
+            ->where('trang_thai', '!=', DeTai::TRANG_THAI_KHONG_XAY_RA_GVPB)
+            ->get();
+
+        foreach ($deTais as $deTai) {
+            // Kiểm tra xem đề tài đã thuộc hội đồng nào chưa
+            $existingChiTiet = ChiTietDeTaiBaoCao::where('de_tai_id', $deTai->id)
+                ->where('hoi_dong_id', '!=', $this->id)
+                ->first();
+
+            if (!$existingChiTiet) {
+                // Thêm đề tài vào hội đồng
+                ChiTietDeTaiBaoCao::create([
+                    'hoi_dong_id' => $this->id,
+                    'de_tai_id' => $deTai->id,
+                    'trang_thai' => 'dang_thuc_hien'
+                ]);
+            }
+        }
     }
 }
 

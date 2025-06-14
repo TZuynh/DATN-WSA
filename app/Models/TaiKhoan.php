@@ -43,5 +43,10 @@ class TaiKhoan extends Authenticatable
     {
         return $this->hasMany(BangDiem::class, 'giang_vien_id');
     }
+
+    public function deTais()
+    {
+        return $this->hasMany(DeTai::class, 'giang_vien_id');
+    }
 }
 

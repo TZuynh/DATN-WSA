@@ -126,11 +126,24 @@ class HoiDongController extends Controller
         // Load các quan hệ cần thiết
         $hoiDong->load([
             'dotBaoCao',
-            'chiTietBaoCaos.deTai.giangVien.taiKhoan',
-            'chiTietBaoCaos.deTai.sinhViens',
-            'lichChams',
-            'phanCongVaiTros.taiKhoan',
-            'phanCongVaiTros.vaiTro'
+            'chiTietBaoCaos' => function($query) {
+                $query->with([
+                    'deTai' => function($query) {
+                        $query->with(['giangVien', 'nhom']);
+                    }
+                ]);
+            },
+            'phanCongVaiTros' => function($query) {
+                $query->with([
+                    'taiKhoan' => function($query) {
+                        $query->with(['deTais' => function($query) {
+                            $query->where('trang_thai', '!=', DeTai::TRANG_THAI_KHONG_XAY_RA_GVHD)
+                                ->where('trang_thai', '!=', DeTai::TRANG_THAI_KHONG_XAY_RA_GVPB);
+                        }]);
+                    },
+                    'vaiTro'
+                ]);
+            }
         ]);
 
         // Lấy danh sách đề tài chưa thuộc hội đồng nào
