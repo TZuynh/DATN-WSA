@@ -45,6 +45,9 @@
                         @foreach($taiKhoans as $taiKhoan)
                             <option value="{{ $taiKhoan->id }}" {{ old('tai_khoan_id') == $taiKhoan->id ? 'selected' : '' }}>
                                 {{ $taiKhoan->ten }}
+                                @if(in_array($taiKhoan->id, $giangVienCoDeTai))
+                                    (Đang có đề tài)
+                                @endif
                             </option>
                         @endforeach
                     </select>
@@ -55,8 +58,16 @@
                     <select name="vai_tro_id" id="vai_tro_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn vai trò">
                         <option value="">Chọn vai trò</option>
                         @foreach($vaiTros as $vaiTro)
-                            <option value="{{ $vaiTro->id }}" {{ old('vai_tro_id') == $vaiTro->id ? 'selected' : '' }}>
+                            <option value="{{ $vaiTro->id }}" 
+                                {{ old('vai_tro_id') == $vaiTro->id ? 'selected' : '' }}
+                                @if(in_array($vaiTro->id, $vaiTroKhongDuocPhanCong) && in_array(old('tai_khoan_id'), $giangVienCoDeTai))
+                                    disabled
+                                @endif
+                            >
                                 {{ $vaiTro->ten }}
+                                @if(in_array($vaiTro->id, $vaiTroKhongDuocPhanCong))
+                                    (Không áp dụng cho giảng viên có đề tài)
+                                @endif
                             </option>
                         @endforeach
                     </select>
@@ -70,4 +81,33 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.getElementById('tai_khoan_id').addEventListener('change', function() {
+            const selectedGiangVienId = this.value;
+            const vaiTroSelect = document.getElementById('vai_tro_id');
+            const giangVienCoDeTai = @json($giangVienCoDeTai);
+            const vaiTroKhongDuocPhanCong = @json($vaiTroKhongDuocPhanCong);
+
+            // Reset vai trò về giá trị mặc định
+            vaiTroSelect.value = '';
+
+            // Enable/disable các vai trò dựa trên giảng viên được chọn
+            Array.from(vaiTroSelect.options).forEach(option => {
+                if (option.value === '') return; // Bỏ qua option mặc định
+
+                if (in_array(parseInt(option.value), vaiTroKhongDuocPhanCong) && 
+                    in_array(parseInt(selectedGiangVienId), giangVienCoDeTai)) {
+                    option.disabled = true;
+                } else {
+                    option.disabled = false;
+                }
+            });
+        });
+
+        // Helper function để kiểm tra giá trị trong mảng
+        function in_array(needle, haystack) {
+            return haystack.indexOf(needle) !== -1;
+        }
+    </script>
 @endsection 
