@@ -24,6 +24,12 @@
                 </li>
             </ul>
         </li>
+        <li class="menu-item {{ request()->routeIs('admin.phong.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.phong.index') }}">
+                <i class="fas fa-door-open"></i> 
+                <span>Quản lý phòng</span>
+            </a>
+        </li>
         <li class="menu-item has-submenu {{ request()->routeIs('admin.hoi-dong.*') || request()->routeIs('admin.dot-bao-cao.*') || request()->routeIs('admin.phan-cong-hoi-dong.*') || request()->routeIs('admin.lich-cham.*') ? 'active' : '' }}">
             <a href="javascript:void(0)" style="display: flex; align-items: center; justify-content: space-between;">
                 <div style="display: flex; align-items: center;">
