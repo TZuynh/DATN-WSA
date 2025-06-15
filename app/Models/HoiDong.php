@@ -54,20 +54,20 @@ class HoiDong extends Model
             ->where('trang_thai', '!=', DeTai::TRANG_THAI_KHONG_XAY_RA_GVPB)
             ->get();
 
-        foreach ($deTais as $deTai) {
-            // Kiểm tra xem đề tài đã thuộc hội đồng nào chưa
-            $existingChiTiet = ChiTietDeTaiBaoCao::where('de_tai_id', $deTai->id)
-                ->where('hoi_dong_id', '!=', $this->id)
-                ->first();
+        // Lấy đợt báo cáo hiện tại
+        $dotBaoCao = DotBaoCao::where('trang_thai', 'dang_dien_ra')->first();
 
-            if (!$existingChiTiet) {
-                // Thêm đề tài vào hội đồng
-                ChiTietDeTaiBaoCao::create([
-                    'hoi_dong_id' => $this->id,
-                    'de_tai_id' => $deTai->id,
-                    'trang_thai' => 'dang_thuc_hien'
-                ]);
-            }
+        if (!$dotBaoCao) {
+            throw new \Exception('Không tìm thấy đợt báo cáo đang diễn ra');
+        }
+
+        // Thêm từng đề tài vào hội đồng
+        foreach ($deTais as $deTai) {
+            ChiTietDeTaiBaoCao::create([
+                'hoi_dong_id' => $this->id,
+                'de_tai_id' => $deTai->id,
+                'dot_bao_cao_id' => $dotBaoCao->id
+            ]);
         }
     }
 }

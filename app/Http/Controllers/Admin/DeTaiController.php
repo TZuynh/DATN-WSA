@@ -15,7 +15,7 @@ class DeTaiController extends Controller
     public function index()
     {
         try {
-            $deTais = DeTai::with(['nhom', 'giangVien'])
+            $deTais = DeTai::with(['nhom.sinhViens', 'giangVien'])
                 ->orderBy('created_at', 'desc')
                 ->paginate(10);
             return view('admin.de-tai.index', compact('deTais'));

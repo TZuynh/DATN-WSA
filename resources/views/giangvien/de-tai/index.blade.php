@@ -21,15 +21,16 @@
                             <thead>
                                 <tr>
                                     <th style="width: 2%">ID</th>
-                                    <th style="width: 6%">Mã đề tài</th>
-                                    <th style="width: 8%">Tên đề tài</th>
-                                    <th style="width: 12%">Mô tả</th>
-                                    <th style="width: 12%">Ý kiến GV</th>
-                                    <th style="width: 6%">Ngày bắt đầu</th>
-                                    <th style="width: 6%">Ngày kết thúc</th>
-                                    <th style="width: 6%">Nhóm</th>
-                                    <th style="width: 4%">Trạng thái</th>
-                                    <th style="width: 6%">Thao tác</th>
+                                    <th style="width: 5%">Mã đề tài</th>
+                                    <th style="width: 10%">Tên đề tài</th>
+                                    <th style="width: 10%">Mô tả</th>
+                                    <th style="width: 10%">Ý kiến GV</th>
+                                    <th style="width: 5%">Ngày bắt đầu</th>
+                                    <th style="width: 5%">Ngày kết thúc</th>
+                                    <th style="width: 5%">Nhóm</th>
+                                    <th style="width: 10%">Thành viên</th>
+                                    <th style="width: 3%">Trạng thái</th>
+                                    <th style="width: 5%">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -37,12 +38,21 @@
                                 <tr>
                                     <td>{{ $deTai->id }}</td>
                                     <td>{{ $deTai->ma_de_tai }}</td>
-                                    <td>{{ Str::limit($deTai->ten_de_tai, 20) }}</td>
-                                    <td>{!! Str::limit($deTai->mo_ta, 40) !!}</td>
-                                    <td>{!! Str::limit($deTai->y_kien_giang_vien, 40) !!}</td>
+                                    <td>{{ Str::limit($deTai->ten_de_tai, 15) }}</td>
+                                    <td>{!! Str::limit($deTai->mo_ta, 20) !!}</td>
+                                    <td>{!! Str::limit($deTai->y_kien_giang_vien, 20) !!}</td>
                                     <td>{{ $deTai->ngay_bat_dau ? $deTai->ngay_bat_dau->format('d/m/Y') : 'N/A' }}</td>
                                     <td>{{ $deTai->ngay_ket_thuc ? $deTai->ngay_ket_thuc->format('d/m/Y') : 'N/A' }}</td>
-                                    <td>{{ Str::limit($deTai->nhom->ten ?? 'N/A', 15) }}</td>
+                                    <td>{{ Str::limit($deTai->nhom->ten ?? 'N/A', 10) }}</td>
+                                    <td>
+                                        @if($deTai->nhom && $deTai->nhom->sinhViens->count() > 0)
+                                            @foreach($deTai->nhom->sinhViens as $index => $sinhVien)
+                                                {{ Str::limit($sinhVien->ten, 15) }}{{ !$loop->last ? ', ' : '' }}
+                                            @endforeach
+                                        @else
+                                            <span>N/A</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         <span class="badge {{ $deTai->trang_thai_class }}">
                                             {{ $deTai->trang_thai_text }}

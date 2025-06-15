@@ -17,7 +17,7 @@ class DeTaiController extends Controller
     public function index()
     {
         $giangVienId = auth()->user()->id;
-        $deTais = DeTai::with('nhom')
+        $deTais = DeTai::with('nhom.sinhViens')
             ->where('giang_vien_id', $giangVienId)
             ->orderBy('created_at', 'desc')
             ->get();

@@ -12,12 +12,30 @@ class DeTai extends Model
         'nhom_id', 'giang_vien_id', 'dot_bao_cao_id', 'trang_thai', 'y_kien_giang_vien'
     ];
 
-    // Các trạng thái có thể có của đề tài
-    const TRANG_THAI_DANG_CHO_DUYET = 0;
+    // Các trạng thái của đề tài
+    const TRANG_THAI_CHO_DUYET = 0;
     const TRANG_THAI_DANG_THUC_HIEN_GVHD = 1;
     const TRANG_THAI_DANG_THUC_HIEN_GVPB = 2;
     const TRANG_THAI_KHONG_XAY_RA_GVHD = 3;
     const TRANG_THAI_KHONG_XAY_RA_GVPB = 4;
+
+    // Mảng ánh xạ trạng thái sang text
+    const TRANG_THAI_TEXT = [
+        self::TRANG_THAI_CHO_DUYET => 'Chờ duyệt',
+        self::TRANG_THAI_DANG_THUC_HIEN_GVHD => 'Đang thực hiện (GVHD đồng ý)',
+        self::TRANG_THAI_DANG_THUC_HIEN_GVPB => 'Đang thực hiện (GVPB đồng ý)',
+        self::TRANG_THAI_KHONG_XAY_RA_GVHD => 'Không xảy ra (GVHD không đồng ý)',
+        self::TRANG_THAI_KHONG_XAY_RA_GVPB => 'Không xảy ra (GVPB không đồng ý)'
+    ];
+
+    // Mảng ánh xạ trạng thái sang class CSS
+    const TRANG_THAI_CLASS = [
+        self::TRANG_THAI_CHO_DUYET => 'bg-warning',
+        self::TRANG_THAI_DANG_THUC_HIEN_GVHD => 'bg-info',
+        self::TRANG_THAI_DANG_THUC_HIEN_GVPB => 'bg-primary',
+        self::TRANG_THAI_KHONG_XAY_RA_GVHD => 'bg-danger',
+        self::TRANG_THAI_KHONG_XAY_RA_GVPB => 'bg-danger'
+    ];
 
     protected $casts = [
         'ngay_bat_dau' => 'date',
@@ -45,6 +63,11 @@ class DeTai extends Model
         return $this->belongsTo(DotBaoCao::class);
     }
 
+    public function phanCongCham()
+    {
+        return $this->hasOne(PhanCongCham::class, 'de_tai_id');
+    }
+
     // Phương thức tạo mã đề tài tự động
     public static function generateMaDeTai()
     {
@@ -59,26 +82,12 @@ class DeTai extends Model
     // Các phương thức hỗ trợ
     public function getTrangThaiTextAttribute()
     {
-        return match($this->trang_thai) {
-            self::TRANG_THAI_DANG_CHO_DUYET => 'Đang chờ duyệt',
-            self::TRANG_THAI_DANG_THUC_HIEN_GVHD => 'Đang thực hiện (giảng viên hướng dẫn đồng ý báo cáo)',
-            self::TRANG_THAI_DANG_THUC_HIEN_GVPB => 'Đang thực hiện (giáo viên phản biện đồng ý báo cáo)',
-            self::TRANG_THAI_KHONG_XAY_RA_GVHD => 'Không xảy ra (giảng viên hướng dẫn không đồng ý)',
-            self::TRANG_THAI_KHONG_XAY_RA_GVPB => 'Không xảy ra (giảng viên phản biện không đồng ý)',
-            default => 'Không xác định'
-        };
+        return self::TRANG_THAI_TEXT[$this->trang_thai] ?? 'Không xác định';
     }
 
     public function getTrangThaiClassAttribute()
     {
-        return match($this->trang_thai) {
-            self::TRANG_THAI_DANG_CHO_DUYET => 'badge bg-warning',
-            self::TRANG_THAI_DANG_THUC_HIEN_GVHD => 'badge bg-info',
-            self::TRANG_THAI_DANG_THUC_HIEN_GVPB => 'badge bg-success',
-            self::TRANG_THAI_KHONG_XAY_RA_GVHD => 'badge bg-danger',
-            self::TRANG_THAI_KHONG_XAY_RA_GVPB => 'badge bg-danger',
-            default => 'badge bg-secondary'
-        };
+        return self::TRANG_THAI_CLASS[$this->trang_thai] ?? 'badge bg-secondary';
     }
 
     public function updateTrangThai()
@@ -116,7 +125,7 @@ class DeTai extends Model
 
         static::creating(function ($deTai) {
             if (!isset($deTai->trang_thai)) {
-                $deTai->trang_thai = self::TRANG_THAI_DANG_CHO_DUYET;
+                $deTai->trang_thai = self::TRANG_THAI_CHO_DUYET;
             }
             if (!isset($deTai->ma_de_tai)) {
                 $deTai->ma_de_tai = self::generateMaDeTai();

@@ -10,7 +10,21 @@
         <li class="menu-item {{ request()->routeIs('admin.taikhoan.*') ? 'active' : '' }}">
             <a href="{{ route('admin.taikhoan.index') }}"><i class="fas fa-users"></i> Quản lý tài khoản</a>
         </li>
-        <li class="menu-item has-submenu {{ request()->routeIs('admin.hoi-dong.*') || request()->routeIs('admin.dot-bao-cao.*') || request()->routeIs('admin.phan-cong-hoi-dong.*') ? 'active' : '' }}">
+        <li class="menu-item has-submenu {{ request()->routeIs('admin.hoi-dong.*') || request()->routeIs('admin.dot-bao-cao.*') || request()->routeIs('admin.phan-cong-hoi-dong.*') || request()->routeIs('admin.phan-cong-cham.*') ? 'active' : '' }}">
+            <a href="javascript:void(0)" style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center;">
+                    <i class="fas fa-sitemap"></i> 
+                    <span>Quản lý phản biện</span>
+                </div>
+                <i class="fas fa-chevron-down arrow"></i>
+            </a>
+            <ul class="submenu">
+                <li class="menu-item {{ request()->routeIs('admin.phan-cong-cham.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.phan-cong-cham.index') }}"><i class="fas fa-tasks"></i> Phân công chấm</a>
+                </li>
+            </ul>
+        </li>
+        <li class="menu-item has-submenu {{ request()->routeIs('admin.hoi-dong.*') || request()->routeIs('admin.dot-bao-cao.*') || request()->routeIs('admin.phan-cong-hoi-dong.*') || request()->routeIs('admin.phan-cong-cham.*') ? 'active' : '' }}">
             <a href="javascript:void(0)" style="display: flex; align-items: center; justify-content: space-between;">
                 <div style="display: flex; align-items: center;">
                     <i class="fas fa-sitemap"></i> 
