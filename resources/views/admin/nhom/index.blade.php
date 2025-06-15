@@ -9,7 +9,7 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">Danh sách nhóm</h3>
                     <div class="card-tools d-flex flex-column flex-md-row align-items-end align-items-md-center">
-                        <div class="mb-2 mb-md-0 me-md-2">
+                        {{-- <div class="mb-2 mb-md-0 me-md-2">
                             <form action="{{ route('admin.nhom.import') }}" method="POST" enctype="multipart/form-data" class="d-inline-flex">
                                 @csrf
                                 <div class="input-group">
@@ -19,12 +19,12 @@
                                     </button>
                                 </div>
                             </form>
-                        </div>
-                        <div>
+                        </div> --}}
+                        {{-- <div>
                             <a href="{{ route('admin.nhom.create') }}" class="btn btn-primary">
                                 <i class="fas fa-plus"></i> Thêm mới
                             </a>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
                 <div class="card-body">
@@ -36,8 +36,9 @@
                                     <th>Mã nhóm</th>
                                     <th>Tên nhóm</th>
                                     <th>Sinh viên</th>
+                                    <th>Giảng viên hướng dẫn</th>
                                     <th>Trạng thái</th>
-                                    <th>Thao tác</th>
+                                    {{-- <th>Thao tác</th> --}}
                                 </tr>
                             </thead>
                             <tbody>
@@ -56,13 +57,20 @@
                                             </ul>
                                         </td>
                                         <td>
+                                            @if($nhom->giangVien)
+                                                {{ $nhom->giangVien->ten }}
+                                            @else
+                                                <span class="text-muted">Chưa có giảng viên</span>
+                                            @endif
+                                        </td>
+                                        <td>
                                             @if($nhom->trang_thai == 'hoat_dong')
                                                 <span class="badge bg-success">Hoạt động</span>
                                             @else
                                                 <span class="badge bg-danger">Không hoạt động</span>
                                             @endif
                                         </td>
-                                        <td>
+                                        {{-- <td>
                                             <a href="{{ route('admin.nhom.edit', $nhom) }}" class="btn btn-info btn-sm">
                                                 <i class="fas fa-edit"></i>
                                             </a>
@@ -73,11 +81,11 @@
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
-                                        </td>
+                                        </td> --}}
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center">Không có dữ liệu</td>
+                                        <td colspan="7" class="text-center">Không có dữ liệu</td>
                                     </tr>
                                 @endforelse
                             </tbody>

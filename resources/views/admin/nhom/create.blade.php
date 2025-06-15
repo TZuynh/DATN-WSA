@@ -23,16 +23,6 @@
                     <form action="{{ route('admin.nhom.store') }}" method="POST">
                         @csrf
                         <div class="form-group mb-4">
-                            <label for="ma_nhom" class="form-label">Mã nhóm <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('ma_nhom') is-invalid @enderror" 
-                                id="ma_nhom" name="ma_nhom" value="{{ old('ma_nhom') }}" 
-                                placeholder="Nhập mã nhóm">
-                            @error('ma_nhom')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="form-group mb-4">
                             <label for="ten" class="form-label">Tên nhóm <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('ten') is-invalid @enderror" 
                                 id="ten" name="ten" value="{{ old('ten') }}" 

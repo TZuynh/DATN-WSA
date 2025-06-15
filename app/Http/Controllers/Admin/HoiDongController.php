@@ -44,15 +44,32 @@ class HoiDongController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'ma_hoi_dong' => 'required|unique:hoi_dongs,ma_hoi_dong',
             'ten' => 'required',
             'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id'
         ]);
 
-        HoiDong::create($request->all());
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('admin.hoi-dong.index')
-            ->with('success', 'Thêm hội đồng thành công.');
+            // Tạo mã hội đồng tự động
+            $maHoiDong = HoiDong::taoMaHoiDong($request->dot_bao_cao_id);
+            
+            // Tạo hội đồng mới với mã tự động
+            HoiDong::create([
+                'ma_hoi_dong' => $maHoiDong,
+                'ten' => $request->ten,
+                'dot_bao_cao_id' => $request->dot_bao_cao_id
+            ]);
+
+            DB::commit();
+            return redirect()->route('admin.hoi-dong.index')
+                ->with('success', 'Thêm hội đồng thành công.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -70,15 +87,28 @@ class HoiDongController extends Controller
     public function update(Request $request, HoiDong $hoiDong)
     {
         $request->validate([
-            'ma_hoi_dong' => 'required|unique:hoi_dongs,ma_hoi_dong,' . $hoiDong->id,
             'ten' => 'required',
             'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id'
         ]);
 
-        $hoiDong->update($request->all());
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('admin.hoi-dong.index')
-            ->with('success', 'Cập nhật hội đồng thành công.');
+            // Cập nhật thông tin hội đồng
+            $hoiDong->update([
+                'ten' => $request->ten,
+                'dot_bao_cao_id' => $request->dot_bao_cao_id
+            ]);
+
+            DB::commit();
+            return redirect()->route('admin.hoi-dong.index')
+                ->with('success', 'Cập nhật hội đồng thành công.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+        }
     }
 
     /**

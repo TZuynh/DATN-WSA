@@ -29,8 +29,9 @@
                 
                 <div style="margin-bottom: 20px;">
                     <label for="ma_hoi_dong" style="display: block; margin-bottom: 5px; color: #4a5568;">Mã hội đồng</label>
-                    <input type="text" name="ma_hoi_dong" id="ma_hoi_dong" value="{{ old('ma_hoi_dong', $hoiDong->ma_hoi_dong) }}"
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Nhập mã hội đồng">
+                    <input type="text" id="ma_hoi_dong" value="{{ $hoiDong->ma_hoi_dong }}"
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background-color: #f7fafc;" readonly>
+                    <small style="color: #718096; font-size: 0.875rem;">Mã hội đồng không thể thay đổi</small>
                 </div>
 
                 <div style="margin-bottom: 20px;">

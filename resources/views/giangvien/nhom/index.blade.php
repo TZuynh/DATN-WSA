@@ -1,14 +1,14 @@
 @extends('components.giangvien.app')
-@section('title', 'Danh sách nhóm')
+@section('title', 'Quản lý nhóm')
 @section('content')
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title">Danh sách nhóm</h3>
+                    <h3 class="card-title">Quản lý nhóm</h3>
                     <div class="card-tools d-flex flex-column flex-md-row align-items-end align-items-md-center">
-                        {{-- <div class="mb-2 mb-md-0 me-md-2">
+                        <div class="mb-2 mb-md-0 me-md-2">
                             <form action="{{ route('giangvien.nhom.import') }}" method="POST" enctype="multipart/form-data" class="d-inline-flex">
                                 @csrf
                                 <div class="input-group">
@@ -18,12 +18,12 @@
                                     </button>
                                 </div>
                             </form>
-                        </div> --}}
-                        {{-- <div>
+                        </div>
+                        <div>
                             <a href="{{ route('giangvien.nhom.create') }}" class="btn btn-primary">
                                 <i class="fas fa-plus"></i> Thêm mới
                             </a>
-                        </div> --}}
+                        </div>
                     </div>
                 </div>
                 <div class="card-body">
@@ -36,7 +36,7 @@
                                     <th>Tên nhóm</th>
                                     <th>Sinh viên</th>
                                     <th>Trạng thái</th>
-                                    {{-- <th>Thao tác</th> --}}
+                                    <th>Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -61,7 +61,7 @@
                                                 <span class="badge bg-danger">Không hoạt động</span>
                                             @endif
                                         </td>
-                                        {{-- <td>
+                                        <td>
                                             <a href="{{ route('giangvien.nhom.edit', $nhom) }}" class="btn btn-info btn-sm">
                                                 <i class="fas fa-edit"></i>
                                             </a>
@@ -72,11 +72,11 @@
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
-                                        </td> --}}
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center">Không có dữ liệu</td>
+                                        <td colspan="7" class="text-center">Không có dữ liệu</td>
                                     </tr>
                                 @endforelse
                             </tbody>

@@ -24,13 +24,10 @@
                         @csrf
                         @method('PUT')
                         <div class="form-group mb-4">
-                            <label for="ma_nhom" class="form-label">Mã nhóm <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('ma_nhom') is-invalid @enderror" 
-                                id="ma_nhom" name="ma_nhom" value="{{ old('ma_nhom', $nhom->ma_nhom) }}" 
-                                placeholder="Nhập mã nhóm">
-                            @error('ma_nhom')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <label for="ma_nhom" class="form-label">Mã nhóm</label>
+                            <input type="text" class="form-control bg-light" 
+                                id="ma_nhom" value="{{ $nhom->ma_nhom }}" readonly>
+                            <small class="form-text text-muted">Mã nhóm không thể thay đổi</small>
                         </div>
 
                         <div class="form-group mb-4">

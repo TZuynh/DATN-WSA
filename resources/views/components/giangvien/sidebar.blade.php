@@ -32,7 +32,7 @@
         <li class="menu-item {{ request()->routeIs('giangvien.nhom.*') ? 'active' : '' }}">
             <a href="{{ route('giangvien.nhom.index') }}">
                 <i class="fas fa-user-plus"></i>
-                <span>Danh sách nhóm</span>
+                <span>Quản lý nhóm</span>
             </a>
         </li>
         {{-- <li class="menu-item {{ request()->routeIs('giangvien.de-tai-mau.*') ? 'active' : '' }}">

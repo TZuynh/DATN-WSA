@@ -32,4 +32,21 @@ class Nhom extends Model
     {
         return $this->hasMany(LichCham::class);
     }
+
+    /**
+     * Tạo mã nhóm tự động
+     */
+    public static function taoMaNhom()
+    {
+        // Lấy năm hiện tại
+        $namHienTai = date('Y');
+        
+        // Đếm số nhóm trong năm hiện tại
+        $soNhom = self::where('ma_nhom', 'like', "NH{$namHienTai}%")->count();
+        
+        // Tạo mã nhóm theo format: NHYYYY-XXX (XXX là số thứ tự)
+        $maNhom = 'NH' . $namHienTai . '-' . str_pad($soNhom + 1, 3, '0', STR_PAD_LEFT);
+        
+        return $maNhom;
+    }
 }

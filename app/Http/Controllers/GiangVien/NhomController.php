@@ -17,7 +17,7 @@ class NhomController extends Controller
 {
     public function index()
     {
-        $nhoms = Nhom::with('sinhViens')
+        $nhoms = Nhom::with(['sinhViens', 'giangVien'])
             ->where('giang_vien_id', auth()->id())
             ->latest()
             ->paginate(10);
@@ -33,13 +33,10 @@ class NhomController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'ma_nhom' => 'required|string|unique:nhoms,ma_nhom',
             'ten' => 'required|string|max:255',
             'sinh_vien_ids' => 'required|array|min:1|max:3',
             'sinh_vien_ids.*' => 'exists:sinh_viens,id',
         ], [
-            'ma_nhom.required' => 'Mã nhóm không được để trống',
-            'ma_nhom.unique' => 'Mã nhóm đã tồn tại',
             'ten.required' => 'Tên nhóm không được để trống',
             'sinh_vien_ids.required' => 'Vui lòng chọn ít nhất 1 sinh viên',
             'sinh_vien_ids.min' => 'Vui lòng chọn ít nhất 1 sinh viên',
@@ -53,18 +50,27 @@ class NhomController extends Controller
                 ->withInput();
         }
 
-        $nhom = Nhom::create([
-            'ma_nhom' => $request->ma_nhom,
-            'ten' => $request->ten,
-            'giang_vien_id' => auth()->id(),
-            'trang_thai' => 'hoat_dong'
-        ]);
+        try {
+            // Tạo mã nhóm tự động
+            $maNhom = Nhom::taoMaNhom();
+            
+            $nhom = Nhom::create([
+                'ma_nhom' => $maNhom,
+                'ten' => $request->ten,
+                'giang_vien_id' => auth()->id(),
+                'trang_thai' => 'hoat_dong'
+            ]);
 
-        // Thêm các sinh viên vào nhóm
-        $nhom->sinhViens()->attach($request->sinh_vien_ids);
+            // Thêm các sinh viên vào nhóm
+            $nhom->sinhViens()->attach($request->sinh_vien_ids);
 
-        return redirect()->route('giangvien.nhom.index')
-            ->with('success', 'Tạo nhóm thành công!');
+            return redirect()->route('giangvien.nhom.index')
+                ->with('success', 'Tạo nhóm thành công!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+        }
     }
 
     public function edit(Nhom $nhom)
@@ -90,14 +96,11 @@ class NhomController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'ma_nhom' => 'required|string|unique:nhoms,ma_nhom,' . $nhom->id,
             'ten' => 'required|string|max:255',
             'sinh_vien_ids' => 'required|array|min:1|max:3',
             'sinh_vien_ids.*' => 'exists:sinh_viens,id',
             'trang_thai' => 'required|in:hoat_dong,khong_hoat_dong',
         ], [
-            'ma_nhom.required' => 'Mã nhóm không được để trống',
-            'ma_nhom.unique' => 'Mã nhóm đã tồn tại',
             'ten.required' => 'Tên nhóm không được để trống',
             'sinh_vien_ids.required' => 'Vui lòng chọn ít nhất 1 sinh viên',
             'sinh_vien_ids.min' => 'Vui lòng chọn ít nhất 1 sinh viên',
@@ -113,17 +116,22 @@ class NhomController extends Controller
                 ->withInput();
         }
 
-        $nhom->update([
-            'ma_nhom' => $request->ma_nhom,
-            'ten' => $request->ten,
-            'trang_thai' => $request->trang_thai
-        ]);
+        try {
+            $nhom->update([
+                'ten' => $request->ten,
+                'trang_thai' => $request->trang_thai
+            ]);
 
-        // Cập nhật danh sách sinh viên trong nhóm
-        $nhom->sinhViens()->sync($request->sinh_vien_ids);
+            // Cập nhật danh sách sinh viên trong nhóm
+            $nhom->sinhViens()->sync($request->sinh_vien_ids);
 
-        return redirect()->route('giangvien.nhom.index')
-            ->with('success', 'Cập nhật nhóm thành công!');
+            return redirect()->route('giangvien.nhom.index')
+                ->with('success', 'Cập nhật nhóm thành công!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+        }
     }
 
     public function destroy(Nhom $nhom)

@@ -44,6 +44,29 @@ class HoiDong extends Model
     }
 
     /**
+     * Tạo mã hội đồng tự động
+     */
+    public static function taoMaHoiDong($dotBaoCaoId)
+    {
+        $dotBaoCao = DotBaoCao::find($dotBaoCaoId);
+        if (!$dotBaoCao) {
+            throw new \Exception('Không tìm thấy đợt báo cáo');
+        }
+
+        // Lấy năm học từ đợt báo cáo (ví dụ: 2023-2024)
+        $namHoc = explode('-', $dotBaoCao->nam_hoc);
+        $namBatDau = $namHoc[0];
+        
+        // Đếm số hội đồng trong đợt báo cáo này
+        $soHoiDong = self::where('dot_bao_cao_id', $dotBaoCaoId)->count();
+        
+        // Tạo mã hội đồng theo format: HD-YYYY-XXX (XXX là số thứ tự)
+        $maHoiDong = 'HD-' . $namBatDau . '-' . str_pad($soHoiDong + 1, 3, '0', STR_PAD_LEFT);
+        
+        return $maHoiDong;
+    }
+
+    /**
      * Thêm tất cả đề tài của giảng viên vào hội đồng
      */
     public function themDeTaiCuaGiangVien($giangVienId)
