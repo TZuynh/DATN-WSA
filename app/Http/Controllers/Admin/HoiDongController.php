@@ -34,9 +34,9 @@ class HoiDongController extends Controller
      */
     public function create()
     {
-        $dotBaoCaos = DotBaoCao::all();
         $phongs = Phong::all();
-        return view('admin.hoi-dong.create', compact('dotBaoCaos', 'phongs'));
+        $dotBaoCaos = DotBaoCao::all();
+        return view('admin.hoi-dong.create', compact('phongs', 'dotBaoCaos'));
     }
 
     /**
@@ -91,29 +91,16 @@ class HoiDongController extends Controller
     public function update(Request $request, HoiDong $hoiDong)
     {
         $request->validate([
-            'ten' => 'required',
+            'ma_hoi_dong' => 'required|string|max:255',
+            'ten' => 'required|string|max:255',
             'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
             'phong_id' => 'required|exists:phongs,id'
         ]);
 
-        try {
-            DB::beginTransaction();
+        $hoiDong->update($request->all());
 
-            $hoiDong->update([
-                'ten' => $request->ten,
-                'dot_bao_cao_id' => $request->dot_bao_cao_id,
-                'phong_id' => $request->phong_id
-            ]);
-
-            DB::commit();
-            return redirect()->route('admin.hoi-dong.index')
-                ->with('success', 'Cập nhật hội đồng thành công.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
-        }
+        return redirect()->route('admin.hoi-dong.index')
+            ->with('success', 'Cập nhật hội đồng thành công.');
     }
 
     /**

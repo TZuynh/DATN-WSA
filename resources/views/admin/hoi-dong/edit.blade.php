@@ -15,6 +15,15 @@
                         @csrf
                         @method('PUT')
                         <div class="form-group">
+                            <label for="ma_hoi_dong">Mã hội đồng <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('ma_hoi_dong') is-invalid @enderror" 
+                                id="ma_hoi_dong" name="ma_hoi_dong" value="{{ old('ma_hoi_dong', $hoiDong->ma_hoi_dong) }}" required>
+                            @error('ma_hoi_dong')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
                             <label for="ten">Tên hội đồng <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('ten') is-invalid @enderror" 
                                 id="ten" name="ten" value="{{ old('ten', $hoiDong->ten) }}" required>
@@ -55,12 +64,40 @@
                             @enderror
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Cập nhật</button>
-                        <a href="{{ route('admin.hoi-dong.index') }}" class="btn btn-secondary">Quay lại</a>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Cập nhật
+                            </button>
+                            <a href="{{ route('admin.hoi-dong.index') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Quay lại
+                            </a>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
-@endsection 
+@endsection
+
+@push('styles')
+<style>
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .form-group label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    .invalid-feedback {
+        font-size: 0.875rem;
+    }
+    .btn {
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+    }
+    .btn i {
+        font-size: 0.875rem;
+    }
+</style>
+@endpush 

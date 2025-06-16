@@ -16,7 +16,7 @@
                         <div class="form-group">
                             <label for="ten">Tên hội đồng <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('ten') is-invalid @enderror" 
-                                id="ten" name="ten" value="{{ old('ten') }}" required>
+                                id="ten" name="ten" value="{{ old('ten') }}" placeholder="Nhập tên hội đồng" required>
                             @error('ten')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -39,19 +39,13 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="phong_id">Phòng <span class="text-danger">*</span></label>
-                            <select class="form-control @error('phong_id') is-invalid @enderror" 
-                                id="phong_id" name="phong_id" required>
+                            <label for="phong_id">Phòng</label>
+                            <select name="phong_id" id="phong_id" class="form-control">
                                 <option value="">Chọn phòng</option>
                                 @foreach($phongs as $phong)
-                                    <option value="{{ $phong->id }}" {{ old('phong_id') == $phong->id ? 'selected' : '' }}>
-                                        {{ $phong->ten_phong }}
-                                    </option>
+                                    <option value="{{ $phong->id }}">{{ $phong->ten_phong }}</option>
                                 @endforeach
                             </select>
-                            @error('phong_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
 
                         <button type="submit" class="btn btn-primary">Thêm mới</button>
