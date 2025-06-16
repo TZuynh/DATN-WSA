@@ -37,9 +37,9 @@ class Nhom extends Model
     /**
      * Lấy đề tài của nhóm
      */
-    public function deTai(): BelongsTo
+    public function deTais(): HasMany
     {
-        return $this->belongsTo(DeTai::class, 'id', 'nhom_id');
+        return $this->hasMany(DeTai::class, 'nhom_id');
     }
 
     /**

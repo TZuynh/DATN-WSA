@@ -47,7 +47,20 @@ class HoiDongController extends Controller
         $request->validate([
             'ten' => 'required',
             'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
-            'phong_id' => 'required|exists:phongs,id'
+            'phong_id' => [
+                'required',
+                'exists:phongs,id',
+                function ($attribute, $value, $fail) use ($request) {
+                    // Kiểm tra xem phòng đã được sử dụng trong đợt báo cáo này chưa
+                    $phongDaSuDung = HoiDong::where('dot_bao_cao_id', $request->dot_bao_cao_id)
+                        ->where('phong_id', $value)
+                        ->exists();
+                    
+                    if ($phongDaSuDung) {
+                        $fail('Phòng này đã được sử dụng trong đợt báo cáo này.');
+                    }
+                },
+            ]
         ]);
 
         try {

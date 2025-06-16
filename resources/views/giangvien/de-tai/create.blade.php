@@ -84,15 +84,23 @@
                                 <select class="form-control @error('nhom_id') is-invalid @enderror" 
                                     id="nhom_id" name="nhom_id">
                                     <option value="">-- Chọn nhóm --</option>
-                                    @foreach($nhoms as $nhom)
+                                    @forelse($nhoms as $nhom)
                                         <option value="{{ $nhom->id }}" {{ old('nhom_id') == $nhom->id ? 'selected' : '' }}>
                                             {{ $nhom->ten }}
                                         </option>
-                                    @endforeach
+                                    @empty
+                                        <option value="" disabled>Không có nhóm nào khả dụng</option>
+                                    @endforelse
                                 </select>
                                 @error('nhom_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                @if($nhoms->isEmpty())
+                                    <div class="text-danger mt-2">
+                                        <i class="fas fa-exclamation-triangle"></i> 
+                                        Tất cả các nhóm đã có đề tài. Vui lòng tạo nhóm mới hoặc chọn nhóm khác.
+                                    </div>
+                                @endif
                             </div>
 
                             <div class="form-group">

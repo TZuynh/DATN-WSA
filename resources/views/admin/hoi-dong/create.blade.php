@@ -39,13 +39,21 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="phong_id">Phòng</label>
-                            <select name="phong_id" id="phong_id" class="form-control">
+                            <label for="phong_id">Phòng <span class="text-danger">*</span></label>
+                            <select name="phong_id" id="phong_id" class="form-control @error('phong_id') is-invalid @enderror" required>
                                 <option value="">Chọn phòng</option>
                                 @foreach($phongs as $phong)
-                                    <option value="{{ $phong->id }}">{{ $phong->ten_phong }}</option>
+                                    <option value="{{ $phong->id }}" {{ old('phong_id') == $phong->id ? 'selected' : '' }}>
+                                        {{ $phong->ten_phong }}
+                                    </option>
                                 @endforeach
                             </select>
+                            @error('phong_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="form-text text-muted">
+                                Mỗi phòng chỉ được sử dụng cho một hội đồng trong cùng đợt báo cáo
+                            </small>
                         </div>
 
                         <button type="submit" class="btn btn-primary">Thêm mới</button>

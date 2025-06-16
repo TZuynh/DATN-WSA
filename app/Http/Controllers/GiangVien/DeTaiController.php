@@ -27,7 +27,7 @@ class DeTaiController extends Controller
 
     public function create()
     {
-        $nhoms = Nhom::all();
+        $nhoms = Nhom::whereDoesntHave('deTais')->get();
         return view('giangvien.de-tai.create', compact('nhoms'));
     }
 
@@ -39,7 +39,18 @@ class DeTaiController extends Controller
             'y_kien_giang_vien' => 'nullable|string',
             'ngay_bat_dau' => 'required|date',
             'ngay_ket_thuc' => 'required|date|after:ngay_bat_dau',
-            'nhom_id' => 'nullable|exists:nhoms,id'
+            'nhom_id' => [
+                'nullable',
+                'exists:nhoms,id',
+                function ($attribute, $value, $fail) {
+                    if ($value) {
+                        $nhom = Nhom::find($value);
+                        if ($nhom && $nhom->deTais()->exists()) {
+                            $fail('Nhóm này đã có đề tài.');
+                        }
+                    }
+                },
+            ]
         ]);
 
         try {
