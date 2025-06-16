@@ -67,5 +67,27 @@ class HoiDong extends Model
     {
         return $this->belongsTo(Phong::class);
     }
+
+    /**
+     * Thêm đề tài của giảng viên vào hội đồng
+     * @param int $giangVienId ID của giảng viên
+     * @return void
+     */
+    public function themDeTaiCuaGiangVien($giangVienId)
+    {
+        // Lấy danh sách đề tài của giảng viên trong đợt báo cáo này
+        $deTais = DeTai::where('giang_vien_id', $giangVienId)
+            ->where('dot_bao_cao_id', $this->dot_bao_cao_id)
+            ->get();
+
+        // Thêm từng đề tài vào chi tiết báo cáo của hội đồng
+        foreach ($deTais as $deTai) {
+            ChiTietDeTaiBaoCao::create([
+                'hoi_dong_id' => $this->id,
+                'de_tai_id' => $deTai->id,
+                'trang_thai' => 0 // Trạng thái mặc định là chờ duyệt
+            ]);
+        }
+    }
 }
 

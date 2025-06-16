@@ -109,6 +109,8 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('Khởi tạo form tạo lịch chấm');
+
         // Cấu hình Flatpickr cho thời gian
         const lichTao = flatpickr("#lich_tao", {
             locale: "vi",
@@ -116,14 +118,50 @@
             dateFormat: "Y-m-d H:i",
             minDate: "today",
             time_24hr: true,
-            minuteIncrement: 1
+            minuteIncrement: 1,
+            onChange: function(selectedDates, dateStr) {
+                console.log('Đã chọn thời gian:', dateStr);
+            }
+        });
+
+        // Log khi thay đổi hội đồng
+        document.getElementById('hoi_dong_id').addEventListener('change', function(e) {
+            console.log('Đã chọn hội đồng:', {
+                id: e.target.value,
+                text: e.target.options[e.target.selectedIndex].text
+            });
+        });
+
+        // Log khi thay đổi đợt báo cáo
+        document.getElementById('dot_bao_cao_id').addEventListener('change', function(e) {
+            console.log('Đã chọn đợt báo cáo:', {
+                id: e.target.value,
+                text: e.target.options[e.target.selectedIndex].text
+            });
+        });
+
+        // Log khi thay đổi nhóm
+        document.getElementById('nhom_id').addEventListener('change', function(e) {
+            console.log('Đã chọn nhóm:', {
+                id: e.target.value,
+                text: e.target.options[e.target.selectedIndex].text
+            });
         });
 
         // Validate form trước khi submit
         document.querySelector('form').addEventListener('submit', function(e) {
+            console.log('Bắt đầu validate form');
+            
+            const formData = new FormData(this);
+            const formDataObj = {};
+            formData.forEach((value, key) => formDataObj[key] = value);
+            console.log('Dữ liệu form:', formDataObj);
+
             const lichTaoValue = document.getElementById('lich_tao').value;
+            console.log('Giá trị thời gian:', lichTaoValue);
 
             if (!lichTaoValue) {
+                console.error('Lỗi: Chưa chọn thời gian');
                 e.preventDefault();
                 alert('Vui lòng chọn thời gian!');
                 return;
@@ -131,13 +169,36 @@
 
             const selectedDate = new Date(lichTaoValue);
             const now = new Date();
+            console.log('So sánh thời gian:', {
+                selected: selectedDate,
+                now: now,
+                isPast: selectedDate < now
+            });
 
             if (selectedDate < now) {
+                console.error('Lỗi: Thời gian đã chọn trong quá khứ');
                 e.preventDefault();
                 alert('Thời gian không được nhỏ hơn thời gian hiện tại!');
                 return;
             }
+
+            console.log('Form hợp lệ, đang gửi dữ liệu...');
         });
+
+        // Log lỗi validation nếu có
+        @if($errors->any())
+            console.error('Lỗi validation:', @json($errors->all()));
+        @endif
+
+        // Log thông báo thành công nếu có
+        @if(session('success'))
+            console.log('Thông báo thành công:', @json(session('success')));
+        @endif
+
+        // Log thông báo lỗi nếu có
+        @if(session('error'))
+            console.error('Thông báo lỗi:', @json(session('error')));
+        @endif
     });
 </script>
 @endpush 
