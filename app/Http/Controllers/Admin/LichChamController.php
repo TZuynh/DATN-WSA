@@ -81,7 +81,10 @@ class LichChamController extends Controller
                 throw new \Exception('Đề tài chưa được phân công chấm.');
             }
 
-            // Tạo lịch chấm với de_tai_id và phan_cong_cham_id
+            // Cập nhật tất cả thu_tu hiện tại
+            LichCham::query()->update(['thu_tu' => DB::raw('thu_tu + 1')]);
+
+            // Tạo lịch chấm mới với thu_tu = 1
             $lichCham = new LichCham();
             $lichCham->hoi_dong_id = $request->hoi_dong_id;
             $lichCham->dot_bao_cao_id = $request->dot_bao_cao_id;
@@ -89,6 +92,7 @@ class LichChamController extends Controller
             $lichCham->de_tai_id = $deTai->id;
             $lichCham->phan_cong_cham_id = $phanCongCham->id;
             $lichCham->lich_tao = $request->lich_tao;
+            $lichCham->thu_tu = 1; // Luôn thêm mới ở vị trí đầu tiên
             $lichCham->save();
 
             DB::commit();

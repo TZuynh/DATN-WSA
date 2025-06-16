@@ -16,6 +16,11 @@
         </div>
     </div>
 
+    <div class="alert alert-info mb-4">
+        <i class="fas fa-info-circle me-2"></i>
+        Bạn có thể kéo thả các dòng để sắp xếp lại thứ tự danh sách. Thứ tự này sẽ được áp dụng khi xuất PDF.
+    </div>
+
     <div class="card shadow mb-4">
         <div class="card-body">
             <div class="table-responsive">
@@ -33,7 +38,10 @@
                     <tbody id="sortable">
                         @forelse($lichChams as $lichCham)
                             <tr data-id="{{ $lichCham->id }}" class="sortable-row">
-                                <td>{{ $lichCham->thu_tu }}</td>
+                                <td>
+                                    <i class="fas fa-grip-vertical me-2 text-muted"></i>
+                                    {{ $lichCham->thu_tu }}
+                                </td>
                                 <td>{{ $lichCham->hoiDong->ten }}</td>
                                 <td>{{ $lichCham->dotBaoCao->nam_hoc }}</td>
                                 <td>{{ $lichCham->nhom->ten }}</td>
