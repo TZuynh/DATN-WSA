@@ -242,7 +242,7 @@ class LichChamController extends Controller
             // Lấy lich_tao mới nhất của hội đồng
             $latestLichCham = $lichChamsCollection->first();
             if ($latestLichCham) {
-                $lichTao = Carbon::parse($latestLichCham->lich_tao)->format('d/m/Y H:i');
+                $lichTao = Carbon::parse($latestLichCham->lich_tao)->format('H\hi \N\g\à\y d/m/Y');
             }
 
             $groupedData[] = [
