@@ -158,7 +158,7 @@
                     @foreach($lichCham->nhom->sinhViens as $index => $sinhVien)
                     <tr>
                         @if($index === 0)
-                            <td rowspan="{{ $lichCham->nhom->sinhViens->count() }}">{{ $stt }}</td>
+                            <td rowspan="{{ $lichCham->nhom->sinhViens->count() }}">{{ $lichCham->thu_tu }}</td>
                             <td>{{ $sinhVien->mssv }}</td>
                             <td>{{ $sinhVien->ten }}</td>
                             <td>{{ $sinhVien->lop->ten_lop }}</td>
@@ -176,9 +176,6 @@
                         @endif
                     </tr>
                     @endforeach
-                    @php
-                        $stt++;
-                    @endphp
                 @endforeach
             </tbody>
         </table>

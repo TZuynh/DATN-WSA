@@ -23,7 +23,7 @@ class LichChamController extends Controller
     public function index()
     {
         $lichChams = LichCham::with(['hoiDong', 'dotBaoCao', 'nhom'])
-                        ->orderBy('thu_tu')
+                        ->orderBy('thu_tu', 'asc')
                         ->paginate(10);
             
         return view('admin.lich-cham.index', compact('lichChams'));
@@ -213,7 +213,7 @@ class LichChamController extends Controller
             'nhom.giangVien',
             'phanCongCham.giangVienPhanBien'
         ])
-        ->orderBy('lich_tao', 'desc')
+        ->orderBy('thu_tu', 'asc')
         ->get()
         ->groupBy('hoi_dong_id');
 
@@ -239,7 +239,6 @@ class LichChamController extends Controller
                 }
             }
 
-            // Lấy lich_tao mới nhất của hội đồng
             $latestLichCham = $lichChamsCollection->first();
             if ($latestLichCham) {
                 $lichTao = Carbon::parse($latestLichCham->lich_tao)->format('H\hi \N\g\à\y d/m/Y');
@@ -249,10 +248,16 @@ class LichChamController extends Controller
                 'hoiDong' => $hoiDong,
                 'truongTieuBan' => $truongTieuBan,
                 'thuKy' => $thuKy,
-                'lichChams' => $lichChamsCollection,
+                'lichChams' => $lichChamsCollection->sortBy('thu_tu'),
                 'lichTao' => $lichTao
             ];
         }
+
+        usort($groupedData, function($a, $b) {
+            $aFirstLichCham = $a['lichChams']->first();
+            $bFirstLichCham = $b['lichChams']->first();
+            return $aFirstLichCham->thu_tu <=> $bFirstLichCham->thu_tu;
+        });
 
         $data = [
             'title' => 'DANH SÁCH LỊCH CHẤM',
