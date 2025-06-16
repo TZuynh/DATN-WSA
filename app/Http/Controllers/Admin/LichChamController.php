@@ -22,7 +22,7 @@ class LichChamController extends Controller
      */
     public function index()
     {
-        $lichChams = LichCham::with(['hoiDong', 'dotBaoCao', 'nhom'])
+        $lichChams = LichCham::with(['hoiDong', 'dotBaoCao', 'nhom', 'deTai'])
                         ->orderBy('thu_tu', 'asc')
                         ->paginate(10);
             
@@ -37,16 +37,32 @@ class LichChamController extends Controller
         $hoiDongs = HoiDong::all();
         $dotBaoCaos = DotBaoCao::all();
         
+        // Kiểm tra xem có đề tài nào đã được phân công chấm chưa
+        $deTaiDaPhanCong = DeTai::whereHas('phanCongCham')->exists();
+        if (!$deTaiDaPhanCong) {
+            return redirect()->route('admin.lich-cham.index')
+                ->with('error', 'Chưa có đề tài nào được phân công chấm. Vui lòng phân công chấm trước khi tạo lịch.');
+        }
+        
         // Lấy danh sách nhóm đã có lịch chấm
         $nhomDaCoLichCham = LichCham::pluck('nhom_id')->toArray();
         
         // Lấy danh sách nhóm chưa có lịch chấm
         $nhoms = Nhom::where('trang_thai', 'hoat_dong')
-            ->whereHas('deTai') // Chỉ lấy các nhóm đã có đề tài
-            ->whereNotIn('id', $nhomDaCoLichCham) // Loại bỏ các nhóm đã có lịch chấm
+            ->whereHas('deTais', function($query) {
+                $query->whereHas('phanCongCham');
+            })
+            ->whereNotIn('id', $nhomDaCoLichCham)
             ->select('id', 'ma_nhom', 'ten', 'giang_vien_id')
-            ->with(['giangVien:id,ten', 'deTai:id,ten_de_tai'])
+            ->with(['giangVien:id,ten', 'deTais' => function($query) {
+                $query->whereHas('phanCongCham');
+            }])
             ->get();
+            
+        if ($nhoms->isEmpty()) {
+            return redirect()->route('admin.lich-cham.index')
+                ->with('error', 'Tất cả các nhóm đã có lịch chấm hoặc chưa có đề tài được phân công chấm.');
+        }
             
         return view('admin.lich-cham.create', compact('hoiDongs', 'dotBaoCaos', 'nhoms'));
     }
@@ -78,13 +94,13 @@ class LichChamController extends Controller
             // Lấy thông tin đề tài của nhóm
             $deTai = DeTai::where('nhom_id', $request->nhom_id)->first();
             if (!$deTai) {
-                throw new \Exception('Nhóm chưa được gán đề tài.');
+                throw new \Exception('Nhóm chưa được gán đề tài. Vui lòng kiểm tra lại thông tin nhóm.');
             }
 
             // Lấy thông tin phân công chấm
             $phanCongCham = PhanCongCham::where('de_tai_id', $deTai->id)->first();
             if (!$phanCongCham) {
-                throw new \Exception('Đề tài chưa được phân công chấm.');
+                throw new \Exception('Đề tài "' . $deTai->ten_de_tai . '" chưa được phân công chấm. Vui lòng phân công chấm trước khi tạo lịch.');
             }
 
             // Cập nhật tất cả thu_tu hiện tại
@@ -120,6 +136,9 @@ class LichChamController extends Controller
         $hoiDongs = HoiDong::all();
         $dotBaoCaos = DotBaoCao::all();
         
+        // Load relationship deTai
+        $lichCham->load('deTai');
+        
         // Lấy danh sách nhóm đã có lịch chấm (trừ nhóm hiện tại)
         $nhomDaCoLichCham = LichCham::where('id', '!=', $lichCham->id)
             ->pluck('nhom_id')
@@ -127,13 +146,13 @@ class LichChamController extends Controller
         
         // Lấy danh sách nhóm chưa có lịch chấm và nhóm hiện tại
         $nhoms = Nhom::where('trang_thai', 'hoat_dong')
-            ->whereHas('deTai')
+            ->whereHas('deTais')
             ->where(function($query) use ($lichCham, $nhomDaCoLichCham) {
                 $query->where('id', $lichCham->nhom_id) // Thêm nhóm hiện tại
                       ->orWhereNotIn('id', $nhomDaCoLichCham); // Thêm các nhóm chưa có lịch chấm
             })
             ->select('id', 'ma_nhom', 'ten', 'giang_vien_id')
-            ->with(['giangVien:id,ten', 'deTai:id,ten_de_tai'])
+            ->with(['giangVien:id,ten', 'deTais:id,ten_de_tai'])
             ->get();
             
         return view('admin.lich-cham.edit', compact('lichCham', 'hoiDongs', 'dotBaoCaos', 'nhoms'));
@@ -167,13 +186,13 @@ class LichChamController extends Controller
             // Lấy thông tin đề tài của nhóm
             $deTai = DeTai::where('nhom_id', $request->nhom_id)->first();
             if (!$deTai) {
-                throw new \Exception('Nhóm chưa được gán đề tài.');
+                throw new \Exception('Nhóm chưa được gán đề tài. Vui lòng kiểm tra lại thông tin nhóm.');
             }
 
             // Lấy thông tin phân công chấm
             $phanCongCham = PhanCongCham::where('de_tai_id', $deTai->id)->first();
             if (!$phanCongCham) {
-                throw new \Exception('Đề tài chưa được phân công chấm.');
+                throw new \Exception('Đề tài "' . $deTai->ten_de_tai . '" chưa được phân công chấm. Vui lòng phân công chấm trước khi cập nhật lịch.');
             }
 
             // Cập nhật lịch chấm với de_tai_id và phan_cong_cham_id
@@ -230,7 +249,7 @@ class LichChamController extends Controller
             'hoiDong.phong',
             'dotBaoCao', 
             'nhom.sinhViens.lop',
-            'nhom.deTai',
+            'nhom.deTais',
             'nhom.giangVien',
             'phanCongCham.giangVienPhanBien'
         ])

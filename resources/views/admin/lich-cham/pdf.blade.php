@@ -162,7 +162,7 @@
                             <td>{{ $sinhVien->mssv }}</td>
                             <td>{{ $sinhVien->ten }}</td>
                             <td>{{ $sinhVien->lop->ten_lop }}</td>
-                            <td>{{ $lichCham->nhom->deTai->ten_de_tai ?? '' }}</td>
+                            <td>{{ $lichCham->nhom->deTais->first()->ten_de_tai ?? '' }}</td>
                             <td>{{ $lichCham->nhom->giangVien->ten ?? '' }}</td>
                             <td>{{ $lichCham->phanCongCham->giangVienPhanBien->ten ?? '' }}</td>
                             <td rowspan="{{ $lichCham->nhom->sinhViens->count() }}">{{ preg_replace('/[^0-9]/', '', $lichCham->hoiDong->ten ?? '') }}</td>

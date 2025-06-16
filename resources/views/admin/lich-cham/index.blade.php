@@ -31,6 +31,7 @@
                             <th>Hội đồng</th>
                             <th>Đợt báo cáo</th>
                             <th>Nhóm</th>
+                            <th>Đề tài</th>
                             <th>Thời gian</th>
                             <th>Thao tác</th>
                         </tr>
@@ -45,6 +46,7 @@
                                 <td>{{ $lichCham->hoiDong->ten }}</td>
                                 <td>{{ $lichCham->dotBaoCao->nam_hoc }}</td>
                                 <td>{{ $lichCham->nhom->ten }}</td>
+                                <td>{{ $lichCham->deTai->ten_de_tai }}</td>
                                 <td>{{ \Carbon\Carbon::parse($lichCham->lich_tao)->format('d/m/Y H:i') }}</td>
                                 <td>
                                     <div class="btn-group" role="group">

@@ -70,6 +70,7 @@
                             <option value="">Chọn nhóm</option>
                             @foreach($nhoms as $nhom)
                                 <option value="{{ $nhom->id }}"
+                                    data-de-tai="{{ $nhom->deTais->first()->ten_de_tai ?? '' }}"
                                     {{ old('nhom_id') == $nhom->id ? 'selected' : '' }}>
                                     {{ $nhom->ma_nhom }} - {{ $nhom->ten }} (GV: {{ $nhom->giangVien->ten }})
                                 </option>
@@ -80,6 +81,16 @@
                         @enderror
                     </div>
 
+                    <div class="col-md-6">
+                        <label for="ten_de_tai" class="form-label">Tên đề tài</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="ten_de_tai" 
+                               disabled>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="lich_tao" class="form-label">Thời gian <span class="text-danger">*</span></label>
                         <input type="text" 
@@ -111,6 +122,27 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log('Khởi tạo form tạo lịch chấm');
 
+        // Cập nhật tên đề tài khi chọn nhóm
+        document.getElementById('nhom_id').addEventListener('change', function(e) {
+            const selectedOption = e.target.options[e.target.selectedIndex];
+            const tenDeTai = selectedOption.getAttribute('data-de-tai');
+            document.getElementById('ten_de_tai').value = tenDeTai || '';
+            
+            console.log('Đã chọn nhóm:', {
+                id: e.target.value,
+                text: e.target.options[e.target.selectedIndex].text,
+                deTai: tenDeTai
+            });
+        });
+
+        // Cập nhật tên đề tài nếu có giá trị cũ
+        const nhomSelect = document.getElementById('nhom_id');
+        if (nhomSelect.value) {
+            const selectedOption = nhomSelect.options[nhomSelect.selectedIndex];
+            const tenDeTai = selectedOption.getAttribute('data-de-tai');
+            document.getElementById('ten_de_tai').value = tenDeTai || '';
+        }
+
         // Cấu hình Flatpickr cho thời gian
         const lichTao = flatpickr("#lich_tao", {
             locale: "vi",
@@ -135,14 +167,6 @@
         // Log khi thay đổi đợt báo cáo
         document.getElementById('dot_bao_cao_id').addEventListener('change', function(e) {
             console.log('Đã chọn đợt báo cáo:', {
-                id: e.target.value,
-                text: e.target.options[e.target.selectedIndex].text
-            });
-        });
-
-        // Log khi thay đổi nhóm
-        document.getElementById('nhom_id').addEventListener('change', function(e) {
-            console.log('Đã chọn nhóm:', {
                 id: e.target.value,
                 text: e.target.options[e.target.selectedIndex].text
             });

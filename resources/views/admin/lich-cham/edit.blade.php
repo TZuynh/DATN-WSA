@@ -71,6 +71,7 @@
                             <option value="">Chọn nhóm</option>
                             @foreach($nhoms as $nhom)
                                 <option value="{{ $nhom->id }}"
+                                    data-de-tai="{{ $nhom->deTais->first()->ten_de_tai ?? '' }}"
                                     {{ (old('nhom_id', $lichCham->nhom_id) == $nhom->id) ? 'selected' : '' }}>
                                     {{ $nhom->ma_nhom }} - {{ $nhom->ten }} (GV: {{ $nhom->giangVien->ten }})
                                 </option>
@@ -81,6 +82,17 @@
                         @enderror
                     </div>
 
+                    <div class="col-md-6">
+                        <label for="ten_de_tai" class="form-label">Tên đề tài</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="ten_de_tai" 
+                               value="{{ $lichCham->deTai->ten_de_tai ?? '' }}"
+                               disabled>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="lich_tao" class="form-label">Thời gian <span class="text-danger">*</span></label>
                         <input type="text" 
@@ -110,6 +122,13 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Cập nhật tên đề tài khi chọn nhóm
+        document.getElementById('nhom_id').addEventListener('change', function(e) {
+            const selectedOption = e.target.options[e.target.selectedIndex];
+            const tenDeTai = selectedOption.getAttribute('data-de-tai');
+            document.getElementById('ten_de_tai').value = tenDeTai || '';
+        });
+
         // Cấu hình Flatpickr cho thời gian
         const lichTao = flatpickr("#lich_tao", {
             locale: "vi",

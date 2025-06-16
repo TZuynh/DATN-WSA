@@ -29,6 +29,11 @@ class PhanCongChamController extends Controller
             ->select('id', 'ma_de_tai', 'ten_de_tai', 'giang_vien_id', 'trang_thai')
             ->get();
 
+        if ($deTais->isEmpty()) {
+            return redirect()->route('admin.phan-cong-cham.index')
+                ->with('error', 'Không có đề tài nào đủ điều kiện để phân công chấm. Đề tài phải ở trạng thái "Đang thực hiện (GVHD)" và chưa được phân công chấm.');
+        }
+
         // Lấy danh sách giảng viên
         $giangViens = TaiKhoan::where('vai_tro', 'giang_vien')
             ->select('id', 'ten')
