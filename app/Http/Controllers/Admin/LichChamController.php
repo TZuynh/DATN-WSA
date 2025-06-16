@@ -117,6 +117,10 @@ class LichChamController extends Controller
             $lichCham->thu_tu = 1; // Luôn thêm mới ở vị trí đầu tiên
             $lichCham->save();
 
+            // Cập nhật trạng thái đề tài thành Đang thực hiện (GVPB đồng ý)
+            $deTai->trang_thai = DeTai::TRANG_THAI_DANG_THUC_HIEN_GVPB;
+            $deTai->save();
+
             DB::commit();
             return redirect()->route('admin.lich-cham.index')
                 ->with('success', 'Thêm lịch chấm thành công.');
@@ -203,6 +207,10 @@ class LichChamController extends Controller
             $lichCham->phan_cong_cham_id = $phanCongCham->id;
             $lichCham->lich_tao = $request->lich_tao;
             $lichCham->save();
+
+            // Cập nhật trạng thái đề tài thành Đang thực hiện (GVPB đồng ý)
+            $deTai->trang_thai = DeTai::TRANG_THAI_DANG_THUC_HIEN_GVPB;
+            $deTai->save();
 
             DB::commit();
             return redirect()->route('admin.lich-cham.index')
