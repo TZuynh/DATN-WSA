@@ -3,32 +3,57 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Nhom extends Model
 {
-    protected $fillable = ['ma_nhom', 'ten', 'giang_vien_id', 'de_tai_id', 'trang_thai'];
+    protected $table = 'nhoms';
 
-    public function chiTietNhoms()
-    {
-        return $this->hasMany(ChiTietNhom::class);
-    }
+    protected $fillable = [
+        'ma_nhom',
+        'ten',
+        'giang_vien_id',
+        'trang_thai'
+    ];
 
-    public function sinhViens()
-    {
-        return $this->belongsToMany(SinhVien::class, 'chi_tiet_nhoms', 'nhom_id', 'sinh_vien_id');
-    }
-
-    public function deTais()
-    {
-        return $this->hasMany(DeTai::class, 'nhom_id');
-    }
-
-    public function giangVien()
+    /**
+     * Lấy giảng viên hướng dẫn của nhóm
+     */
+    public function giangVien(): BelongsTo
     {
         return $this->belongsTo(TaiKhoan::class, 'giang_vien_id');
     }
 
-    public function lichChams()
+    /**
+     * Lấy danh sách sinh viên trong nhóm
+     */
+    public function sinhViens(): BelongsToMany
+    {
+        return $this->belongsToMany(SinhVien::class, 'chi_tiet_nhoms', 'nhom_id', 'sinh_vien_id');
+    }
+
+    /**
+     * Lấy đề tài của nhóm
+     */
+    public function deTai(): BelongsTo
+    {
+        return $this->belongsTo(DeTai::class, 'id', 'nhom_id');
+    }
+
+    /**
+     * Lấy chi tiết nhóm
+     */
+    public function chiTietNhoms(): HasMany
+    {
+        return $this->hasMany(ChiTietNhom::class);
+    }
+
+    /**
+     * Lấy danh sách lịch chấm của nhóm
+     */
+    public function lichChams(): HasMany
     {
         return $this->hasMany(LichCham::class);
     }

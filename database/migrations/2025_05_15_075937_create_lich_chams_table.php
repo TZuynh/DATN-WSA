@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('nhom_id')->constrained();
             $table->foreignId('hoi_dong_id')->constrained();
             $table->foreignId('dot_bao_cao_id')->constrained();
+            $table->foreignId('de_tai_id')->constrained();
             $table->dateTime('lich_tao');
             $table->timestamps();
         });

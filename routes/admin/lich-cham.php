@@ -10,4 +10,5 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/lich-cham/{lichCham}/edit', [LichChamController::class, 'edit'])->name('admin.lich-cham.edit');
     Route::put('/admin/lich-cham/{lichCham}', [LichChamController::class, 'update'])->name('admin.lich-cham.update');
     Route::delete('/admin/lich-cham/{lichCham}', [LichChamController::class, 'destroy'])->name('admin.lich-cham.destroy');
+    Route::get('/admin/lich-cham/export-pdf', [LichChamController::class, 'exportPdf'])->name('admin.lich-cham.export-pdf');
 }); 

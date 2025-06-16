@@ -3,53 +3,63 @@
 @section('title', 'Thêm hội đồng mới')
 
 @section('content')
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <div style="max-width: 800px; margin: 0 auto;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h1 style="color: #2d3748; font-weight: 700;">Thêm hội đồng mới</h1>
-            <a href="{{ route('admin.hoi-dong.index') }}" style="padding: 10px 20px; background-color: #718096; color: white; border: none; border-radius: 4px; text-decoration: none;">
-                <i class="fas fa-arrow-left"></i> Quay lại
-            </a>
-        </div>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Thêm hội đồng mới</h3>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('admin.hoi-dong.store') }}" method="POST">
+                        @csrf
+                        <div class="form-group">
+                            <label for="ten">Tên hội đồng <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('ten') is-invalid @enderror" 
+                                id="ten" name="ten" value="{{ old('ten') }}" required>
+                            @error('ten')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
 
-        @if($errors->any())
-            <div style="background-color: #f56565; color: white; padding: 10px; border-radius: 4px; margin-bottom: 20px;">
-                <ul style="margin: 0; padding-left: 20px;">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+                        <div class="form-group">
+                            <label for="dot_bao_cao_id">Đợt báo cáo <span class="text-danger">*</span></label>
+                            <select class="form-control @error('dot_bao_cao_id') is-invalid @enderror" 
+                                id="dot_bao_cao_id" name="dot_bao_cao_id" required>
+                                <option value="">Chọn đợt báo cáo</option>
+                                @foreach($dotBaoCaos as $dotBaoCao)
+                                    <option value="{{ $dotBaoCao->id }}" {{ old('dot_bao_cao_id') == $dotBaoCao->id ? 'selected' : '' }}>
+                                        {{ $dotBaoCao->nam_hoc }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('dot_bao_cao_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phong_id">Phòng <span class="text-danger">*</span></label>
+                            <select class="form-control @error('phong_id') is-invalid @enderror" 
+                                id="phong_id" name="phong_id" required>
+                                <option value="">Chọn phòng</option>
+                                @foreach($phongs as $phong)
+                                    <option value="{{ $phong->id }}" {{ old('phong_id') == $phong->id ? 'selected' : '' }}>
+                                        {{ $phong->ten_phong }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('phong_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Thêm mới</button>
+                        <a href="{{ route('admin.hoi-dong.index') }}" class="btn btn-secondary">Quay lại</a>
+                    </form>
+                </div>
             </div>
-        @endif
-
-        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);">
-            <form action="{{ route('admin.hoi-dong.store') }}" method="POST">
-                @csrf
-                
-                <div style="margin-bottom: 20px;">
-                    <label for="ten" style="display: block; margin-bottom: 5px; color: #4a5568;">Tên hội đồng</label>
-                    <input type="text" name="ten" id="ten" value="{{ old('ten') }}"
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Nhập tên hội đồng">
-                </div>
-
-                <div style="margin-bottom: 20px;">
-                    <label for="dot_bao_cao_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Đợt báo cáo</label>
-                    <select name="dot_bao_cao_id" id="dot_bao_cao_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn đợt báo cáo">
-                        <option value="">Chọn đợt báo cáo</option>
-                        @foreach($dotBaoCaos as $dotBaoCao)
-                            <option value="{{ $dotBaoCao->id }}" {{ old('dot_bao_cao_id') == $dotBaoCao->id ? 'selected' : '' }}>
-                                {{ $dotBaoCao->nam_hoc }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div style="text-align: right;">
-                    <button type="submit" style="padding: 10px 20px; background-color: #4299e1; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        <i class="fas fa-save"></i> Lưu
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
+</div>
 @endsection 

@@ -13,7 +13,7 @@
         <li class="menu-item has-submenu {{ request()->routeIs('admin.phan-bien.*') || request()->routeIs('admin.phan-cong-cham.*') ? 'active' : '' }}">
             <a href="javascript:void(0)" style="display: flex; align-items: center; justify-content: space-between;">
                 <div style="display: flex; align-items: center;">
-                    <i class="fas fa-comments"></i> 
+                    <i class="fas fa-comments"></i>
                     <span>Quản lý phản biện</span>
                 </div>
                 <i class="fas fa-chevron-down arrow"></i>
@@ -26,14 +26,14 @@
         </li>
         <li class="menu-item {{ request()->routeIs('admin.phong.*') ? 'active' : '' }}">
             <a href="{{ route('admin.phong.index') }}">
-                <i class="fas fa-door-open"></i> 
+                <i class="fas fa-door-open"></i>
                 <span>Quản lý phòng</span>
             </a>
         </li>
         <li class="menu-item has-submenu {{ request()->routeIs('admin.hoi-dong.*') || request()->routeIs('admin.dot-bao-cao.*') || request()->routeIs('admin.phan-cong-hoi-dong.*') || request()->routeIs('admin.lich-cham.*') ? 'active' : '' }}">
             <a href="javascript:void(0)" style="display: flex; align-items: center; justify-content: space-between;">
                 <div style="display: flex; align-items: center;">
-                    <i class="fas fa-users"></i> 
+                    <i class="fas fa-users"></i>
                     <span>Quản lý hội đồng</span>
                 </div>
                 <i class="fas fa-chevron-down arrow"></i>
@@ -211,7 +211,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const submenuToggles = document.querySelectorAll('.menu-item.has-submenu > a');
-    
+
     submenuToggles.forEach(toggle => {
         toggle.addEventListener('click', function(e) {
             e.preventDefault();

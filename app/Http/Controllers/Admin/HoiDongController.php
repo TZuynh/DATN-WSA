@@ -9,7 +9,7 @@ use App\Models\PhanCongVaiTro;
 use App\Models\ChiTietDeTaiBaoCao;
 use App\Models\LichCham;
 use App\Models\BienBanNhanXet;
-use App\Models\DeTai;
+use App\Models\Phong;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +22,7 @@ class HoiDongController extends Controller
      */
     public function index()
     {
-        $hoiDongs = HoiDong::with('dotBaoCao')
+        $hoiDongs = HoiDong::with(['dotBaoCao', 'phong'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
             
@@ -35,7 +35,8 @@ class HoiDongController extends Controller
     public function create()
     {
         $dotBaoCaos = DotBaoCao::all();
-        return view('admin.hoi-dong.create', compact('dotBaoCaos'));
+        $phongs = Phong::all();
+        return view('admin.hoi-dong.create', compact('dotBaoCaos', 'phongs'));
     }
 
     /**
@@ -45,7 +46,8 @@ class HoiDongController extends Controller
     {
         $request->validate([
             'ten' => 'required',
-            'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id'
+            'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
+            'phong_id' => 'required|exists:phongs,id'
         ]);
 
         try {
@@ -58,7 +60,8 @@ class HoiDongController extends Controller
             HoiDong::create([
                 'ma_hoi_dong' => $maHoiDong,
                 'ten' => $request->ten,
-                'dot_bao_cao_id' => $request->dot_bao_cao_id
+                'dot_bao_cao_id' => $request->dot_bao_cao_id,
+                'phong_id' => $request->phong_id
             ]);
 
             DB::commit();
@@ -78,7 +81,8 @@ class HoiDongController extends Controller
     public function edit(HoiDong $hoiDong)
     {
         $dotBaoCaos = DotBaoCao::all();
-        return view('admin.hoi-dong.edit', compact('hoiDong', 'dotBaoCaos'));
+        $phongs = Phong::all();
+        return view('admin.hoi-dong.edit', compact('hoiDong', 'dotBaoCaos', 'phongs'));
     }
 
     /**
@@ -88,16 +92,17 @@ class HoiDongController extends Controller
     {
         $request->validate([
             'ten' => 'required',
-            'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id'
+            'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
+            'phong_id' => 'required|exists:phongs,id'
         ]);
 
         try {
             DB::beginTransaction();
 
-            // Cập nhật thông tin hội đồng
             $hoiDong->update([
                 'ten' => $request->ten,
-                'dot_bao_cao_id' => $request->dot_bao_cao_id
+                'dot_bao_cao_id' => $request->dot_bao_cao_id,
+                'phong_id' => $request->phong_id
             ]);
 
             DB::commit();
@@ -156,95 +161,13 @@ class HoiDongController extends Controller
         // Load các quan hệ cần thiết
         $hoiDong->load([
             'dotBaoCao',
-            'chiTietBaoCaos' => function($query) {
-                $query->with([
-                    'deTai' => function($query) {
-                        $query->with(['giangVien', 'nhom']);
-                    }
-                ]);
-            },
+            'phong',
             'phanCongVaiTros' => function($query) {
-                $query->with([
-                    'taiKhoan' => function($query) {
-                        $query->with(['deTais' => function($query) {
-                            $query->where('trang_thai', '!=', DeTai::TRANG_THAI_KHONG_XAY_RA_GVHD)
-                                ->where('trang_thai', '!=', DeTai::TRANG_THAI_KHONG_XAY_RA_GVPB);
-                        }]);
-                    },
-                    'vaiTro'
-                ]);
+                $query->with(['taiKhoan', 'vaiTro']);
             }
         ]);
 
-        // Lấy danh sách đề tài chưa thuộc hội đồng nào
-        $deTais = DeTai::whereDoesntHave('chiTietBaoCaos', function($query) use ($hoiDong) {
-            $query->where('hoi_dong_id', '!=', $hoiDong->id);
-        })->get();
-
-        return view('admin.hoi-dong.chi-tiet', compact('hoiDong', 'deTais'));
-    }
-
-    /**
-     * Thêm đề tài vào hội đồng
-     */
-    public function themDeTai(Request $request, HoiDong $hoiDong)
-    {
-        $request->validate([
-            'de_tai_id' => 'required|exists:de_tais,id'
-        ]);
-
-        try {
-            DB::beginTransaction();
-
-            // Kiểm tra xem đề tài đã thuộc hội đồng nào chưa
-            $existingChiTiet = ChiTietDeTaiBaoCao::where('de_tai_id', $request->de_tai_id)
-                ->where('hoi_dong_id', '!=', $hoiDong->id)
-                ->first();
-
-            if ($existingChiTiet) {
-                throw new \Exception('Đề tài này đã thuộc một hội đồng khác.');
-            }
-
-            // Tạo chi tiết báo cáo mới
-            ChiTietDeTaiBaoCao::create([
-                'hoi_dong_id' => $hoiDong->id,
-                'de_tai_id' => $request->de_tai_id,
-                'trang_thai' => 'dang_thuc_hien'
-            ]);
-
-            DB::commit();
-            return redirect()->route('admin.hoi-dong.show', $hoiDong->id)
-                ->with('success', 'Thêm đề tài vào hội đồng thành công.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->route('admin.hoi-dong.show', $hoiDong->id)
-                ->with('error', 'Không thể thêm đề tài: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Xóa đề tài khỏi hội đồng
-     */
-    public function xoaDeTai(HoiDong $hoiDong, ChiTietDeTaiBaoCao $chiTietBaoCao)
-    {
-        try {
-            DB::beginTransaction();
-
-            // Kiểm tra xem chi tiết báo cáo có thuộc hội đồng này không
-            if ($chiTietBaoCao->hoi_dong_id !== $hoiDong->id) {
-                throw new \Exception('Chi tiết báo cáo không thuộc hội đồng này.');
-            }
-
-            $chiTietBaoCao->delete();
-
-            DB::commit();
-            return redirect()->route('admin.hoi-dong.show', $hoiDong->id)
-                ->with('success', 'Xóa đề tài khỏi hội đồng thành công.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->route('admin.hoi-dong.show', $hoiDong->id)
-                ->with('error', 'Không thể xóa đề tài: ' . $e->getMessage());
-        }
+        return view('admin.hoi-dong.chi-tiet', compact('hoiDong'));
     }
 
     /**

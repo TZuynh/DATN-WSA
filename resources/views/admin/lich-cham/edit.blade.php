@@ -3,6 +3,10 @@
 @section('title', 'Sửa lịch chấm')
 
 @section('content')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vi.js"></script>
 <div class="container-fluid px-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0 text-gray-800">Sửa lịch chấm</h1>
@@ -79,11 +83,12 @@
 
                     <div class="col-md-6">
                         <label for="lich_tao" class="form-label">Thời gian <span class="text-danger">*</span></label>
-                        <input type="datetime-local" 
+                        <input type="text" 
                                class="form-control @error('lich_tao') is-invalid @enderror" 
                                id="lich_tao" 
                                name="lich_tao" 
-                               value="{{ old('lich_tao', \Carbon\Carbon::parse($lichCham->lich_tao)->format('Y-m-d\TH:i')) }}"
+                               value="{{ old('lich_tao', isset($lichCham) ? \Carbon\Carbon::parse($lichCham->lich_tao)->format('Y-m-d H:i') : '') }}"
+                               placeholder="Chọn thời gian"
                                required>
                         @error('lich_tao')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -104,11 +109,36 @@
 
 @push('scripts')
 <script>
-$(document).ready(function() {
-    // Set min datetime cho input lịch tạo là thời gian hiện tại
-    const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    document.getElementById('lich_tao').min = now.toISOString().slice(0, 16);
-});
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cấu hình Flatpickr cho thời gian
+        const lichTao = flatpickr("#lich_tao", {
+            locale: "vi",
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            minDate: "today",
+            time_24hr: true,
+            minuteIncrement: 1
+        });
+
+        // Validate form trước khi submit
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const lichTaoValue = document.getElementById('lich_tao').value;
+
+            if (!lichTaoValue) {
+                e.preventDefault();
+                alert('Vui lòng chọn thời gian!');
+                return;
+            }
+
+            const selectedDate = new Date(lichTaoValue);
+            const now = new Date();
+
+            if (selectedDate < now) {
+                e.preventDefault();
+                alert('Thời gian không được nhỏ hơn thời gian hiện tại!');
+                return;
+            }
+        });
+    });
 </script>
-@endpush 
+@endpush

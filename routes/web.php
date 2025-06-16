@@ -35,7 +35,6 @@ Route::domain('admin.project.test')->group(function () {
     require __DIR__ . '/admin/lop.php';
     require __DIR__ . '/admin/phan-cong-cham.php';
     require __DIR__ . '/admin/phong.php';
-    
     Route::get('/', function () {
         if (Auth::check() && Auth::user()->vai_tro === 'admin') {
             return redirect('/dashboard');
@@ -52,7 +51,7 @@ Route::domain('giangvien.project.test')->group(function () {
     require __DIR__ . '/giangvien/profile.php';
     require __DIR__ . '/giangvien/de-tai.php';
     require __DIR__ . '/giangvien/lop.php';
-    
+
     Route::get('/', function () {
         if (Auth::check() && Auth::user()->vai_tro === 'giang_vien') {
             return redirect('/dashboard');

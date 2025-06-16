@@ -21,6 +21,7 @@
                 <th style="padding: 12px 15px;">Mã hội đồng</th>
                 <th style="padding: 12px 15px;">Tên hội đồng</th>
                 <th style="padding: 12px 15px;">Đợt báo cáo</th>
+                <th style="padding: 12px 15px;">Phòng</th>
                 <th style="padding: 12px 15px;">Ngày tạo</th>
                 <th style="padding: 12px 15px;">Thao tác</th>
             </tr>
@@ -32,6 +33,7 @@
                     <td style="padding: 12px 15px;">{{ $hoiDong->ma_hoi_dong }}</td>
                     <td style="padding: 12px 15px; color: #2d3748; font-weight: 600;">{{ $hoiDong->ten }}</td>
                     <td style="padding: 12px 15px;">{{ $hoiDong->dotBaoCao->nam_hoc ?? 'N/A' }}</td>
+                    <td style="padding: 12px 15px;">{{ $hoiDong->phong->ten_phong ?? 'Chưa có phòng' }}</td>
                     <td style="padding: 12px 15px;">{{ $hoiDong->created_at->format('d-m-Y') }}</td>
                     <td style="padding: 12px 15px;">
                         <div style="display: flex; gap: 10px;">
