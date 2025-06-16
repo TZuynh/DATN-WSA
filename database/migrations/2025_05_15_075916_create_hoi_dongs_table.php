@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('ma_hoi_dong')->unique();
             $table->string('ten');
+            $table->dateTime('thoi_gian_bat_dau')->nullable();
             $table->timestamps();
         });
     }

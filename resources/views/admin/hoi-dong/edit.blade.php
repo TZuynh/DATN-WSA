@@ -3,6 +3,11 @@
 @section('title', 'Chỉnh sửa hội đồng')
 
 @section('content')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vi.js"></script>
+
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
@@ -65,6 +70,19 @@
                         </div>
 
                         <div class="form-group">
+                            <label for="thoi_gian_bat_dau">Thời gian bắt đầu</label>
+                            <input type="text" 
+                                   class="form-control @error('thoi_gian_bat_dau') is-invalid @enderror" 
+                                   id="thoi_gian_bat_dau" 
+                                   name="thoi_gian_bat_dau" 
+                                   value="{{ old('thoi_gian_bat_dau', $hoiDong->thoi_gian_bat_dau ? $hoiDong->thoi_gian_bat_dau->format('Y-m-d H:i') : '') }}"
+                                   placeholder="Chọn thời gian">
+                            @error('thoi_gian_bat_dau')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save me-2"></i>Cập nhật
                             </button>
@@ -80,24 +98,37 @@
 </div>
 @endsection
 
-@push('styles')
-<style>
-    .form-group {
-        margin-bottom: 1rem;
-    }
-    .form-group label {
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-    }
-    .invalid-feedback {
-        font-size: 0.875rem;
-    }
-    .btn {
-        padding: 0.5rem 1rem;
-        font-weight: 500;
-    }
-    .btn i {
-        font-size: 0.875rem;
-    }
-</style>
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cấu hình Flatpickr cho thời gian
+        const thoiGianBatDau = flatpickr("#thoi_gian_bat_dau", {
+            locale: "vi",
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            minDate: "today",
+            time_24hr: true,
+            minuteIncrement: 1,
+            onChange: function(selectedDates, dateStr) {
+                console.log('Đã chọn thời gian:', dateStr);
+            }
+        });
+
+        // Validate form trước khi submit
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const thoiGianBatDauValue = document.getElementById('thoi_gian_bat_dau').value;
+            
+            if (thoiGianBatDauValue) {
+                const selectedDate = new Date(thoiGianBatDauValue);
+                const now = new Date();
+
+                if (selectedDate < now) {
+                    e.preventDefault();
+                    alert('Thời gian không được nhỏ hơn thời gian hiện tại!');
+                    return;
+                }
+            }
+        });
+    });
+</script>
 @endpush 

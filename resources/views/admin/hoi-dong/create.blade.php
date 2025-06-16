@@ -3,6 +3,11 @@
 @section('title', 'Thêm hội đồng mới')
 
 @section('content')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vi.js"></script>
+
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
@@ -56,6 +61,19 @@
                             </small>
                         </div>
 
+                        <div class="form-group">
+                            <label for="thoi_gian_bat_dau">Thời gian bắt đầu</label>
+                            <input type="text" 
+                                   class="form-control @error('thoi_gian_bat_dau') is-invalid @enderror" 
+                                   id="thoi_gian_bat_dau" 
+                                   name="thoi_gian_bat_dau" 
+                                   value="{{ old('thoi_gian_bat_dau') }}"
+                                   placeholder="Chọn thời gian">
+                            @error('thoi_gian_bat_dau')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         <button type="submit" class="btn btn-primary">Thêm mới</button>
                         <a href="{{ route('admin.hoi-dong.index') }}" class="btn btn-secondary">Quay lại</a>
                     </form>
@@ -64,4 +82,39 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cấu hình Flatpickr cho thời gian
+        const thoiGianBatDau = flatpickr("#thoi_gian_bat_dau", {
+            locale: "vi",
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            minDate: "today",
+            time_24hr: true,
+            minuteIncrement: 1,
+            onChange: function(selectedDates, dateStr) {
+                console.log('Đã chọn thời gian:', dateStr);
+            }
+        });
+
+        // Validate form trước khi submit
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const thoiGianBatDauValue = document.getElementById('thoi_gian_bat_dau').value;
+            
+            if (thoiGianBatDauValue) {
+                const selectedDate = new Date(thoiGianBatDauValue);
+                const now = new Date();
+
+                if (selectedDate < now) {
+                    e.preventDefault();
+                    alert('Thời gian không được nhỏ hơn thời gian hiện tại!');
+                    return;
+                }
+            }
+        });
+    });
+</script>
+@endpush 

@@ -60,7 +60,8 @@ class HoiDongController extends Controller
                         $fail('Phòng này đã được sử dụng trong đợt báo cáo này.');
                     }
                 },
-            ]
+            ],
+            'thoi_gian_bat_dau' => 'nullable|date'
         ]);
 
         try {
@@ -74,7 +75,8 @@ class HoiDongController extends Controller
                 'ma_hoi_dong' => $maHoiDong,
                 'ten' => $request->ten,
                 'dot_bao_cao_id' => $request->dot_bao_cao_id,
-                'phong_id' => $request->phong_id
+                'phong_id' => $request->phong_id,
+                'thoi_gian_bat_dau' => $request->thoi_gian_bat_dau
             ]);
 
             DB::commit();
@@ -107,13 +109,30 @@ class HoiDongController extends Controller
             'ma_hoi_dong' => 'required|string|max:255',
             'ten' => 'required|string|max:255',
             'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
-            'phong_id' => 'required|exists:phongs,id'
+            'phong_id' => 'required|exists:phongs,id',
+            'thoi_gian_bat_dau' => 'nullable|date'
         ]);
 
-        $hoiDong->update($request->all());
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('admin.hoi-dong.index')
-            ->with('success', 'Cập nhật hội đồng thành công.');
+            $hoiDong->update([
+                'ma_hoi_dong' => $request->ma_hoi_dong,
+                'ten' => $request->ten,
+                'dot_bao_cao_id' => $request->dot_bao_cao_id,
+                'phong_id' => $request->phong_id,
+                'thoi_gian_bat_dau' => $request->thoi_gian_bat_dau
+            ]);
+
+            DB::commit();
+            return redirect()->route('admin.hoi-dong.index')
+                ->with('success', 'Cập nhật hội đồng thành công.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Có lỗi xảy ra khi cập nhật: ' . $e->getMessage());
+        }
     }
 
     /**

@@ -15,7 +15,12 @@ class HoiDong extends Model
         'ma_hoi_dong',
         'ten',
         'dot_bao_cao_id',
-        'phong_id'
+        'phong_id',
+        'thoi_gian_bat_dau'
+    ];
+
+    protected $casts = [
+        'thoi_gian_bat_dau' => 'datetime'
     ];
 
     /**

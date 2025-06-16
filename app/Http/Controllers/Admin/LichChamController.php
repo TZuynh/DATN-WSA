@@ -264,6 +264,7 @@ class LichChamController extends Controller
             $truongTieuBan = 'Chưa có trưởng tiểu ban';
             $thuKy = 'Chưa có thư ký';
             $lichTao = null;
+            $thoiGianBatDau = null;
 
             if ($hoiDong) {
                 $phanCongVaiTros = PhanCongVaiTro::with(['taiKhoan', 'vaiTro'])
@@ -277,6 +278,9 @@ class LichChamController extends Controller
                         $thuKy = $phanCong->taiKhoan->ten ?? 'Chưa có thư ký';
                     }
                 }
+
+                // Lấy thời gian bắt đầu của hội đồng
+                $thoiGianBatDau = $hoiDong->thoi_gian_bat_dau ? Carbon::parse($hoiDong->thoi_gian_bat_dau)->format('H\hi \N\g\à\y d/m/Y') : null;
             }
 
             $latestLichCham = $lichChamsCollection->first();
@@ -289,7 +293,8 @@ class LichChamController extends Controller
                 'truongTieuBan' => $truongTieuBan,
                 'thuKy' => $thuKy,
                 'lichChams' => $lichChamsCollection->sortBy('thu_tu'),
-                'lichTao' => $lichTao
+                'lichTao' => $lichTao,
+                'thoiGianBatDau' => $thoiGianBatDau
             ];
         }
 

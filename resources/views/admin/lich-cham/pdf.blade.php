@@ -133,7 +133,7 @@
             <div class="info">
                 <p style="font-weight: bold;">Trưởng tiểu ban: {{ $truongTieuBan }}</p>
                 <p style="font-weight: bold;">Thư ký: {{ $thuKy }}</p>
-                <p class="thoi-gian">Thời gian: {{ $group['lichTao'] ?? 'Chưa có thời gian' }}</p>
+                <p class="thoi-gian">Thời gian: {{ $group['thoiGianBatDau'] ?? 'Chưa có thời gian' }}</p>
             </div>
         </div>
 
