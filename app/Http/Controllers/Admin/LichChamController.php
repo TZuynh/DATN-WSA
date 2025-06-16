@@ -36,8 +36,14 @@ class LichChamController extends Controller
     {
         $hoiDongs = HoiDong::all();
         $dotBaoCaos = DotBaoCao::all();
+        
+        // Lấy danh sách nhóm đã có lịch chấm
+        $nhomDaCoLichCham = LichCham::pluck('nhom_id')->toArray();
+        
+        // Lấy danh sách nhóm chưa có lịch chấm
         $nhoms = Nhom::where('trang_thai', 'hoat_dong')
             ->whereHas('deTai') // Chỉ lấy các nhóm đã có đề tài
+            ->whereNotIn('id', $nhomDaCoLichCham) // Loại bỏ các nhóm đã có lịch chấm
             ->select('id', 'ma_nhom', 'ten', 'giang_vien_id')
             ->with(['giangVien:id,ten', 'deTai:id,ten_de_tai'])
             ->get();
@@ -113,8 +119,19 @@ class LichChamController extends Controller
     {
         $hoiDongs = HoiDong::all();
         $dotBaoCaos = DotBaoCao::all();
+        
+        // Lấy danh sách nhóm đã có lịch chấm (trừ nhóm hiện tại)
+        $nhomDaCoLichCham = LichCham::where('id', '!=', $lichCham->id)
+            ->pluck('nhom_id')
+            ->toArray();
+        
+        // Lấy danh sách nhóm chưa có lịch chấm và nhóm hiện tại
         $nhoms = Nhom::where('trang_thai', 'hoat_dong')
-            ->whereHas('deTai') // Chỉ lấy các nhóm đã có đề tài
+            ->whereHas('deTai')
+            ->where(function($query) use ($lichCham, $nhomDaCoLichCham) {
+                $query->where('id', $lichCham->nhom_id) // Thêm nhóm hiện tại
+                      ->orWhereNotIn('id', $nhomDaCoLichCham); // Thêm các nhóm chưa có lịch chấm
+            })
             ->select('id', 'ma_nhom', 'ten', 'giang_vien_id')
             ->with(['giangVien:id,ten', 'deTai:id,ten_de_tai'])
             ->get();
