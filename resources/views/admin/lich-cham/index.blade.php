@@ -10,7 +10,7 @@
             <a href="{{ route('admin.lich-cham.create') }}" class="btn btn-primary me-2">
                 <i class="fas fa-plus me-2"></i> Thêm lịch chấm
             </a>
-            <a href="{{ route('admin.lich-cham.export-pdf') }}" class="btn btn-primary">
+            <a href="{{ route('admin.lich-cham.export-pdf') }}" class="btn btn-danger">
                 <i class="fas fa-file-pdf me-2"></i> Xuất PDF
             </a>
         </div>
