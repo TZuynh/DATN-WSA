@@ -126,7 +126,7 @@
             $phong = $hoiDong->phong ?? null;
             $truongTieuBan = $group['truongTieuBan'];
             $thuKy = $group['thuKy'];
-            $lichChams = $group['lichChams'];
+            $lichChams = $group['lichChams']->sortBy('thu_tu');
         @endphp
         <div class="header">
             <div class="title">DANH SÁCH NHÓM BẢO VỆ ĐATN - {{ $hoiDong->ten ?? 'Chưa có hội đồng' }} - {{ $phong->ten_phong ?? 'Chưa có phòng' }}</div>

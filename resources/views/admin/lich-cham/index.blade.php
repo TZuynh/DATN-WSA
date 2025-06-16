@@ -22,7 +22,7 @@
                 <table class="table table-bordered table-hover" id="lichChamTable">
                     <thead class="table-light">
                         <tr>
-                            <th>ID</th>
+                            <th style="width: 50px;">STT</th>
                             <th>Hội đồng</th>
                             <th>Đợt báo cáo</th>
                             <th>Nhóm</th>
@@ -30,10 +30,10 @@
                             <th>Thao tác</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="sortable">
                         @forelse($lichChams as $lichCham)
-                            <tr>
-                                <td>{{ $lichCham->id }}</td>
+                            <tr data-id="{{ $lichCham->id }}" class="sortable-row">
+                                <td>{{ $lichCham->thu_tu }}</td>
                                 <td>{{ $lichCham->hoiDong->ten }}</td>
                                 <td>{{ $lichCham->dotBaoCao->nam_hoc }}</td>
                                 <td>{{ $lichCham->nhom->ten }}</td>
@@ -76,25 +76,65 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
-    $(document).ready(function() {
-        $('#lichChamTable').DataTable({
-            language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json',
-            },
-            pageLength: 10,
-            ordering: true,
-            responsive: true,
-            dom: 'Bfrtip',
-            buttons: [
-                'copy', 'csv', 'excel', 'pdf', 'print'
-            ]
+    document.addEventListener('DOMContentLoaded', function () {
+        const tableBody = document.getElementById('sortable');
+
+        new Sortable(tableBody, {
+            animation: 150,
+            onEnd: function () {
+                let orders = [];
+                tableBody.querySelectorAll('tr').forEach((row, index) => {
+                    orders.push({
+                        id: row.dataset.id,
+                        new_order: index + 1
+                    });
+                });
+
+                fetch("{{ route('admin.lich-cham.update-order') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ orders })  // 👉 phải là `orders`
+                }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload(); // Reload để hiển thị STT mới
+                    } else {
+                        alert("Cập nhật thất bại: " + data.message);
+                    }
+                });
+            }
         });
     });
 </script>
+
 @endpush
 
 @push('styles')
 <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 <link href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
+<style>
+    .sortable-row {
+        cursor: move;
+    }
+    .sortable-ghost {
+        opacity: 0.4;
+        background: #F0F0F0 !important;
+    }
+    .sortable-drag {
+        background: #fff !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        cursor: move;
+    }
+    tbody tr {
+        transition: all 0.3s ease;
+    }
+    tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+</style>
 @endpush 

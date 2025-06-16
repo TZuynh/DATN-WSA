@@ -23,8 +23,8 @@ class LichChamController extends Controller
     public function index()
     {
         $lichChams = LichCham::with(['hoiDong', 'dotBaoCao', 'nhom'])
-            ->orderBy('lich_tao', 'desc')
-            ->paginate(10);
+                        ->orderBy('thu_tu')
+                        ->paginate(10);
             
         return view('admin.lich-cham.index', compact('lichChams'));
     }
@@ -262,4 +262,24 @@ class LichChamController extends Controller
         $pdf = PDF::loadView('admin.lich-cham.pdf', $data);
         return $pdf->download('danh-sach-lich-cham.pdf');
     }
+
+    public function updateOrder(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+            
+            $orders = $request->input('orders');
+            
+            foreach ($orders as $order) {
+                LichCham::where('id', $order['id'])
+                        ->update(['thu_tu' => $order['new_order']]);
+            }
+            
+            DB::commit();
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }    
 } 
