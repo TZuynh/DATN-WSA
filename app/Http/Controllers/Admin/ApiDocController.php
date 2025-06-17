@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\DeTai;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use App\Models\TaiKhoan;
+use Illuminate\Support\Facades\Hash;
 
 class ApiDocController extends Controller
 {
@@ -616,6 +618,178 @@ class ApiDocController extends Controller
 
             return response()->json([
                 'message' => 'Xóa đề tài thành công'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Có lỗi xảy ra',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Lấy danh sách tài khoản
+     */
+    public function getTaiKhoan(Request $request)
+    {
+        try {
+            $query = TaiKhoan::query();
+            
+            if ($request->has('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('ten', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%");
+                });
+            }
+
+            if ($request->has('vai_tro')) {
+                $query->where('vai_tro', $request->vai_tro);
+            }
+
+            $taiKhoans = $query->paginate(10);
+            
+            return response()->json([
+                'success' => true,
+                'data' => $taiKhoans
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi khi lấy danh sách tài khoản: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Lấy chi tiết tài khoản
+     */
+    public function showTaiKhoan($id)
+    {
+        try {
+            $taiKhoan = TaiKhoan::findOrFail($id);
+            
+            return response()->json([
+                'success' => true,
+                'data' => $taiKhoan
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi khi lấy thông tin tài khoản: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Tạo tài khoản mới
+     */
+    public function storeTaiKhoan(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'ten' => 'required|string|max:255',
+            'email' => 'required|email|unique:tai_khoans,email',
+            'mat_khau' => 'required|string|min:6',
+            'vai_tro_id' => 'required|exists:vai_tros,id'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Dữ liệu không hợp lệ',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $taiKhoan = TaiKhoan::create([
+                'ten' => $request->ten,
+                'email' => $request->email,
+                'mat_khau' => Hash::make($request->mat_khau),
+                'vai_tro_id' => $request->vai_tro_id
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Tạo tài khoản thành công',
+                'data' => $taiKhoan
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Có lỗi xảy ra',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Cập nhật tài khoản
+     */
+    public function updateTaiKhoan(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'ten' => 'required|string|max:255',
+            'email' => 'required|email|unique:tai_khoans,email,' . $id,
+            'vai_tro_id' => 'required|exists:vai_tros,id',
+            'mat_khau' => 'nullable|string|min:6'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Dữ liệu không hợp lệ',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $taiKhoan = TaiKhoan::findOrFail($id);
+            
+            $data = [
+                'ten' => $request->ten,
+                'email' => $request->email,
+                'vai_tro_id' => $request->vai_tro_id
+            ];
+
+            if ($request->filled('mat_khau')) {
+                $data['mat_khau'] = Hash::make($request->mat_khau);
+            }
+
+            $taiKhoan->update($data);
+
+            return response()->json([
+                'message' => 'Cập nhật tài khoản thành công',
+                'data' => $taiKhoan
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Có lỗi xảy ra khi cập nhật tài khoản',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Xóa tài khoản
+     */
+    public function destroyTaiKhoan($id)
+    {
+        $taiKhoan = TaiKhoan::findOrFail($id);
+
+        try {
+            DB::beginTransaction();
+
+            $taiKhoan->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Xóa tài khoản thành công'
             ]);
 
         } catch (\Exception $e) {

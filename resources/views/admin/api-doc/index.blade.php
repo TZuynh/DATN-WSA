@@ -61,6 +61,10 @@
                                 <input type="text" id="deTaiUrl" class="form-control mb-3" value="http://project.test/api/admin/de-tai">
                             </div>
                             <div class="mb-3">
+                                <label class="form-label">Token:</label>
+                                <input type="text" id="deTaiToken" class="form-control mb-3" placeholder="Nhập token">
+                            </div>
+                            <div class="mb-3">
                                 <label class="form-label">ID (cho PUT/DELETE):</label>
                                 <input type="text" id="deTaiId" class="form-control mb-3" placeholder="Nhập ID đề tài">
                             </div>
@@ -85,6 +89,57 @@
                             <h4>Response</h4>
                             <div class="response-box p-3 bg-light rounded">
                                 <pre><code id="deTaiResponseBody">Chưa có response</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phần Test API Tài khoản -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Test API Tài khoản</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>Request</h4>
+                            <div class="mb-3">
+                                <label class="form-label">Method:</label>
+                                <select id="taiKhoanMethod" class="form-select mb-3">
+                                    <option value="GET">GET</option>
+                                    <option value="POST">POST</option>
+                                    <option value="PUT">PUT</option>
+                                    <option value="DELETE">DELETE</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">URL:</label>
+                                <input type="text" id="taiKhoanUrl" class="form-control mb-3" value="http://project.test/api/admin/tai-khoan">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Token:</label>
+                                <input type="text" id="taiKhoanToken" class="form-control mb-3" placeholder="Nhập token">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">ID (cho PUT/DELETE):</label>
+                                <input type="text" id="taiKhoanId" class="form-control mb-3" placeholder="Nhập ID tài khoản">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Request Body:</label>
+                                <textarea id="taiKhoanRequestBody" class="form-control mb-3" rows="5" style="font-family: monospace;">{
+    "ten": "",
+    "email": "",
+    "mat_khau": "",
+    "vai_tro_id": ""
+}</textarea>
+                            </div>
+                            <button onclick="testTaiKhoanApi()" class="btn btn-primary">Test API</button>
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Response</h4>
+                            <div class="response-box p-3 bg-light rounded">
+                                <pre><code id="taiKhoanResponseBody">Chưa có response</code></pre>
                             </div>
                         </div>
                     </div>
@@ -249,6 +304,7 @@ async function testDeTaiApi() {
         let url = document.getElementById('deTaiUrl').value;
         const requestBody = document.getElementById('deTaiRequestBody').value;
         const id = document.getElementById('deTaiId').value;
+        const token = document.getElementById('deTaiToken').value;
         
         // Thêm ID vào URL nếu là PUT hoặc DELETE
         if ((method === 'PUT' || method === 'DELETE') && id) {
@@ -262,9 +318,8 @@ async function testDeTaiApi() {
         };
 
         // Thêm token nếu có
-        const token = localStorage.getItem('api_token');
         if (!token) {
-            throw new Error('Vui lòng đăng nhập trước để lấy token!');
+            throw new Error('Vui lòng nhập token!');
         }
         headers['Authorization'] = `Bearer ${token}`;
 
@@ -300,7 +355,6 @@ async function testDeTaiApi() {
         
         // Kiểm tra nếu token hết hạn
         if (data.message === 'Unauthenticated.') {
-            localStorage.removeItem('api_token');
             throw new Error('Token đã hết hạn. Vui lòng đăng nhập lại!');
         }
         
@@ -333,6 +387,75 @@ function toggleTrangThaiField() {
 document.addEventListener('DOMContentLoaded', function() {
     toggleTrangThaiField();
 });
+
+async function testTaiKhoanApi() {
+    try {
+        const method = document.getElementById('taiKhoanMethod').value;
+        let url = document.getElementById('taiKhoanUrl').value;
+        const requestBody = document.getElementById('taiKhoanRequestBody').value;
+        const id = document.getElementById('taiKhoanId').value;
+        const token = document.getElementById('taiKhoanToken').value;
+        
+        // Thêm ID vào URL nếu là PUT hoặc DELETE
+        if ((method === 'PUT' || method === 'DELETE') && id) {
+            url = url + '/' + id;
+        }
+        
+        // Chuẩn bị headers
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        };
+
+        // Thêm token nếu có
+        if (!token) {
+            throw new Error('Vui lòng nhập token!');
+        }
+        headers['Authorization'] = `Bearer ${token}`;
+
+        // Thêm CSRF token nếu có
+        const csrfToken = document.querySelector('meta[name="csrf-token"]');
+        if (csrfToken) {
+            headers['X-CSRF-TOKEN'] = csrfToken.getAttribute('content');
+        }
+
+        // Xử lý URL cho các method khác nhau
+        if (method === 'GET' || method === 'DELETE') {
+            // Nếu là GET hoặc DELETE, chuyển request body thành query params
+            const params = new URLSearchParams();
+            const bodyObj = JSON.parse(requestBody);
+            Object.keys(bodyObj).forEach(key => {
+                if (bodyObj[key]) {
+                    params.append(key, bodyObj[key]);
+                }
+            });
+            if (params.toString()) {
+                url += '?' + params.toString();
+            }
+        }
+        
+        // Gửi request
+        const response = await fetch(url, {
+            method: method,
+            headers: headers,
+            body: method === 'GET' || method === 'DELETE' ? null : requestBody
+        });
+
+        const data = await response.json();
+        
+        // Kiểm tra nếu token hết hạn
+        if (data.message === 'Unauthenticated.') {
+            throw new Error('Token đã hết hạn. Vui lòng đăng nhập lại!');
+        }
+        
+        // Hiển thị response
+        document.getElementById('taiKhoanResponseBody').textContent = JSON.stringify(data, null, 2);
+    } catch (error) {
+        document.getElementById('taiKhoanResponseBody').textContent = JSON.stringify({
+            error: error.message
+        }, null, 2);
+    }
+}
 </script>
 
 <style>

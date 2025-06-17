@@ -36,6 +36,13 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'role:admin'])->group(functi
     Route::post('/de-tai', [ApiDocController::class, 'storeDeTai']);
     Route::match(['put', 'patch'], '/de-tai/{id}', [ApiDocController::class, 'updateDeTai']);
     Route::delete('/de-tai/{id}', [ApiDocController::class, 'destroyDeTai']);
+
+    // API Tài khoản
+    Route::get('/tai-khoan', [ApiDocController::class, 'getTaiKhoan']);
+    Route::get('/tai-khoan/{id}', [ApiDocController::class, 'showTaiKhoan']);
+    Route::post('/tai-khoan', [ApiDocController::class, 'storeTaiKhoan']);
+    Route::match(['put', 'patch'], '/tai-khoan/{id}', [ApiDocController::class, 'updateTaiKhoan']);
+    Route::delete('/tai-khoan/{id}', [ApiDocController::class, 'destroyTaiKhoan']);
 });
 
 // Giang vien API routes

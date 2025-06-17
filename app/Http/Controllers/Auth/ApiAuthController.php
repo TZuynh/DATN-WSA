@@ -26,8 +26,13 @@ class ApiAuthController extends Controller
             ]);
         }
 
+        $token = $taiKhoan->createToken('api-token')->plainTextToken;
+        
+        // Lưu token vào session
+        session(['api_token' => $token]);
+
         return response()->json([
-            'token' => $taiKhoan->createToken('api-token')->plainTextToken,
+            'token' => $token,
             'tai_khoan' => [
                 'id' => $taiKhoan->id,
                 'ten' => $taiKhoan->ten,

@@ -14,10 +14,19 @@ class TaiKhoan extends Authenticatable
     protected $table = 'tai_khoans';
 
     protected $fillable = [
-        'ten', 'email', 'mat_khau', 'vai_tro',
+        'ten',
+        'email',
+        'mat_khau',
+        'vai_tro',
     ];
 
-    protected $hidden = ['mat_khau'];
+    protected $hidden = [
+        'mat_khau',
+    ];
+
+    protected $casts = [
+        'vai_tro' => 'string',
+    ];
 
     public function getAuthPassword()
     {
