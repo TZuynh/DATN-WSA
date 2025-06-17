@@ -81,7 +81,9 @@ class DeTaiController extends Controller
         }
 
         $nhoms = Nhom::all();
-        return view('giangvien.de-tai.edit', compact('deTai', 'nhoms'));
+        $daPhanCongCham = $deTai->phanCongCham()->exists();
+        $daCoLichCham = $deTai->lichCham()->exists();
+        return view('giangvien.de-tai.edit', compact('deTai', 'nhoms', 'daPhanCongCham', 'daCoLichCham'));
     }
 
     public function update(Request $request, DeTai $deTai)
@@ -89,6 +91,19 @@ class DeTaiController extends Controller
         if ($deTai->giang_vien_id !== auth()->id()) {
             return redirect()->route('giangvien.de-tai.index')
                 ->with('error', 'Bạn không có quyền cập nhật đề tài này.');
+        }
+
+        // Kiểm tra xem đề tài đã có trong lịch chấm chưa
+        if ($deTai->lichCham()->exists()) {
+            return redirect()->back()
+                ->with('error', 'Không thể cập nhật trạng thái đề tài vì đã có trong lịch chấm.');
+        }
+
+        // Kiểm tra xem đề tài đã được phân công chấm chưa
+        if ($deTai->phanCongCham()->exists() && 
+            in_array($request->trang_thai, [DeTai::TRANG_THAI_CHO_DUYET, DeTai::TRANG_THAI_KHONG_XAY_RA_GVHD])) {
+            return redirect()->back()
+                ->with('error', 'Không thể chuyển đề tài sang trạng thái này vì đã được phân công chấm.');
         }
 
         $request->validate([

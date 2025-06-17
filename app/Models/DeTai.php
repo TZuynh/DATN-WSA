@@ -65,7 +65,12 @@ class DeTai extends Model
 
     public function phanCongCham()
     {
-        return $this->hasOne(PhanCongCham::class, 'de_tai_id');
+        return $this->hasOne(PhanCongCham::class);
+    }
+
+    public function lichCham()
+    {
+        return $this->hasOne(LichCham::class);
     }
 
     // Phương thức tạo mã đề tài tự động

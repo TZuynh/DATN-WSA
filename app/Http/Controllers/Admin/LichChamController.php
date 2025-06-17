@@ -47,21 +47,31 @@ class LichChamController extends Controller
         // Lấy danh sách nhóm đã có lịch chấm
         $nhomDaCoLichCham = LichCham::pluck('nhom_id')->toArray();
         
-        // Lấy danh sách nhóm chưa có lịch chấm
+        // Lấy danh sách nhóm chưa có lịch chấm và có đề tài phù hợp
         $nhoms = Nhom::where('trang_thai', 'hoat_dong')
             ->whereHas('deTais', function($query) {
-                $query->whereHas('phanCongCham');
+                $query->whereHas('phanCongCham')
+                    ->whereNotIn('trang_thai', [
+                        DeTai::TRANG_THAI_CHO_DUYET,
+                        DeTai::TRANG_THAI_KHONG_XAY_RA_GVHD,
+                        DeTai::TRANG_THAI_KHONG_XAY_RA_GVPB
+                    ]);
             })
             ->whereNotIn('id', $nhomDaCoLichCham)
             ->select('id', 'ma_nhom', 'ten', 'giang_vien_id')
             ->with(['giangVien:id,ten', 'deTais' => function($query) {
-                $query->whereHas('phanCongCham');
+                $query->whereHas('phanCongCham')
+                    ->whereNotIn('trang_thai', [
+                        DeTai::TRANG_THAI_CHO_DUYET,
+                        DeTai::TRANG_THAI_KHONG_XAY_RA_GVHD,
+                        DeTai::TRANG_THAI_KHONG_XAY_RA_GVPB
+                    ]);
             }])
             ->get();
             
         if ($nhoms->isEmpty()) {
             return redirect()->route('admin.lich-cham.index')
-                ->with('error', 'Tất cả các nhóm đã có lịch chấm hoặc chưa có đề tài được phân công chấm.');
+                ->with('error', 'Không có nhóm nào phù hợp để thêm vào lịch chấm. Vui lòng kiểm tra trạng thái đề tài.');
         }
             
         return view('admin.lich-cham.create', compact('hoiDongs', 'dotBaoCaos', 'nhoms'));

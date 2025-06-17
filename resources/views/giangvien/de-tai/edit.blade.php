@@ -121,13 +121,21 @@
                     <label for="trang_thai" style="display: block; margin-bottom: 5px; color: #4a5568;">Trạng thái</label>
                     <select name="trang_thai" id="trang_thai"
                         class="form-control @error('trang_thai') is-invalid @enderror" required
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+                        {{ $daCoLichCham ? 'disabled' : '' }}>
+                        @if(!$daPhanCongCham)
                         <option value="0" {{ old('trang_thai', $deTai->trang_thai) == 0 ? 'selected' : '' }}>Đang chờ duyệt</option>
+                        @endif
                         <option value="1" {{ old('trang_thai', $deTai->trang_thai) == 1 ? 'selected' : '' }}>Đang thực hiện (giảng viên hướng dẫn đồng ý báo cáo)</option>
                         <option value="2" {{ old('trang_thai', $deTai->trang_thai) == 2 ? 'selected' : '' }}>Đang thực hiện (giảng viên phản biện đồng ý báo cáo)</option>
+                        @if(!$daPhanCongCham)
                         <option value="3" {{ old('trang_thai', $deTai->trang_thai) == 3 ? 'selected' : '' }}>Không xảy ra (giảng viên hướng dẫn không đồng ý)</option>
+                        @endif
                         <option value="4" {{ old('trang_thai', $deTai->trang_thai) == 4 ? 'selected' : '' }}>Không xảy ra (giảng viên phản biện không đồng ý)</option>
                     </select>
+                    @if($daCoLichCham)
+                    <small style="color: #e53e3e; display: block; margin-top: 5px;">Không thể thay đổi trạng thái vì đề tài đã có trong lịch chấm</small>
+                    @endif
                     @error('trang_thai')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
