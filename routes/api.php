@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\ApiAuthController;
+use App\Http\Controllers\Admin\ApiDocController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,25 +26,24 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Admin API routes
-Route::domain('admin.project.test')->group(function () {
-    Route::middleware('auth:sanctum')->group(function () {
-        // Thêm các route API cho admin ở đây
-        // Ví dụ:
-        // Route::prefix('de-tai')->group(function () {
-        //     Route::get('/', [DeTaiController::class, 'index']);
-        //     Route::post('/', [DeTaiController::class, 'store']);
-        // });
-    });
+Route::prefix('admin')->middleware(['auth:sanctum', 'role:admin'])->group(function () {
+    // API Documentation
+    Route::get('/api-doc', [ApiDocController::class, 'index']);
+    
+    // API Đề tài
+    Route::get('/de-tai', [ApiDocController::class, 'getDeTai']);
+    Route::get('/de-tai/{id}', [ApiDocController::class, 'showDeTai']);
+    Route::post('/de-tai', [ApiDocController::class, 'storeDeTai']);
+    Route::match(['put', 'patch'], '/de-tai/{id}', [ApiDocController::class, 'updateDeTai']);
+    Route::delete('/de-tai/{id}', [ApiDocController::class, 'destroyDeTai']);
 });
 
 // Giang vien API routes
-Route::domain('giangvien.project.test')->group(function () {
-    Route::middleware('auth:sanctum')->group(function () {
-        // Thêm các route API cho giảng viên ở đây
-        // Ví dụ:
-        // Route::prefix('sinh-vien')->group(function () {
-        //     Route::get('/', [SinhVienController::class, 'index']);
-        //     Route::post('/', [SinhVienController::class, 'store']);
-        // });
-    });
+Route::prefix('giang-vien')->middleware(['auth:sanctum', 'role:giangvien'])->group(function () {
+    // Thêm các route API cho giảng viên ở đây
+    // Ví dụ:
+    // Route::prefix('sinh-vien')->group(function () {
+    //     Route::get('/', [SinhVienController::class, 'index']);
+    //     Route::post('/', [SinhVienController::class, 'store']);
+    // });
 });

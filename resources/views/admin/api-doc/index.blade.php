@@ -38,6 +38,59 @@
                 </div>
             </div>
 
+            <!-- Phần Test API Đề tài -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Test API Đề tài</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>Request</h4>
+                            <div class="mb-3">
+                                <label class="form-label">Method:</label>
+                                <select id="deTaiMethod" class="form-select mb-3" onchange="toggleTrangThaiField()">
+                                    <option value="GET">GET</option>
+                                    <option value="POST">POST</option>
+                                    <option value="PUT">PUT</option>
+                                    <option value="DELETE">DELETE</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">URL:</label>
+                                <input type="text" id="deTaiUrl" class="form-control mb-3" value="http://project.test/api/admin/de-tai">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">ID (cho PUT/DELETE):</label>
+                                <input type="text" id="deTaiId" class="form-control mb-3" placeholder="Nhập ID đề tài">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Request Body:</label>
+                                <textarea id="deTaiRequestBody" class="form-control mb-3" rows="5" style="font-family: monospace;">{
+    "ten_de_tai": "",
+    "mo_ta": "",
+    "y_kien_giang_vien": "",
+    "ngay_bat_dau": "",
+    "ngay_ket_thuc": "",
+    "nhom_id": "",
+    "giang_vien_id": "",
+    "dot_bao_cao_id": "",
+    "vai_tro_id": "",
+    "trang_thai": 0
+}</textarea>
+                            </div>
+                            <button onclick="testDeTaiApi()" class="btn btn-primary">Test API</button>
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Response</h4>
+                            <div class="response-box p-3 bg-light rounded">
+                                <pre><code id="deTaiResponseBody">Chưa có response</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Tài liệu API -->
             <div class="card">
                 <div class="card-header">
@@ -78,8 +131,8 @@
                                                     <tbody>
                                                         @foreach($endpoint['params'] as $param => $description)
                                                             <tr>
-                                                                <td><code>{{ $param }}</code></td>
-                                                                <td>{{ $description }}</td>
+                                                                <td><code>{{ is_string($param) ? $param : json_encode($param) }}</code></td>
+                                                                <td>{{ is_string($description) ? $description : json_encode($description) }}</td>
                                                             </tr>
                                                         @endforeach
                                                     </tbody>
@@ -100,8 +153,8 @@
                                                     <tbody>
                                                         @foreach($endpoint['headers'] as $header => $value)
                                                             <tr>
-                                                                <td><code>{{ $header }}</code></td>
-                                                                <td><code>{{ $value }}</code></td>
+                                                                <td><code>{{ is_string($header) ? $header : json_encode($header) }}</code></td>
+                                                                <td><code>{{ is_string($value) ? $value : json_encode($value) }}</code></td>
                                                             </tr>
                                                         @endforeach
                                                     </tbody>
@@ -116,7 +169,7 @@
                                                     @foreach($endpoint['response'] as $type => $example)
                                                         <div class="response-example mb-3">
                                                             <h6 class="text-capitalize">{{ $type }}:</h6>
-                                                            <pre class="bg-light p-3 rounded"><code>{{ json_encode($example, JSON_PRETTY_PRINT) }}</code></pre>
+                                                            <pre class="bg-light p-3 rounded"><code>{{ is_string($example) ? $example : json_encode($example, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</code></pre>
                                                         </div>
                                                     @endforeach
                                                 </div>
@@ -165,11 +218,11 @@ async function testApi() {
         document.getElementById('responseBody').textContent = JSON.stringify(data, null, 2);
         
         // Hiển thị token nếu có
-        if (data.token) {
+        if (data.token_access) {
             document.getElementById('tokenBox').style.display = 'block';
-            document.getElementById('tokenValue').textContent = data.token;
+            document.getElementById('tokenValue').textContent = data.token_access;
             // Lưu token
-            localStorage.setItem('api_token', data.token);
+            localStorage.setItem('api_token', data.token_access);
         } else {
             document.getElementById('tokenBox').style.display = 'none';
         }
@@ -189,6 +242,97 @@ function copyToken() {
         });
     }
 }
+
+async function testDeTaiApi() {
+    try {
+        const method = document.getElementById('deTaiMethod').value;
+        let url = document.getElementById('deTaiUrl').value;
+        const requestBody = document.getElementById('deTaiRequestBody').value;
+        const id = document.getElementById('deTaiId').value;
+        
+        // Thêm ID vào URL nếu là PUT hoặc DELETE
+        if ((method === 'PUT' || method === 'DELETE') && id) {
+            url = url + '/' + id;
+        }
+        
+        // Chuẩn bị headers
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        };
+
+        // Thêm token nếu có
+        const token = localStorage.getItem('api_token');
+        if (!token) {
+            throw new Error('Vui lòng đăng nhập trước để lấy token!');
+        }
+        headers['Authorization'] = `Bearer ${token}`;
+
+        // Thêm CSRF token nếu có
+        const csrfToken = document.querySelector('meta[name="csrf-token"]');
+        if (csrfToken) {
+            headers['X-CSRF-TOKEN'] = csrfToken.getAttribute('content');
+        }
+
+        // Xử lý URL cho các method khác nhau
+        if (method === 'GET' || method === 'DELETE') {
+            // Nếu là GET hoặc DELETE, chuyển request body thành query params
+            const params = new URLSearchParams();
+            const bodyObj = JSON.parse(requestBody);
+            Object.keys(bodyObj).forEach(key => {
+                if (bodyObj[key]) {
+                    params.append(key, bodyObj[key]);
+                }
+            });
+            if (params.toString()) {
+                url += '?' + params.toString();
+            }
+        }
+        
+        // Gửi request
+        const response = await fetch(url, {
+            method: method,
+            headers: headers,
+            body: method === 'GET' || method === 'DELETE' ? null : requestBody
+        });
+
+        const data = await response.json();
+        
+        // Kiểm tra nếu token hết hạn
+        if (data.message === 'Unauthenticated.') {
+            localStorage.removeItem('api_token');
+            throw new Error('Token đã hết hạn. Vui lòng đăng nhập lại!');
+        }
+        
+        // Hiển thị response
+        document.getElementById('deTaiResponseBody').textContent = JSON.stringify(data, null, 2);
+    } catch (error) {
+        document.getElementById('deTaiResponseBody').textContent = JSON.stringify({
+            error: error.message
+        }, null, 2);
+    }
+}
+
+function toggleTrangThaiField() {
+    const method = document.getElementById('deTaiMethod').value;
+    const requestBody = document.getElementById('deTaiRequestBody');
+    let bodyObj = JSON.parse(requestBody.value);
+    
+    if (method === 'POST') {
+        // Xóa trường trang_thai nếu là POST
+        delete bodyObj.trang_thai;
+    } else if (method === 'PUT' && !bodyObj.hasOwnProperty('trang_thai')) {
+        // Thêm trường trang_thai nếu là PUT và chưa có
+        bodyObj.trang_thai = 0;
+    }
+    
+    requestBody.value = JSON.stringify(bodyObj, null, 4);
+}
+
+// Gọi hàm khi trang được tải
+document.addEventListener('DOMContentLoaded', function() {
+    toggleTrangThaiField();
+});
 </script>
 
 <style>
