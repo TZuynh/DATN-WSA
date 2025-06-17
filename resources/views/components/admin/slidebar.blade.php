@@ -22,18 +22,36 @@
                 </li>
             </ul>
         </li>
-        <li class="menu-item has-submenu {{ request()->routeIs('admin.hoi-dong.*') || request()->routeIs('admin.dot-bao-cao.*') || request()->routeIs('admin.lich-cham.*') ? 'active' : '' }}">
+        <li class="menu-item has-submenu {{ request()->routeIs('admin.phan-bien.*') || request()->routeIs('admin.phan-cong-cham.*') ? 'active' : '' }}">
             <a href="javascript:void(0)">
-                <i class="fas fa-calendar-alt"></i>
-                <span>Lịch</span>
+                <i class="fas fa-tasks"></i>
+                <span>Phản biện</span>
                 <i class="fas fa-chevron-down arrow"></i>
             </a>
             <ul class="submenu">
-                <li class="menu-item {{ request()->routeIs('admin.hoi-dong.*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.hoi-dong.index') }}"><i class="fas fa-users"></i> Hội đồng</a>
+                <li class="menu-item {{ request()->routeIs('admin.phan-cong-cham.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.phan-cong-cham.index') }}"><i class="fas fa-tasks"></i> Phân công chấm</a>
+                </li>
+            </ul>
+        </li>
+        <li class="menu-item has-submenu {{ request()->routeIs('admin.hoi-dong.*') || request()->routeIs('admin.dot-bao-cao.*') || request()->routeIs('admin.lich-cham.*') ? 'active' : '' }}">
+            <a href="javascript:void(0)">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Hội đồng</span>
+                <i class="fas fa-chevron-down arrow"></i>
+            </a>
+            <ul class="submenu">
+                <li class="menu-item {{ request()->routeIs('admin.phong.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.phong.index') }}">
+                        <i class="fas fa-door-open"></i>
+                        <span>Phòng</span>
+                    </a>
                 </li>
                 <li class="menu-item {{ request()->routeIs('admin.dot-bao-cao.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.dot-bao-cao.index') }}"><i class="fas fa-calendar"></i> Đợt báo cáo</a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('admin.hoi-dong.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.hoi-dong.index') }}"><i class="fas fa-users"></i> Hội đồng</a>
                 </li>
                 <li class="menu-item {{ request()->routeIs('admin.lich-cham.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.lich-cham.index') }}"><i class="fas fa-clock"></i> Lịch chấm</a>
@@ -60,24 +78,6 @@
                     <a href="{{ route('admin.de-tai.index') }}"><i class="fas fa-book"></i> Đề tài</a>
                 </li>
             </ul>
-        </li>
-        <li class="menu-item has-submenu {{ request()->routeIs('admin.phan-bien.*') || request()->routeIs('admin.phan-cong-cham.*') ? 'active' : '' }}">
-            <a href="javascript:void(0)">
-                <i class="fas fa-tasks"></i>
-                <span>Chấm điểm</span>
-                <i class="fas fa-chevron-down arrow"></i>
-            </a>
-            <ul class="submenu">
-                <li class="menu-item {{ request()->routeIs('admin.phan-cong-cham.*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.phan-cong-cham.index') }}"><i class="fas fa-tasks"></i> Phân công chấm</a>
-                </li>
-            </ul>
-        </li>
-        <li class="menu-item {{ request()->routeIs('admin.phong.*') ? 'active' : '' }}">
-            <a href="{{ route('admin.phong.index') }}">
-                <i class="fas fa-door-open"></i>
-                <span>Phòng</span>
-            </a>
         </li>
         <li class="menu-item has-submenu {{ request()->routeIs('admin.cai-dat.*') || request()->routeIs('admin.api-doc.*') ? 'active' : '' }}">
             <a href="javascript:void(0)">
