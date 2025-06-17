@@ -692,7 +692,7 @@ class ApiDocController extends Controller
             'ten' => 'required|string|max:255',
             'email' => 'required|email|unique:tai_khoans,email',
             'mat_khau' => 'required|string|min:6',
-            'vai_tro_id' => 'required|exists:vai_tros,id'
+            'vai_tro' => 'required|string|in:admin,giang_vien,sinh_vien'
         ]);
 
         if ($validator->fails()) {
@@ -709,7 +709,7 @@ class ApiDocController extends Controller
                 'ten' => $request->ten,
                 'email' => $request->email,
                 'mat_khau' => Hash::make($request->mat_khau),
-                'vai_tro_id' => $request->vai_tro_id
+                'vai_tro' => $request->vai_tro
             ]);
 
             DB::commit();
@@ -736,7 +736,7 @@ class ApiDocController extends Controller
         $validator = Validator::make($request->all(), [
             'ten' => 'required|string|max:255',
             'email' => 'required|email|unique:tai_khoans,email,' . $id,
-            'vai_tro_id' => 'required|exists:vai_tros,id',
+            'vai_tro' => 'required|string|in:admin,giang_vien,sinh_vien',
             'mat_khau' => 'nullable|string|min:6'
         ]);
 
@@ -753,7 +753,7 @@ class ApiDocController extends Controller
             $data = [
                 'ten' => $request->ten,
                 'email' => $request->email,
-                'vai_tro_id' => $request->vai_tro_id
+                'vai_tro' => $request->vai_tro
             ];
 
             if ($request->filled('mat_khau')) {

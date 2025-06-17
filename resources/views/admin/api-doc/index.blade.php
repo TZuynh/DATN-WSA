@@ -131,7 +131,7 @@
     "ten": "",
     "email": "",
     "mat_khau": "",
-    "vai_tro_id": ""
+    "vai_tro": "admin"
 }</textarea>
                             </div>
                             <button onclick="testTaiKhoanApi()" class="btn btn-primary">Test API</button>
