@@ -134,7 +134,7 @@
                         <option value="4" {{ old('trang_thai', $deTai->trang_thai) == 4 ? 'selected' : '' }}>Không xảy ra (giảng viên phản biện không đồng ý)</option>
                     </select>
                     @if($daCoLichCham)
-                    <small style="color: #e53e3e; display: block; margin-top: 5px;">Không thể thay đổi trạng thái vì đề tài đã có trong lịch chấm</small>
+                    <small style="color: #e53e3e; display: block; margin-top: 5px;">Không thể thay đổi trạng thái vì đề tài đã có trong lịch bảo vệ</small>
                     @endif
                     @error('trang_thai')
                     <div class="invalid-feedback">{{ $message }}</div>
