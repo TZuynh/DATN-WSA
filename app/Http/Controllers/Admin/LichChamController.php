@@ -71,7 +71,7 @@ class LichChamController extends Controller
             
         if ($nhoms->isEmpty()) {
             return redirect()->route('admin.lich-cham.index')
-                ->with('error', 'Không có nhóm nào phù hợp để thêm vào lịch chấm. Vui lòng kiểm tra trạng thái đề tài.');
+                ->with('error', 'Không có nhóm nào phù hợp để thêm vào lịch bảo vệ. Vui lòng kiểm tra trạng thái đề tài.');
         }
             
         return view('admin.lich-cham.create', compact('hoiDongs', 'dotBaoCaos', 'nhoms'));
@@ -133,12 +133,12 @@ class LichChamController extends Controller
 
             DB::commit();
             return redirect()->route('admin.lich-cham.index')
-                ->with('success', 'Thêm lịch chấm thành công.');
+                ->with('success', 'Thêm lịch bảo vệ thành công.');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['error' => 'Không thể thêm lịch chấm: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'Không thể thêm lịch bảo vệ: ' . $e->getMessage()]);
         }
     }
 
@@ -160,13 +160,27 @@ class LichChamController extends Controller
         
         // Lấy danh sách nhóm chưa có lịch chấm và nhóm hiện tại
         $nhoms = Nhom::where('trang_thai', 'hoat_dong')
-            ->whereHas('deTais')
+            ->whereHas('deTais', function($query) {
+                $query->whereHas('phanCongCham')
+                    ->whereNotIn('trang_thai', [
+                        DeTai::TRANG_THAI_CHO_DUYET,
+                        DeTai::TRANG_THAI_KHONG_XAY_RA_GVHD,
+                        DeTai::TRANG_THAI_KHONG_XAY_RA_GVPB
+                    ]);
+            })
             ->where(function($query) use ($lichCham, $nhomDaCoLichCham) {
                 $query->where('id', $lichCham->nhom_id) // Thêm nhóm hiện tại
                       ->orWhereNotIn('id', $nhomDaCoLichCham); // Thêm các nhóm chưa có lịch chấm
             })
             ->select('id', 'ma_nhom', 'ten', 'giang_vien_id')
-            ->with(['giangVien:id,ten', 'deTais:id,ten_de_tai'])
+            ->with(['giangVien:id,ten', 'deTais' => function($query) {
+                $query->whereHas('phanCongCham')
+                    ->whereNotIn('trang_thai', [
+                        DeTai::TRANG_THAI_CHO_DUYET,
+                        DeTai::TRANG_THAI_KHONG_XAY_RA_GVHD,
+                        DeTai::TRANG_THAI_KHONG_XAY_RA_GVPB
+                    ]);
+            }])
             ->get();
             
         return view('admin.lich-cham.edit', compact('lichCham', 'hoiDongs', 'dotBaoCaos', 'nhoms'));
@@ -209,6 +223,21 @@ class LichChamController extends Controller
                 throw new \Exception('Đề tài "' . $deTai->ten_de_tai . '" chưa được phân công chấm. Vui lòng phân công chấm trước khi cập nhật lịch.');
             }
 
+            // Kiểm tra nếu thay đổi đề tài
+            $deTaiCu = $lichCham->deTai;
+            if ($deTaiCu && $deTaiCu->id != $deTai->id) {
+                // Nếu thay đổi đề tài, cần kiểm tra xem đề tài cũ có lịch chấm nào khác không
+                $lichChamKhac = LichCham::where('de_tai_id', $deTaiCu->id)
+                    ->where('id', '!=', $lichCham->id)
+                    ->exists();
+                
+                if (!$lichChamKhac) {
+                    // Nếu đề tài cũ không còn lịch chấm nào khác, có thể reset trạng thái về GVHD
+                    $deTaiCu->trang_thai = DeTai::TRANG_THAI_DANG_THUC_HIEN_GVHD;
+                    $deTaiCu->save();
+                }
+            }
+
             // Cập nhật lịch chấm với de_tai_id và phan_cong_cham_id
             $lichCham->hoi_dong_id = $request->hoi_dong_id;
             $lichCham->dot_bao_cao_id = $request->dot_bao_cao_id;
@@ -241,10 +270,10 @@ class LichChamController extends Controller
         try {
             DB::beginTransaction();
 
-            // Kiểm tra xem lịch chấm đã diễn ra chưa
-            if (Carbon::parse($lichCham->lich_tao)->isPast()) {
-                throw new \Exception('Không thể xóa lịch chấm đã diễn ra.');
-            }
+            // // Kiểm tra xem lịch chấm đã diễn ra chưa
+            // if (Carbon::parse($lichCham->lich_tao)->isPast()) {
+            //     throw new \Exception('Không thể xóa lịch chấm đã diễn ra.');
+            // }
 
             $lichCham->delete();
 
@@ -323,7 +352,7 @@ class LichChamController extends Controller
         });
 
         $data = [
-            'title' => 'DANH SÁCH LỊCH CHẤM',
+            'title' => 'DANH SÁCH LỊCH BẢO VỆ',
             'groupedData' => $groupedData,
         ];
 

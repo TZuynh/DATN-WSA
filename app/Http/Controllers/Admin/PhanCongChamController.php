@@ -31,7 +31,7 @@ class PhanCongChamController extends Controller
 
         if ($deTais->isEmpty()) {
             return redirect()->route('admin.phan-cong-cham.index')
-                ->with('error', 'Không có đề tài nào đủ điều kiện để phân công chấm. Đề tài phải ở trạng thái "Đang thực hiện (GVHD)" và chưa được phân công chấm.');
+                ->with('error', 'Không có đề tài nào đủ điều kiện để phản biện. Đề tài phải ở trạng thái "Đang thực hiện (GVHD)" và chưa được phản biện.');
         }
 
         // Lấy danh sách giảng viên
@@ -49,13 +49,22 @@ class PhanCongChamController extends Controller
                 'de_tai_id' => 'required|exists:de_tais,id',
                 'giang_vien_phan_bien_id' => 'required|exists:tai_khoans,id',
                 'giang_vien_khac_id' => 'required|exists:tai_khoans,id',
-                'ngay_phan_cong' => 'required|date'
+                'lich_cham' => 'required|date_format:Y-m-d H:i'
+            ], [
+                'de_tai_id.required' => 'Vui lòng chọn đề tài',
+                'de_tai_id.exists' => 'Đề tài không tồn tại',
+                'giang_vien_phan_bien_id.required' => 'Vui lòng chọn giảng viên phản biện',
+                'giang_vien_phan_bien_id.exists' => 'Giảng viên phản biện không tồn tại',
+                'giang_vien_khac_id.required' => 'Vui lòng chọn giảng viên khác',
+                'giang_vien_khac_id.exists' => 'Giảng viên khác không tồn tại',
+                'lich_cham.required' => 'Vui lòng chọn lịch chấm',
+                'lich_cham.date_format' => 'Định dạng lịch chấm không hợp lệ (YYYY-MM-DD HH:mm)',
             ]);
 
-            // Kiểm tra đề tài đã được phân công chấm chưa trong đợt báo cáo này
+            // Kiểm tra đề tài đã được Phản biện chưa trong đợt báo cáo này
             if (PhanCongCham::where('de_tai_id', $request->de_tai_id)
                 ->exists()) {
-                return redirect()->back()->with('error', 'Đề tài này đã được phân công chấm');
+                return redirect()->back()->with('error', 'Đề tài này đã được phản biện');
             }
 
             // Kiểm tra đề tài có trạng thái phù hợp không
@@ -75,19 +84,24 @@ class PhanCongChamController extends Controller
                 return redirect()->back()->with('error', 'Các giảng viên không được trùng nhau');
             }
 
+            // Kiểm tra lịch chấm không được trong quá khứ
+            if (strtotime($request->lich_cham) < time()) {
+                return redirect()->back()->with('error', 'Lịch chấm không được trong quá khứ');
+            }
+
             DB::beginTransaction();
             try {
-                // Tạo phân công chấm mới
+                // Tạo Phản biện mới
                 $phanCongCham = PhanCongCham::create([
                     'de_tai_id' => $request->de_tai_id,
                     'giang_vien_huong_dan_id' => $deTai->giang_vien_id,
                     'giang_vien_phan_bien_id' => $request->giang_vien_phan_bien_id,
                     'giang_vien_khac_id' => $request->giang_vien_khac_id,
-                    'ngay_phan_cong' => $request->ngay_phan_cong
+                    'lich_cham' => $request->lich_cham
                 ]);
 
                 DB::commit();
-                return redirect()->route('admin.phan-cong-cham.index')->with('success', 'Phân công chấm thành công');
+                return redirect()->route('admin.phan-cong-cham.index')->with('success', 'Phản biện thành công');
             } catch (\Exception $e) {
                 DB::rollBack();
                 return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
@@ -102,6 +116,9 @@ class PhanCongChamController extends Controller
         $phanCongCham = PhanCongCham::with(['deTai', 'giangVienHuongDan', 'giangVienPhanBien', 'giangVienKhac'])
             ->findOrFail($id);
 
+        // Kiểm tra xem đề tài hiện tại có lịch chấm không
+        $deTaiCoLichCham = \App\Models\LichCham::where('de_tai_id', $phanCongCham->de_tai_id)->exists();
+
         // Lấy danh sách đề tài đã được duyệt ở giai đoạn 1
         $deTais = DeTai::where('trang_thai', DeTai::TRANG_THAI_DANG_THUC_HIEN_GVHD)
             ->where(function($query) use ($phanCongCham) {
@@ -111,12 +128,22 @@ class PhanCongChamController extends Controller
             ->select('id', 'ma_de_tai', 'ten_de_tai', 'giang_vien_id', 'trang_thai')
             ->get();
 
+        // Đảm bảo đề tài hiện tại luôn có trong danh sách
+        if (!$deTais->contains('id', $phanCongCham->de_tai_id)) {
+            $currentDeTai = DeTai::where('id', $phanCongCham->de_tai_id)
+                ->select('id', 'ma_de_tai', 'ten_de_tai', 'giang_vien_id', 'trang_thai')
+                ->first();
+            if ($currentDeTai) {
+                $deTais->push($currentDeTai);
+            }
+        }
+
         // Lấy danh sách giảng viên
         $giangViens = TaiKhoan::where('vai_tro', 'giang_vien')
             ->select('id', 'ten')
             ->get();
 
-        return view('admin.phan-cong-cham.edit', compact('phanCongCham', 'giangViens', 'deTais'));
+        return view('admin.phan-cong-cham.edit', compact('phanCongCham', 'giangViens', 'deTais', 'deTaiCoLichCham'));
     }
 
     public function update(Request $request, $id)
@@ -126,7 +153,7 @@ class PhanCongChamController extends Controller
             'giang_vien_huong_dan_id' => 'required|exists:tai_khoans,id',
             'giang_vien_phan_bien_id' => 'required|exists:tai_khoans,id',
             'giang_vien_khac_id' => 'required|exists:tai_khoans,id',
-            'ngay_phan_cong' => 'required|date|after_or_equal:today',
+            'lich_cham' => 'required|date_format:Y-m-d H:i',
         ], [
             'de_tai_id.required' => 'Vui lòng chọn đề tài',
             'de_tai_id.exists' => 'Đề tài không tồn tại',
@@ -136,16 +163,35 @@ class PhanCongChamController extends Controller
             'giang_vien_phan_bien_id.exists' => 'Giảng viên phản biện không tồn tại',
             'giang_vien_khac_id.required' => 'Vui lòng chọn giảng viên khác',
             'giang_vien_khac_id.exists' => 'Giảng viên khác không tồn tại',
-            'ngay_phan_cong.required' => 'Vui lòng chọn ngày phân công',
-            'ngay_phan_cong.date' => 'Ngày phân công không hợp lệ',
-            'ngay_phan_cong.after_or_equal' => 'Ngày phân công phải lớn hơn hoặc bằng ngày hiện tại',
+            'lich_cham.required' => 'Vui lòng chọn lịch chấm',
+            'lich_cham.date_format' => 'Định dạng lịch chấm không hợp lệ (YYYY-MM-DD HH:mm)',
         ]);
 
         $phanCongCham = PhanCongCham::findOrFail($id);
+        
+        // Kiểm tra nếu thay đổi đề tài
+        if ($phanCongCham->de_tai_id != $request->de_tai_id) {
+            // Kiểm tra xem đề tài mới có lịch chấm chưa
+            $deTaiMoi = DeTai::findOrFail($request->de_tai_id);
+            $lichChamTonTai = \App\Models\LichCham::where('de_tai_id', $deTaiMoi->id)->exists();
+            
+            if ($lichChamTonTai) {
+                return redirect()->back()->with('error', 'Đề tài này đã có lịch chấm. Không thể thay đổi phản biện.');
+            }
+            
+            // Kiểm tra xem đề tài cũ có lịch chấm không
+            $deTaiCu = DeTai::findOrFail($phanCongCham->de_tai_id);
+            $lichChamCu = \App\Models\LichCham::where('de_tai_id', $deTaiCu->id)->exists();
+            
+            if ($lichChamCu) {
+                return redirect()->back()->with('error', 'Đề tài hiện tại đã có lịch chấm. Không thể thay đổi phản biện.');
+            }
+        }
+        
         $phanCongCham->update($validated);
 
         return redirect()->route('admin.phan-cong-cham.index')
-            ->with('success', 'Cập nhật phân công chấm thành công');
+            ->with('success', 'Cập nhật phản biện thành công');
     }
 
     public function destroy($id)
@@ -154,10 +200,10 @@ class PhanCongChamController extends Controller
             $phanCongCham = PhanCongCham::findOrFail($id);
             $phanCongCham->delete();
             return redirect()->route('admin.phan-cong-cham.index')
-                ->with('success', 'Xóa phân công chấm thành công');
+                ->with('success', 'Xóa phản biện thành công');
         } catch (\Exception $e) {
             return redirect()->route('admin.phan-cong-cham.index')
-                ->with('error', 'Không tìm thấy phân công chấm cần xóa');
+                ->with('error', 'Không tìm thấy phản biện cần xóa');
         }
     }
 

@@ -1,6 +1,6 @@
 @extends('admin.layout')
 
-@section('title', 'Thêm phân công chấm')
+@section('title', 'Thêm phản biện')
 
 @section('styles')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -19,7 +19,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Thêm phân công chấm</h3>
+                    <h3 class="card-title">Thêm phản biện</h3>
                 </div>
                 <div class="card-body">
                     <form action="{{ route('admin.phan-cong-cham.store') }}" method="POST" id="formPhanCongCham">
@@ -76,9 +76,9 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="ngay_phan_cong" class="required-field">Ngày phân công</label>
-                            <input type="text" name="ngay_phan_cong" id="ngay_phan_cong" class="form-control @error('ngay_phan_cong') is-invalid @enderror" placeholder="Chọn ngày phân công" value="{{ old('ngay_phan_cong') }}" required>
-                            @error('ngay_phan_cong')
+                            <label for="lich_cham" class="required-field">Lịch chấm</label>
+                            <input type="text" name="lich_cham" id="lich_cham" class="form-control @error('lich_cham') is-invalid @enderror" placeholder="Chọn lịch chấm" value="{{ old('lich_cham') }}" required>
+                            @error('lich_cham')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -99,14 +99,18 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vi.js"></script>
 <script>
     $(document).ready(function() {
-        // Cấu hình Flatpickr cho ngày phân công
-        const ngayPhanCong = flatpickr("#ngay_phan_cong", {
+        // Cấu hình Flatpickr cho lịch chấm
+        const lichCham = flatpickr("#lich_cham", {
             locale: "vi",
-            dateFormat: "Y-m-d",
+            dateFormat: "Y-m-d H:i",
+            enableTime: true,
+            time_24hr: true,
             minDate: "today",
-            placeholder: "Chọn ngày phân công",
+            minTime: "08:00",
+            maxTime: "18:00",
+            placeholder: "Chọn lịch chấm",
             allowInput: true,
-            defaultDate: "{{ old('ngay_phan_cong') }}"
+            defaultDate: "{{ old('lich_cham') }}"
         });
 
         var giangVienHuongDanId = null;
@@ -200,7 +204,7 @@
             var deTai = $('#de_tai_id').val();
             var giangVienPhanBien = $('#giang_vien_phan_bien_id option:selected').val();
             var giangVienKhac = $('#giang_vien_khac_id option:selected').val();
-            var ngayPhanCong = $('#ngay_phan_cong').val();
+            var lichCham = $('#lich_cham').val();
             var giangVienHuongDan = $('#giang_vien_huong_dan_id').val();
 
             // Debug chi tiết
@@ -238,8 +242,8 @@
                 isValid = false;
             }
 
-            if (!ngayPhanCong) {
-                alert('Vui lòng chọn ngày phân công');
+            if (!lichCham) {
+                alert('Vui lòng chọn lịch chấm');
                 isValid = false;
             }
 
@@ -296,8 +300,8 @@
 
                 newForm.append($('<input>', {
                     'type': 'hidden',
-                    'name': 'ngay_phan_cong',
-                    'value': ngayPhanCong
+                    'name': 'lich_cham',
+                    'value': lichCham
                 }));
 
                 newForm.append($('<input>', {
@@ -311,7 +315,7 @@
                     de_tai_id: deTai,
                     giang_vien_phan_bien_id: giangVienPhanBien,
                     giang_vien_khac_id: giangVienKhac,
-                    ngay_phan_cong: ngayPhanCong,
+                    lich_cham: lichCham,
                     giang_vien_huong_dan_id: giangVienHuongDan
                 });
 

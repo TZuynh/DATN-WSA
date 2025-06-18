@@ -30,7 +30,7 @@
             </a>
             <ul class="submenu">
                 <li class="menu-item {{ request()->routeIs('admin.phan-cong-cham.*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.phan-cong-cham.index') }}"><i class="fas fa-tasks"></i> Phân công chấm</a>
+                    <a href="{{ route('admin.phan-cong-cham.index') }}"><i class="fas fa-tasks"></i>Quản lý phản biện</a>
                 </li>
             </ul>
         </li>
@@ -54,7 +54,7 @@
                     <a href="{{ route('admin.hoi-dong.index') }}"><i class="fas fa-users"></i> Hội đồng</a>
                 </li>
                 <li class="menu-item {{ request()->routeIs('admin.lich-cham.*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.lich-cham.index') }}"><i class="fas fa-clock"></i> Lịch chấm</a>
+                    <a href="{{ route('admin.lich-cham.index') }}"><i class="fas fa-clock"></i> Lịch bảo vệ</a>
                 </li>
             </ul>
         </li>

@@ -13,11 +13,11 @@ class PhanCongCham extends Model
         'giang_vien_huong_dan_id',
         'giang_vien_phan_bien_id',
         'giang_vien_khac_id',
-        'ngay_phan_cong'
+        'lich_cham'
     ];
 
     protected $casts = [
-        'ngay_phan_cong' => 'date'
+        'lich_cham' => 'datetime'
     ];
 
     public function deTai()

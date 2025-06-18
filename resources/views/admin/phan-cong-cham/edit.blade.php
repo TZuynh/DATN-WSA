@@ -1,6 +1,6 @@
 @extends('admin.layout')
 
-@section('title', 'Chỉnh sửa phân công chấm')
+@section('title', 'Chỉnh sửa phản biện')
 
 @section('styles')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -19,7 +19,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Chỉnh sửa phân công chấm</h3>
+                    <h3 class="card-title">Chỉnh sửa phản biện</h3>
                 </div>
                 <div class="card-body">
                     <form action="{{ route('admin.phan-cong-cham.update', $phanCongCham) }}" method="POST" id="formPhanCongCham">
@@ -29,14 +29,27 @@
 
                         <div class="form-group">
                             <label for="de_tai_id" class="required-field">Đề tài</label>
-                            <select name="de_tai_id" id="de_tai_id" class="form-control @error('de_tai_id') is-invalid @enderror" required>
+                            @if($deTaiCoLichCham)
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>Cảnh báo:</strong> Đề tài này đã có lịch chấm. Việc thay đổi phản biện có thể ảnh hưởng đến lịch chấm hiện tại.
+                                </div>
+                            @endif
+                            <select name="de_tai_id" id="de_tai_id" class="form-control @error('de_tai_id') is-invalid @enderror" required {{ $deTaiCoLichCham ? 'disabled' : '' }}>
                                 <option value="">Chọn đề tài</option>
                                 @foreach($deTais as $deTai)
-                                    <option value="{{ $deTai->id }}" data-giang-vien-id="{{ $deTai->giang_vien_id }}" {{ $deTai->id == $phanCongCham->de_tai_id ? 'selected' : '' }}>
+                                    <option value="{{ $deTai->id }}" 
+                                            data-giang-vien-id="{{ $deTai->giang_vien_id }}" 
+                                            {{ old('de_tai_id', $phanCongCham->de_tai_id) == $deTai->id ? 'selected' : '' }}>
                                         {{ $deTai->ma_de_tai }} - {{ $deTai->ten_de_tai }}
                                     </option>
                                 @endforeach
                             </select>
+                            @if($deTaiCoLichCham)
+                                <small class="form-text text-muted">
+                                    Để thay đổi đề tài, vui lòng xóa lịch chấm hiện tại trước.
+                                </small>
+                            @endif
                             @error('de_tai_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -78,12 +91,12 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="ngay_phan_cong" class="required-field">Ngày phân công</label>
-                            <input type="text" name="ngay_phan_cong" id="ngay_phan_cong" 
-                                   class="form-control @error('ngay_phan_cong') is-invalid @enderror" 
-                                   placeholder="Chọn ngày phân công"
-                                   value="{{ \Carbon\Carbon::parse($phanCongCham->ngay_phan_cong)->format('Y-m-d') }}" required>
-                            @error('ngay_phan_cong')
+                            <label for="lich_cham" class="required-field">Lịch chấm</label>
+                            <input type="text" name="lich_cham" id="lich_cham" 
+                                   class="form-control @error('lich_cham') is-invalid @enderror" 
+                                   placeholder="Chọn lịch chấm"
+                                   value="{{ \Carbon\Carbon::parse($phanCongCham->lich_cham)->format('Y-m-d H:i') }}" required>
+                            @error('lich_cham')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -104,12 +117,22 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vi.js"></script>
 <script>
     $(document).ready(function() {
-        // Cấu hình Flatpickr cho ngày phân công
-        const ngayPhanCong = flatpickr("#ngay_phan_cong", {
+        // Debug: Kiểm tra dữ liệu
+        console.log('PhanCongCham ID:', {{ $phanCongCham->id }});
+        console.log('DeTai ID:', {{ $phanCongCham->de_tai_id }});
+        console.log('Selected option value:', $('#de_tai_id').val());
+        console.log('Selected option text:', $('#de_tai_id option:selected').text());
+
+        // Cấu hình Flatpickr cho lịch chấm
+        const lichCham = flatpickr("#lich_cham", {
             locale: "vi",
-            dateFormat: "Y-m-d",
+            dateFormat: "Y-m-d H:i",
+            enableTime: true,
+            time_24hr: true,
             minDate: "today",
-            placeholder: "Chọn ngày phân công",
+            minTime: "08:00",
+            maxTime: "18:00",
+            placeholder: "Chọn lịch chấm",
             allowInput: true
         });
 
@@ -117,8 +140,17 @@
 
         // Khi chọn đề tài, tự động điền giảng viên hướng dẫn
         $('#de_tai_id').change(function() {
+            // Kiểm tra nếu select box bị disabled
+            if ($(this).prop('disabled')) {
+                return;
+            }
+            
             var selectedOption = $(this).find('option:selected');
             var newGiangVienHuongDanId = selectedOption.data('giang-vien-id');
+            
+            console.log('Change event triggered');
+            console.log('Selected option:', selectedOption.text());
+            console.log('New giangVienHuongDanId:', newGiangVienHuongDanId);
             
             if (newGiangVienHuongDanId) {
                 // Lấy tên giảng viên từ danh sách giảng viên
@@ -226,7 +258,7 @@
             var deTai = $('#de_tai_id').val();
             var giangVienPhanBien = $('#giang_vien_phan_bien_id option:selected').val();
             var giangVienKhac = $('#giang_vien_khac_id option:selected').val();
-            var ngayPhanCong = $('#ngay_phan_cong').val();
+            var lichCham = $('#lich_cham').val();
             var giangVienHuongDan = $('#giang_vien_huong_dan_id').val();
 
             // Debug chi tiết
@@ -265,8 +297,8 @@
                 isValid = false;
             }
 
-            if (!ngayPhanCong) {
-                alert('Vui lòng chọn ngày phân công');
+            if (!lichCham) {
+                alert('Vui lòng chọn lịch chấm');
                 isValid = false;
             }
 
@@ -325,8 +357,8 @@
 
                 newForm.append($('<input>', {
                     'type': 'hidden',
-                    'name': 'ngay_phan_cong',
-                    'value': ngayPhanCong
+                    'name': 'lich_cham',
+                    'value': lichCham
                 }));
 
                 newForm.append($('<input>', {
@@ -340,7 +372,7 @@
                     de_tai_id: deTai,
                     giang_vien_phan_bien_id: giangVienPhanBien,
                     giang_vien_khac_id: giangVienKhac,
-                    ngay_phan_cong: ngayPhanCong,
+                    lich_cham: lichCham,
                     giang_vien_huong_dan_id: giangVienHuongDan
                 });
 
@@ -349,6 +381,12 @@
                 newForm.submit();
             }
         });
+
+        // Trigger change event khi trang load để tự động điền giảng viên hướng dẫn
+        if ($('#de_tai_id').val()) {
+            console.log('Triggering change event for de_tai_id');
+            $('#de_tai_id').trigger('change');
+        }
     });
 </script>
 @endpush

@@ -93,17 +93,17 @@ class DeTaiController extends Controller
                 ->with('error', 'Bạn không có quyền cập nhật đề tài này.');
         }
 
-        // Kiểm tra xem đề tài đã có trong lịch chấm chưa
+        // Kiểm tra xem đề tài đã có trong lịch bảo vệ chưa
         if ($deTai->lichCham()->exists()) {
             return redirect()->back()
-                ->with('error', 'Không thể cập nhật trạng thái đề tài vì đã có trong lịch chấm.');
+                ->with('error', 'Không thể cập nhật trạng thái đề tài vì đã có trong lịch bảo vệ.');
         }
 
-        // Kiểm tra xem đề tài đã được phân công chấm chưa
+        // Kiểm tra xem đề tài đã đượcphản biện chưa
         if ($deTai->phanCongCham()->exists() && 
             in_array($request->trang_thai, [DeTai::TRANG_THAI_CHO_DUYET, DeTai::TRANG_THAI_KHONG_XAY_RA_GVHD])) {
             return redirect()->back()
-                ->with('error', 'Không thể chuyển đề tài sang trạng thái này vì đã được phân công chấm.');
+                ->with('error', 'Không thể chuyển đề tài sang trạng thái này vì đã được phản biện.');
         }
 
         $request->validate([

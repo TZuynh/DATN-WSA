@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vi.js"></script>
 <div class="container-fluid px-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Thêm lịch chấm</h1>
+        <h1 class="h3 mb-0 text-gray-800">Thêm lịch bảo vệ</h1>
         <a href="{{ route('admin.lich-cham.index') }}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Quay lại
         </a>

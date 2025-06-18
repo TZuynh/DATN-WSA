@@ -1,14 +1,14 @@
 @extends('admin.layout')
 
-@section('title', 'Quản lý lịch chấm')
+@section('title', 'Quản lý lịch bảo vệ')
 
 @section('content')
 <div class="container-fluid px-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Quản lý lịch chấm</h1>
+        <h1 class="h3 mb-0 text-gray-800">Quản lý lịch bảo vệ</h1>
         <div>
             <a href="{{ route('admin.lich-cham.create') }}" class="btn btn-primary me-2">
-                <i class="fas fa-plus me-2"></i> Thêm lịch chấm
+                <i class="fas fa-plus me-2"></i> Thêm lịch bảo vệ
             </a>
             <a href="{{ route('admin.lich-cham.export-pdf') }}" class="btn btn-danger">
                 <i class="fas fa-file-pdf me-2"></i> Xuất PDF
@@ -70,7 +70,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center">Không có lịch chấm nào</td>
+                                <td colspan="6" class="text-center">Không có lịch bảo vệ nào</td>
                             </tr>
                         @endforelse
                     </tbody>
