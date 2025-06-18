@@ -132,6 +132,7 @@
                                         <th>Đề tài</th>
                                         <th>Đợt báo cáo</th>
                                         <th>Lịch chấm</th>
+                                        <th>Vai trò chấm</th>
                                         <th>Trạng thái</th>
                                         <th>Thao tác</th>
                                     </tr>
@@ -153,6 +154,17 @@
                                                 <td>{{ $phanCongCham->deTai->ten_de_tai }}</td>
                                                 <td>{{ $phanCongCham->deTai->lichCham->dotBaoCao->nam_hoc }}</td>
                                                 <td>{{ \Carbon\Carbon::parse($phanCongCham->deTai->lichCham->lich_tao)->format('d/m/Y H:i') }}</td>
+                                                <td>
+                                                    @if($phanCongCham->vai_tro_cham == 'Phản biện')
+                                                        <span class="badge bg-primary">{{ $phanCongCham->vai_tro_cham }}</span>
+                                                    @elseif($phanCongCham->vai_tro_cham == 'Giảng viên khác')
+                                                        <span class="badge bg-info">{{ $phanCongCham->vai_tro_cham }}</span>
+                                                    @elseif($phanCongCham->vai_tro_cham == 'Hướng dẫn')
+                                                        <span class="badge bg-success">{{ $phanCongCham->vai_tro_cham }}</span>
+                                                    @else
+                                                        <span class="badge bg-secondary">{{ $phanCongCham->vai_tro_cham ?: 'N/A' }}</span>
+                                                    @endif
+                                                </td>
                                                 <td>
                                                     @if($daChamDiem)
                                                         <span class="badge bg-success">Đã chấm</span>
@@ -210,6 +222,7 @@
                                         <th>Mã sinh viên</th>
                                         <th>Tên sinh viên</th>
                                         <th>Đợt báo cáo</th>
+                                        <th>Vai trò chấm</th>
                                         <th>Điểm báo cáo</th>
                                         <th>Điểm thuyết trình</th>
                                         <th>Điểm demo</th>
@@ -231,6 +244,17 @@
                                             <td>{{ $bangDiem->sinhVien->mssv }}</td>
                                             <td>{{ $bangDiem->sinhVien->ten }}</td>
                                             <td>{{ $bangDiem->dotBaoCao->nam_hoc }}</td>
+                                            <td>
+                                                @if($bangDiem->vai_tro_cham == 'Phản biện')
+                                                    <span class="badge bg-primary">{{ $bangDiem->vai_tro_cham }}</span>
+                                                @elseif($bangDiem->vai_tro_cham == 'Giảng viên khác')
+                                                    <span class="badge bg-info">{{ $bangDiem->vai_tro_cham }}</span>
+                                                @elseif($bangDiem->vai_tro_cham == 'Hướng dẫn')
+                                                    <span class="badge bg-success">{{ $bangDiem->vai_tro_cham }}</span>
+                                                @else
+                                                    <span class="badge bg-secondary">{{ $bangDiem->vai_tro_cham ?: 'N/A' }}</span>
+                                                @endif
+                                            </td>
                                             <td>{{ $bangDiem->diem_bao_cao }}</td>
                                             <td>{{ $bangDiem->diem_thuyet_trinh }}</td>
                                             <td>{{ $bangDiem->diem_demo }}</td>

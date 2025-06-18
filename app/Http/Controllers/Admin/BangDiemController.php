@@ -42,6 +42,34 @@ class BangDiemController extends Controller
 
         $bangDiems = $query->orderBy('created_at', 'desc')->paginate(15);
 
+        // Thêm thông tin vai trò chấm cho bảng điểm
+        $bangDiems->getCollection()->transform(function($bangDiem) {
+            $bangDiem->vai_tro_cham = '';
+            
+            // Lấy phân công chấm tương ứng - sử dụng logic đồng nhất
+            $phanCongCham = PhanCongCham::where(function($query) use ($bangDiem) {
+                $query->where('giang_vien_phan_bien_id', $bangDiem->giang_vien_id)
+                      ->orWhere('giang_vien_khac_id', $bangDiem->giang_vien_id)
+                      ->orWhere('giang_vien_huong_dan_id', $bangDiem->giang_vien_id);
+            })
+            ->whereHas('deTai.nhom.sinhViens', function($query) use ($bangDiem) {
+                $query->where('sinh_viens.id', $bangDiem->sinh_vien_id);
+            })
+            ->first();
+            
+            if ($phanCongCham) {
+                if ($phanCongCham->giang_vien_phan_bien_id == $bangDiem->giang_vien_id) {
+                    $bangDiem->vai_tro_cham = 'Phản biện';
+                } elseif ($phanCongCham->giang_vien_khac_id == $bangDiem->giang_vien_id) {
+                    $bangDiem->vai_tro_cham = 'Giảng viên khác';
+                } elseif ($phanCongCham->giang_vien_huong_dan_id == $bangDiem->giang_vien_id) {
+                    $bangDiem->vai_tro_cham = 'Hướng dẫn';
+                }
+            }
+            
+            return $bangDiem;
+        });
+
         // Lấy danh sách đợt báo cáo và giảng viên cho filter
         $dotBaoCaos = DotBaoCao::all();
         $giangViens = TaiKhoan::where('vai_tro', 'giang_vien')->get();
@@ -137,6 +165,28 @@ class BangDiemController extends Controller
             'dotBaoCao.lichChams.hoiDong',
             'giangVien'
         ])->findOrFail($id);
+
+        // Thêm thông tin vai trò chấm
+        $bangDiem->vai_tro_cham = '';
+        $phanCongCham = PhanCongCham::where(function($query) use ($bangDiem) {
+            $query->where('giang_vien_phan_bien_id', $bangDiem->giang_vien_id)
+                  ->orWhere('giang_vien_khac_id', $bangDiem->giang_vien_id)
+                  ->orWhere('giang_vien_huong_dan_id', $bangDiem->giang_vien_id);
+        })
+        ->whereHas('deTai.nhom.sinhViens', function($query) use ($bangDiem) {
+            $query->where('sinh_viens.id', $bangDiem->sinh_vien_id);
+        })
+        ->first();
+        
+        if ($phanCongCham) {
+            if ($phanCongCham->giang_vien_phan_bien_id == $bangDiem->giang_vien_id) {
+                $bangDiem->vai_tro_cham = 'Phản biện';
+            } elseif ($phanCongCham->giang_vien_khac_id == $bangDiem->giang_vien_id) {
+                $bangDiem->vai_tro_cham = 'Giảng viên khác';
+            } elseif ($phanCongCham->giang_vien_huong_dan_id == $bangDiem->giang_vien_id) {
+                $bangDiem->vai_tro_cham = 'Hướng dẫn';
+            }
+        }
 
         return view('admin.bang-diem.show', compact('bangDiem'));
     }

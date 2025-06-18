@@ -112,6 +112,20 @@
                                     <td>{{ $bangDiem->giangVien->ten }}</td>
                                 </tr>
                                 <tr>
+                                    <th>Vai trò chấm:</th>
+                                    <td>
+                                        @if($bangDiem->vai_tro_cham == 'Phản biện')
+                                            <span class="badge bg-primary">{{ $bangDiem->vai_tro_cham }}</span>
+                                        @elseif($bangDiem->vai_tro_cham == 'Giảng viên khác')
+                                            <span class="badge bg-info">{{ $bangDiem->vai_tro_cham }}</span>
+                                        @elseif($bangDiem->vai_tro_cham == 'Hướng dẫn')
+                                            <span class="badge bg-success">{{ $bangDiem->vai_tro_cham }}</span>
+                                        @else
+                                            <span class="badge bg-secondary">{{ $bangDiem->vai_tro_cham ?: 'N/A' }}</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                <tr>
                                     <th>Ngày chấm:</th>
                                     <td>{{ $bangDiem->created_at->format('d/m/Y H:i') }}</td>
                                 </tr>

@@ -57,11 +57,52 @@ class BangDiemController extends Controller
                    $phanCong->deTai->lichCham;
         });
 
+        // Thêm thông tin vai trò chấm cho mỗi phân công
+        $phanCongChamsFiltered = $phanCongChamsFiltered->map(function($phanCong) use ($giangVienId) {
+            $phanCong->vai_tro_cham = '';
+            if ($phanCong->giang_vien_phan_bien_id == $giangVienId) {
+                $phanCong->vai_tro_cham = 'Phản biện';
+            } elseif ($phanCong->giang_vien_khac_id == $giangVienId) {
+                $phanCong->vai_tro_cham = 'Giảng viên khác';
+            } elseif ($phanCong->giang_vien_huong_dan_id == $giangVienId) {
+                $phanCong->vai_tro_cham = 'Hướng dẫn';
+            }
+            return $phanCong;
+        });
+
         // Lấy danh sách bảng điểm đã chấm của giảng viên này
         $bangDiems = BangDiem::where('giang_vien_id', $giangVienId)
             ->with(['sinhVien', 'dotBaoCao'])
             ->orderBy('created_at', 'desc')
             ->get();
+
+        // Thêm thông tin vai trò chấm cho bảng điểm đã chấm
+        $bangDiems = $bangDiems->map(function($bangDiem) use ($giangVienId) {
+            $bangDiem->vai_tro_cham = '';
+            
+            // Lấy phân công chấm tương ứng - sử dụng logic đồng nhất với danh sách sinh viên cần chấm
+            $phanCongCham = PhanCongCham::where(function($query) use ($giangVienId) {
+                $query->where('giang_vien_phan_bien_id', $giangVienId)
+                      ->orWhere('giang_vien_khac_id', $giangVienId)
+                      ->orWhere('giang_vien_huong_dan_id', $giangVienId);
+            })
+            ->whereHas('deTai.nhom.sinhViens', function($query) use ($bangDiem) {
+                $query->where('sinh_viens.id', $bangDiem->sinh_vien_id);
+            })
+            ->first();
+            
+            if ($phanCongCham) {
+                if ($phanCongCham->giang_vien_phan_bien_id == $giangVienId) {
+                    $bangDiem->vai_tro_cham = 'Phản biện';
+                } elseif ($phanCongCham->giang_vien_khac_id == $giangVienId) {
+                    $bangDiem->vai_tro_cham = 'Giảng viên khác';
+                } elseif ($phanCongCham->giang_vien_huong_dan_id == $giangVienId) {
+                    $bangDiem->vai_tro_cham = 'Hướng dẫn';
+                }
+            }
+            
+            return $bangDiem;
+        });
 
         // Debug: Kiểm tra chi tiết từng bước
         $debugDetails = [];
@@ -227,6 +268,28 @@ class BangDiemController extends Controller
         if ($bangDiem->giang_vien_id !== Auth::id()) {
             return redirect()->route('giangvien.bang-diem.index')
                 ->with('error', 'Bạn không có quyền xem điểm này.');
+        }
+
+        // Thêm thông tin vai trò chấm
+        $bangDiem->vai_tro_cham = '';
+        $phanCongCham = PhanCongCham::where(function($query) use ($bangDiem) {
+            $query->where('giang_vien_phan_bien_id', $bangDiem->giang_vien_id)
+                  ->orWhere('giang_vien_khac_id', $bangDiem->giang_vien_id)
+                  ->orWhere('giang_vien_huong_dan_id', $bangDiem->giang_vien_id);
+        })
+        ->whereHas('deTai.nhom.sinhViens', function($query) use ($bangDiem) {
+            $query->where('sinh_viens.id', $bangDiem->sinh_vien_id);
+        })
+        ->first();
+        
+        if ($phanCongCham) {
+            if ($phanCongCham->giang_vien_phan_bien_id == $bangDiem->giang_vien_id) {
+                $bangDiem->vai_tro_cham = 'Phản biện';
+            } elseif ($phanCongCham->giang_vien_khac_id == $bangDiem->giang_vien_id) {
+                $bangDiem->vai_tro_cham = 'Giảng viên khác';
+            } elseif ($phanCongCham->giang_vien_huong_dan_id == $bangDiem->giang_vien_id) {
+                $bangDiem->vai_tro_cham = 'Hướng dẫn';
+            }
         }
 
         return view('giangvien.bang-diem.show', compact('bangDiem'));

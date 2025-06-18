@@ -95,6 +95,7 @@
                                         <th>Tên sinh viên</th>
                                         <th>Đợt báo cáo</th>
                                         <th>Giảng viên chấm</th>
+                                        <th>Vai trò chấm</th>
                                         <th>Điểm báo cáo</th>
                                         <th>Điểm thuyết trình</th>
                                         <th>Điểm demo</th>
@@ -117,6 +118,17 @@
                                             <td>{{ $bangDiem->sinhVien->ten }}</td>
                                             <td>{{ $bangDiem->dotBaoCao->nam_hoc }}</td>
                                             <td>{{ $bangDiem->giangVien->ten }}</td>
+                                            <td>
+                                                @if($bangDiem->vai_tro_cham == 'Phản biện')
+                                                    <span class="badge bg-primary">{{ $bangDiem->vai_tro_cham }}</span>
+                                                @elseif($bangDiem->vai_tro_cham == 'Giảng viên khác')
+                                                    <span class="badge bg-info">{{ $bangDiem->vai_tro_cham }}</span>
+                                                @elseif($bangDiem->vai_tro_cham == 'Hướng dẫn')
+                                                    <span class="badge bg-success">{{ $bangDiem->vai_tro_cham }}</span>
+                                                @else
+                                                    <span class="badge bg-secondary">{{ $bangDiem->vai_tro_cham ?: 'N/A' }}</span>
+                                                @endif
+                                            </td>
                                             <td>{{ $bangDiem->diem_bao_cao }}</td>
                                             <td>{{ $bangDiem->diem_thuyet_trinh }}</td>
                                             <td>{{ $bangDiem->diem_demo }}</td>
