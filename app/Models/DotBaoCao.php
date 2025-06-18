@@ -63,6 +63,18 @@ class DotBaoCao extends Model
         return $this->hasMany(DeTai::class);
     }
 
+    public function hoiDong()
+    {
+        return $this->hasOneThrough(
+            HoiDong::class,
+            LichCham::class,
+            'dot_bao_cao_id', // Foreign key trên lich_chams
+            'id', // Foreign key trên hoi_dongs
+            'id', // Local key trên dot_bao_caos
+            'hoi_dong_id' // Local key trên lich_chams
+        )->distinct();
+    }
+
     // Các phương thức hỗ trợ
     public function getTrangThaiTextAttribute()
     {

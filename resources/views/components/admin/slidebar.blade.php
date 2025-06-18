@@ -79,6 +79,12 @@
                 </li>
             </ul>
         </li>
+        <li class="menu-item {{ request()->routeIs('admin.bang-diem.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.bang-diem.index') }}">
+                <i class="fas fa-star"></i>
+                <span>Bảng điểm</span>
+            </a>
+        </li>
         <li class="menu-item has-submenu {{ request()->routeIs('admin.cai-dat.*') || request()->routeIs('admin.api-doc.*') ? 'active' : '' }}">
             <a href="javascript:void(0)">
                 <i class="fas fa-cog"></i>

@@ -47,5 +47,11 @@
                 <span>Quản lý đề tài</span>
             </a>
         </li>
+        <li class="menu-item {{ request()->routeIs('giangvien.bang-diem.*') ? 'active' : '' }}">
+            <a href="{{ route('giangvien.bang-diem.index') }}">
+                <i class="fas fa-star"></i>
+                <span>Chấm điểm</span>
+            </a>
+        </li>
     </ul>
 </div>

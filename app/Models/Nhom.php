@@ -59,6 +59,14 @@ class Nhom extends Model
     }
 
     /**
+     * Lấy đề tài duy nhất của nhóm
+     */
+    public function deTai()
+    {
+        return $this->hasOne(DeTai::class, 'nhom_id');
+    }
+
+    /**
      * Tạo mã nhóm tự động
      */
     public static function taoMaNhom()

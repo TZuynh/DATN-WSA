@@ -26,5 +26,10 @@ class BangDiem extends Model
     {
         return $this->belongsTo(DotBaoCao::class);
     }
+
+    public function nhom()
+    {
+        return $this->belongsTo(Nhom::class, 'nhom_id');
+    }
 }
 
