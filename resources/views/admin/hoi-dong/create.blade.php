@@ -34,7 +34,7 @@
                                 <option value="">Chọn đợt báo cáo</option>
                                 @foreach($dotBaoCaos as $dotBaoCao)
                                     <option value="{{ $dotBaoCao->id }}" {{ old('dot_bao_cao_id') == $dotBaoCao->id ? 'selected' : '' }}>
-                                        {{ $dotBaoCao->nam_hoc }}
+                                        {{ $dotBaoCao->nam_hoc }} - {{ optional($dotBaoCao->hocKy)->ten }}
                                     </option>
                                 @endforeach
                             </select>
@@ -44,8 +44,8 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="phong_id">Phòng <span class="text-danger">*</span></label>
-                            <select name="phong_id" id="phong_id" class="form-control @error('phong_id') is-invalid @enderror" required>
+                            <label for="phong_id">Phòng</label>
+                            <select name="phong_id" id="phong_id" class="form-control @error('phong_id') is-invalid @enderror">
                                 <option value="">Chọn phòng</option>
                                 @foreach($phongs as $phong)
                                     <option value="{{ $phong->id }}" {{ old('phong_id') == $phong->id ? 'selected' : '' }}>
@@ -62,13 +62,13 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="thoi_gian_bat_dau">Thời gian bắt đầu</label>
+                            <label for="thoi_gian_bat_dau">Thời gian bắt đầu <span class="text-danger">*</span></label>
                             <input type="text" 
                                    class="form-control @error('thoi_gian_bat_dau') is-invalid @enderror" 
                                    id="thoi_gian_bat_dau" 
                                    name="thoi_gian_bat_dau" 
                                    value="{{ old('thoi_gian_bat_dau') }}"
-                                   placeholder="Chọn thời gian">
+                                   placeholder="Chọn thời gian" required>
                             @error('thoi_gian_bat_dau')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

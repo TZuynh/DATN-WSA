@@ -44,7 +44,7 @@
                                 <option value="">Chọn đợt báo cáo</option>
                                 @foreach($dotBaoCaos as $dotBaoCao)
                                     <option value="{{ $dotBaoCao->id }}" {{ old('dot_bao_cao_id', $hoiDong->dot_bao_cao_id) == $dotBaoCao->id ? 'selected' : '' }}>
-                                        {{ $dotBaoCao->nam_hoc }}
+                                        {{ $dotBaoCao->nam_hoc }} - {{ optional($dotBaoCao->hocKy)->ten }}
                                     </option>
                                 @endforeach
                             </select>
@@ -54,9 +54,9 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="phong_id">Phòng <span class="text-danger">*</span></label>
+                            <label for="phong_id">Phòng</label>
                             <select class="form-control @error('phong_id') is-invalid @enderror" 
-                                id="phong_id" name="phong_id" required>
+                                id="phong_id" name="phong_id">
                                 <option value="">Chọn phòng</option>
                                 @foreach($phongs as $phong)
                                     <option value="{{ $phong->id }}" {{ old('phong_id', $hoiDong->phong_id) == $phong->id ? 'selected' : '' }}>
@@ -70,13 +70,13 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="thoi_gian_bat_dau">Thời gian bắt đầu</label>
+                            <label for="thoi_gian_bat_dau">Thời gian bắt đầu <span class="text-danger">*</span></label>
                             <input type="text" 
                                    class="form-control @error('thoi_gian_bat_dau') is-invalid @enderror" 
                                    id="thoi_gian_bat_dau" 
                                    name="thoi_gian_bat_dau" 
                                    value="{{ old('thoi_gian_bat_dau', $hoiDong->thoi_gian_bat_dau ? $hoiDong->thoi_gian_bat_dau->format('Y-m-d H:i') : '') }}"
-                                   placeholder="Chọn thời gian">
+                                   placeholder="Chọn thời gian" required>
                             @error('thoi_gian_bat_dau')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

@@ -35,7 +35,7 @@ class HoiDongController extends Controller
     public function create()
     {
         $phongs = Phong::all();
-        $dotBaoCaos = DotBaoCao::all();
+        $dotBaoCaos = DotBaoCao::with('hocKy')->get();
         return view('admin.hoi-dong.create', compact('phongs', 'dotBaoCaos'));
     }
 
@@ -48,20 +48,21 @@ class HoiDongController extends Controller
             'ten' => 'required',
             'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
             'phong_id' => [
-                'required',
+                'nullable',
                 'exists:phongs,id',
                 function ($attribute, $value, $fail) use ($request) {
-                    // Kiểm tra xem phòng đã được sử dụng trong đợt báo cáo này chưa
-                    $phongDaSuDung = HoiDong::where('dot_bao_cao_id', $request->dot_bao_cao_id)
-                        ->where('phong_id', $value)
-                        ->exists();
-                    
-                    if ($phongDaSuDung) {
-                        $fail('Phòng này đã được sử dụng trong đợt báo cáo này.');
+                    if ($value) {
+                        $phongDaSuDung = HoiDong::where('dot_bao_cao_id', $request->dot_bao_cao_id)
+                            ->where('phong_id', $value)
+                            ->exists();
+                        
+                        if ($phongDaSuDung) {
+                            $fail('Phòng này đã được sử dụng trong đợt báo cáo này.');
+                        }
                     }
                 },
             ],
-            'thoi_gian_bat_dau' => 'nullable|date'
+            'thoi_gian_bat_dau' => 'required|date'
         ]);
 
         try {
@@ -95,7 +96,7 @@ class HoiDongController extends Controller
      */
     public function edit(HoiDong $hoiDong)
     {
-        $dotBaoCaos = DotBaoCao::all();
+        $dotBaoCaos = DotBaoCao::with('hocKy')->get();
         $phongs = Phong::all();
         return view('admin.hoi-dong.edit', compact('hoiDong', 'dotBaoCaos', 'phongs'));
     }
@@ -109,8 +110,23 @@ class HoiDongController extends Controller
             'ma_hoi_dong' => 'required|string|max:255',
             'ten' => 'required|string|max:255',
             'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
-            'phong_id' => 'required|exists:phongs,id',
-            'thoi_gian_bat_dau' => 'nullable|date'
+            'phong_id' => [
+                'nullable',
+                'exists:phongs,id',
+                function ($attribute, $value, $fail) use ($request, $hoiDong) {
+                    if ($value) {
+                        $phongDaSuDung = HoiDong::where('dot_bao_cao_id', $request->dot_bao_cao_id)
+                            ->where('phong_id', $value)
+                            ->where('id', '!=', $hoiDong->id)
+                            ->exists();
+                        
+                        if ($phongDaSuDung) {
+                            $fail('Phòng này đã được sử dụng trong đợt báo cáo này.');
+                        }
+                    }
+                },
+            ],
+            'thoi_gian_bat_dau' => 'required|date'
         ]);
 
         try {
