@@ -25,8 +25,7 @@
                                     <th style="width: 10%">Tên đề tài</th>
                                     <th style="width: 10%">Mô tả</th>
                                     <th style="width: 10%">Ý kiến GV</th>
-                                    <th style="width: 5%">Ngày bắt đầu</th>
-                                    <th style="width: 5%">Ngày kết thúc</th>
+                                    <th style="width: 10%">Đợt báo cáo</th>
                                     <th style="width: 5%">Nhóm</th>
                                     <th style="width: 10%">Thành viên</th>
                                     <th style="width: 3%">Trạng thái</th>
@@ -41,8 +40,7 @@
                                     <td>{{ Str::limit($deTai->ten_de_tai, 15) }}</td>
                                     <td>{!! Str::limit($deTai->mo_ta, 20) !!}</td>
                                     <td>{!! Str::limit($deTai->y_kien_giang_vien, 20) !!}</td>
-                                    <td>{{ $deTai->ngay_bat_dau ? $deTai->ngay_bat_dau->format('d/m/Y') : 'N/A' }}</td>
-                                    <td>{{ $deTai->ngay_ket_thuc ? $deTai->ngay_ket_thuc->format('d/m/Y') : 'N/A' }}</td>
+                                    <td>{{ optional($deTai->dotBaoCao)->nam_hoc }} - {{ optional(optional($deTai->dotBaoCao)->hocKy)->ten }}</td>
                                     <td>{{ Str::limit($deTai->nhom->ten ?? 'N/A', 10) }}</td>
                                     <td>
                                         @if($deTai->nhom && $deTai->nhom->sinhViens->count() > 0)
@@ -84,7 +82,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="11" class="text-center">Không có dữ liệu</td>
+                                    <td colspan="10" class="text-center">Không có dữ liệu</td>
                                 </tr>
                                 @endforelse
                             </tbody>

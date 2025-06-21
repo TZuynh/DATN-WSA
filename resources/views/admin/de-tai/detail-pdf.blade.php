@@ -269,8 +269,12 @@
                 <tr>
                     <td class="section-title" style="font-size: 16px;">Thời gian thực hiện đề tài:</td>
                     <td class="section-content">
-                        <span class="date-text">từ ngày</span> {{ $deTai->ngay_bat_dau ? $deTai->ngay_bat_dau->format('d/m/Y') : 'N/A' }} 
-                        <span class="date-text">đến ngày</span> {{ $deTai->ngay_ket_thuc ? $deTai->ngay_ket_thuc->format('d/m/Y') : 'N/A' }}
+                        @if ($deTai->dotBaoCao)
+                        <span class="date-text">từ ngày</span> {{ $deTai->dotBaoCao->ngay_bat_dau ? $deTai->dotBaoCao->ngay_bat_dau->format('d/m/Y') : 'N/A' }} 
+                        <span class="date-text">đến ngày</span> {{ $deTai->dotBaoCao->ngay_ket_thuc ? $deTai->dotBaoCao->ngay_ket_thuc->format('d/m/Y') : 'N/A' }}
+                        @else
+                        N/A
+                        @endif
                     </td>
                 </tr>
             </table>

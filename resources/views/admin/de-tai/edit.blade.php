@@ -31,27 +31,6 @@
                 @csrf
                 @method('PUT')
                 
-                <input type="hidden" name="ngay_bat_dau" value="{{ old('ngay_bat_dau', $deTai->ngay_bat_dau ? $deTai->ngay_bat_dau->format('Y-m-d') : '') }}">
-                <input type="hidden" name="ngay_ket_thuc" value="{{ old('ngay_ket_thuc', $deTai->ngay_ket_thuc ? $deTai->ngay_ket_thuc->format('Y-m-d') : '') }}">
-                <input type="hidden" name="giang_vien_id" value="{{ old('giang_vien_id', $deTai->giang_vien_id) }}">
-                <input type="hidden" name="trang_thai" value="{{ old('trang_thai', $deTai->trang_thai) }}">
-                <input type="hidden" name="mo_ta" value="{{ old('mo_ta', $deTai->mo_ta) }}">
-                <input type="hidden" name="y_kien_giang_vien" value="{{ old('y_kien_giang_vien', $deTai->y_kien_giang_vien) }}">
-                <input type="hidden" name="nhom_id" value="{{ old('nhom_id', $deTai->nhom_id) }}">
-                <input type="hidden" name="ma_de_tai" value="{{ old('ma_de_tai', $deTai->ma_de_tai) }}">
-
-                <div style="margin-bottom: 20px;">
-                    <label for="ma_de_tai" style="display: block; margin-bottom: 5px; color: #4a5568;">Mã đề tài</label>
-                    <input type="text" class="form-control @error('ma_de_tai') is-invalid @enderror" 
-                        id="ma_de_tai" name="ma_de_tai" 
-                        value="{{ old('ma_de_tai', $deTai->ma_de_tai) }}" 
-                        placeholder="Nhập mã đề tài" required
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background-color: #f3f4f6;" disabled>
-                    @error('ma_de_tai')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
                 <div style="margin-bottom: 20px;">
                     <label for="ten_de_tai" style="display: block; margin-bottom: 5px; color: #4a5568;">Tên đề tài</label>
                     <input type="text" class="form-control @error('ten_de_tai') is-invalid @enderror" 
@@ -66,10 +45,9 @@
 
                 <div style="margin-bottom: 20px;">
                     <label for="mo_ta" style="display: block; margin-bottom: 5px; color: #4a5568;">Mô tả</label>
-                    <div class="form-control" 
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background-color: #f3f4f6; overflow-y: auto; max-height: 200px; min-height: 100px;">
-                        {{ strip_tags(old('mo_ta', $deTai->mo_ta)) }}
-                    </div>
+                     <textarea class="form-control @error('mo_ta') is-invalid @enderror"
+                        id="mo_ta" name="mo_ta"
+                        placeholder="Nhập mô tả đề tài" disabled>{{ old('mo_ta', $deTai->mo_ta) }}</textarea>
                     @error('mo_ta')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -77,35 +55,26 @@
 
                 <div style="margin-bottom: 20px;">
                     <label for="y_kien_giang_vien" style="display: block; margin-bottom: 5px; color: #4a5568;">Ý kiến giảng viên</label>
-                    <div class="form-control" 
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background-color: #f3f4f6; overflow-y: auto; max-height: 200px; min-height: 100px;">
-                        {{ strip_tags(old('y_kien_giang_vien', $deTai->y_kien_giang_vien)) }}
-                    </div>
+                    <textarea class="form-control @error('y_kien_giang_vien') is-invalid @enderror"
+                        id="y_kien_giang_vien" name="y_kien_giang_vien"
+                        placeholder="Nhập ý kiến của giảng viên" disabled>{{ old('y_kien_giang_vien', $deTai->y_kien_giang_vien) }}</textarea>
                     @error('y_kien_giang_vien')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label for="ngay_bat_dau" style="display: block; margin-bottom: 5px; color: #4a5568;">Ngày bắt đầu <span style="color: red;">*</span></label>
-                    <input type="text" class="form-control @error('ngay_bat_dau') is-invalid @enderror" 
-                        id="ngay_bat_dau" name="ngay_bat_dau" 
-                        value="{{ old('ngay_bat_dau', $deTai->ngay_bat_dau ? $deTai->ngay_bat_dau->format('Y-m-d') : '') }}"
-                        placeholder="Chọn ngày bắt đầu" required
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background-color: #f3f4f6;" disabled>
-                    @error('ngay_bat_dau')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div style="margin-bottom: 20px;">
-                    <label for="ngay_ket_thuc" style="display: block; margin-bottom: 5px; color: #4a5568;">Ngày kết thúc <span style="color: red;">*</span></label>
-                    <input type="text" class="form-control @error('ngay_ket_thuc') is-invalid @enderror" 
-                        id="ngay_ket_thuc" name="ngay_ket_thuc" 
-                        value="{{ old('ngay_ket_thuc', $deTai->ngay_ket_thuc ? $deTai->ngay_ket_thuc->format('Y-m-d') : '') }}"
-                        placeholder="Chọn ngày kết thúc" required
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background-color: #f3f4f6;" disabled>
-                    @error('ngay_ket_thuc')
+                    <label for="dot_bao_cao_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Đợt báo cáo <span style="color: red;">*</span></label>
+                    <select name="dot_bao_cao_id" id="dot_bao_cao_id" 
+                        class="form-control @error('dot_bao_cao_id') is-invalid @enderror" required
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" disabled>
+                        @foreach($dotBaoCaos as $dotBaoCao)
+                        <option value="{{ $dotBaoCao->id }}" {{ old('dot_bao_cao_id', $deTai->dot_bao_cao_id) == $dotBaoCao->id ? 'selected' : '' }}>
+                            {{ $dotBaoCao->nam_hoc }} - {{ optional($dotBaoCao->hocKy)->ten }}
+                        </option>
+                        @endforeach
+                    </select>
+                    @error('dot_bao_cao_id')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
@@ -114,7 +83,7 @@
                     <label for="nhom_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Chọn nhóm</label>
                     <select name="nhom_id" id="nhom_id" 
                         class="form-control @error('nhom_id') is-invalid @enderror"
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background-color: #f3f4f6;" disabled>
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" disabled>
                         <option value="">-- Chọn nhóm --</option>
                         @foreach($nhoms as $nhom)
                         <option value="{{ $nhom->id }}" {{ old('nhom_id', $deTai->nhom_id) == $nhom->id ? 'selected' : '' }}>
@@ -131,7 +100,7 @@
                     <label for="giang_vien_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Chọn giảng viên <span style="color: red;">*</span></label>
                     <select name="giang_vien_id" id="giang_vien_id" 
                         class="form-control @error('giang_vien_id') is-invalid @enderror" required
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background-color: #f3f4f6;" disabled>
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" disabled>
                         <option value="">-- Chọn giảng viên --</option>
                         @foreach($giangViens as $giangVien)
                         <option value="{{ $giangVien->id }}" {{ old('giang_vien_id', $deTai->giang_vien_id) == $giangVien->id ? 'selected' : '' }}>
@@ -148,7 +117,7 @@
                     <label for="trang_thai" style="display: block; margin-bottom: 5px; color: #4a5568;">Trạng thái <span style="color: red;">*</span></label>
                     <select name="trang_thai" id="trang_thai" 
                         class="form-control @error('trang_thai') is-invalid @enderror" required
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background-color: #f3f4f6;" disabled>
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" disabled>
                         <option value="">-- Chọn trạng thái --</option>
                         <option value="0" {{ old('trang_thai', $deTai->trang_thai) == 0 ? 'selected' : '' }}>Đang chờ duyệt</option>
                         <option value="1" {{ old('trang_thai', $deTai->trang_thai) == 1 ? 'selected' : '' }}>Đang thực hiện (giảng viên hướng dẫn đồng ý báo cáo)</option>
@@ -169,47 +138,9 @@
             </form>
         </div>
     </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Cấu hình Flatpickr cho ngày bắt đầu
-            const ngayBatDau = flatpickr("#ngay_bat_dau", {
-                locale: "vi",
-                dateFormat: "Y-m-d",
-                minDate: "today",
-                onChange: function(selectedDates, dateStr) {
-                    // Cập nhật minDate của ngày kết thúc
-                    ngayKetThuc.set("minDate", dateStr);
-                }
-            });
-
-            // Cấu hình Flatpickr cho ngày kết thúc
-            const ngayKetThuc = flatpickr("#ngay_ket_thuc", {
-                locale: "vi",
-                dateFormat: "Y-m-d",
-                minDate: "today"
-            });
-
-            // Validate form trước khi submit
-            document.getElementById('editForm').addEventListener('submit', function(e) {
-                const ngayBatDau = document.getElementById('ngay_bat_dau').value;
-                const ngayKetThuc = document.getElementById('ngay_ket_thuc').value;
-
-                if (!ngayBatDau || !ngayKetThuc) {
-                    e.preventDefault();
-                    alert('Vui lòng điền đầy đủ thông tin!');
-                    return;
-                }
-
-                const batDau = new Date(ngayBatDau);
-                const ketThuc = new Date(ngayKetThuc);
-
-                if (batDau >= ketThuc) {
-                    e.preventDefault();
-                    alert('Ngày kết thúc phải sau ngày bắt đầu!');
-                    return;
-                }
-            });
+            // No date validation needed
         });
     </script>
 @endsection 

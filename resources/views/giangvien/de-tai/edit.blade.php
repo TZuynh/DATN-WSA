@@ -77,26 +77,18 @@
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label for="ngay_bat_dau" style="display: block; margin-bottom: 5px; color: #4a5568;">Ngày bắt đầu</label>
-                    <input type="text" class="form-control @error('ngay_bat_dau') is-invalid @enderror"
-                        id="ngay_bat_dau" name="ngay_bat_dau"
-                        value="{{ old('ngay_bat_dau', $deTai->ngay_bat_dau ? $deTai->ngay_bat_dau->format('Y-m-d') : '') }}"
-                        placeholder="Chọn ngày bắt đầu" required
+                    <label for="dot_bao_cao_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Đợt báo cáo <span class="text-danger">*</span></label>
+                    <select name="dot_bao_cao_id" id="dot_bao_cao_id"
+                        class="form-control @error('dot_bao_cao_id') is-invalid @enderror" required
                         style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    @error('ngay_bat_dau')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div style="margin-bottom: 20px;">
-                    <label for="ngay_ket_thuc" style="display: block; margin-bottom: 5px; color: #4a5568;">Ngày kết thúc</label>
-                    <input type="text" class="form-control @error('ngay_ket_thuc') is-invalid @enderror"
-                        id="ngay_ket_thuc" name="ngay_ket_thuc"
-                        value="{{ old('ngay_ket_thuc', $deTai->ngay_ket_thuc ? $deTai->ngay_ket_thuc->format('Y-m-d') : '') }}"
-                        placeholder="Chọn ngày kết thúc" required
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    @error('ngay_ket_thuc')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                        @foreach($dotBaoCaos as $dotBaoCao)
+                            <option value="{{ $dotBaoCao->id }}" {{ old('dot_bao_cao_id', $deTai->dot_bao_cao_id) == $dotBaoCao->id ? 'selected' : '' }}>
+                                {{ $dotBaoCao->nam_hoc }} - {{ optional($dotBaoCao->hocKy)->ten }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('dot_bao_cao_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
@@ -197,23 +189,7 @@
 
             // Validate form trước khi submit
             document.getElementById('editForm').addEventListener('submit', function(e) {
-                const ngayBatDau = document.getElementById('ngay_bat_dau').value;
-                const ngayKetThuc = document.getElementById('ngay_ket_thuc').value;
 
-                if (!ngayBatDau || !ngayKetThuc) {
-                    e.preventDefault();
-                    alert('Vui lòng điền đầy đủ thông tin!');
-                    return;
-                }
-
-                const batDau = new Date(ngayBatDau);
-                const ketThuc = new Date(ngayKetThuc);
-
-                if (batDau >= ketThuc) {
-                    e.preventDefault();
-                    alert('Ngày kết thúc phải sau ngày bắt đầu!');
-                    return;
-                }
             });
         });
     </script>

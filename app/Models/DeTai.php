@@ -137,9 +137,9 @@ class DeTai extends Model
             }
         });
 
-        static::saved(function ($deTai) {
-            $deTai->updateTrangThai();
-        });
+        // static::saved(function ($deTai) {
+        //     $deTai->updateTrangThai();
+        // });
     }
 }
 

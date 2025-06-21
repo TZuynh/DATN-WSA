@@ -59,21 +59,17 @@
                             </div>
 
                             <div class="form-group mb-4">
-                                <label for="ngay_bat_dau" class="form-label">Ngày bắt đầu <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control @error('ngay_bat_dau') is-invalid @enderror" 
-                                    id="ngay_bat_dau" name="ngay_bat_dau" value="{{ old('ngay_bat_dau') }}"
-                                    placeholder="Chọn ngày bắt đầu">
-                                @error('ngay_bat_dau')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="form-group mb-4">
-                                <label for="ngay_ket_thuc" class="form-label">Ngày kết thúc <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control @error('ngay_ket_thuc') is-invalid @enderror" 
-                                    id="ngay_ket_thuc" name="ngay_ket_thuc" value="{{ old('ngay_ket_thuc') }}"
-                                    placeholder="Chọn ngày kết thúc">
-                                @error('ngay_ket_thuc')
+                                <label for="dot_bao_cao_id" class="form-label">Đợt báo cáo <span class="text-danger">*</span></label>
+                                <select class="form-control @error('dot_bao_cao_id') is-invalid @enderror"
+                                    id="dot_bao_cao_id" name="dot_bao_cao_id" required>
+                                    <option value="">-- Chọn đợt báo cáo --</option>
+                                    @foreach($dotBaoCaos as $dotBaoCao)
+                                        <option value="{{ $dotBaoCao->id }}" {{ old('dot_bao_cao_id') == $dotBaoCao->id ? 'selected' : '' }}>
+                                            {{ $dotBaoCao->nam_hoc }} - {{ optional($dotBaoCao->hocKy)->ten }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('dot_bao_cao_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -123,43 +119,9 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Cấu hình Flatpickr cho ngày bắt đầu
-            const ngayBatDau = flatpickr("#ngay_bat_dau", {
-                locale: "vi",
-                dateFormat: "Y-m-d",
-                minDate: "today",
-                onChange: function(selectedDates, dateStr) {
-                    // Cập nhật minDate của ngày kết thúc
-                    ngayKetThuc.set("minDate", dateStr);
-                }
-            });
-
-            // Cấu hình Flatpickr cho ngày kết thúc
-            const ngayKetThuc = flatpickr("#ngay_ket_thuc", {
-                locale: "vi",
-                dateFormat: "Y-m-d",
-                minDate: "today"
-            });
-
             // Validate form trước khi submit
-            document.getElementById('createForm').addEventListener('submit', function(e) {
-                const ngayBatDau = document.getElementById('ngay_bat_dau').value;
-                const ngayKetThuc = document.getElementById('ngay_ket_thuc').value;
-
-                if (!ngayBatDau || !ngayKetThuc) {
-                    e.preventDefault();
-                    alert('Vui lòng điền đầy đủ thông tin!');
-                    return;
-                }
-
-                const batDau = new Date(ngayBatDau);
-                const ketThuc = new Date(ngayKetThuc);
-
-                if (batDau >= ketThuc) {
-                    e.preventDefault();
-                    alert('Ngày kết thúc phải sau ngày bắt đầu!');
-                    return;
-                }
+            document.querySelector('form').addEventListener('submit', function(e) {
+                // No validation needed for dates anymore
             });
         });
     </script>

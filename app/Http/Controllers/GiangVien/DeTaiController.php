@@ -5,6 +5,7 @@ namespace App\Http\Controllers\GiangVien;
 use App\Http\Controllers\Controller;
 use App\Models\DeTai;
 use App\Models\Nhom;
+use App\Models\DotBaoCao;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -17,7 +18,7 @@ class DeTaiController extends Controller
     public function index()
     {
         $giangVienId = auth()->user()->id;
-        $deTais = DeTai::with('nhom.sinhViens')
+        $deTais = DeTai::with(['nhom.sinhViens', 'dotBaoCao.hocKy'])
             ->where('giang_vien_id', $giangVienId)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -28,7 +29,8 @@ class DeTaiController extends Controller
     public function create()
     {
         $nhoms = Nhom::whereDoesntHave('deTais')->get();
-        return view('giangvien.de-tai.create', compact('nhoms'));
+        $dotBaoCaos = DotBaoCao::whereIn('trang_thai', ['chua_bat_dau', 'dang_dien_ra'])->get();
+        return view('giangvien.de-tai.create', compact('nhoms', 'dotBaoCaos'));
     }
 
     public function store(Request $request)
@@ -37,8 +39,7 @@ class DeTaiController extends Controller
             'ten_de_tai' => 'required|string',
             'mo_ta' => 'nullable|string',
             'y_kien_giang_vien' => 'nullable|string',
-            'ngay_bat_dau' => 'required|date',
-            'ngay_ket_thuc' => 'required|date|after:ngay_bat_dau',
+            'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
             'nhom_id' => [
                 'nullable',
                 'exists:nhoms,id',
@@ -59,8 +60,7 @@ class DeTaiController extends Controller
                 'ten_de_tai' => $request->ten_de_tai,
                 'mo_ta' => $request->mo_ta,
                 'y_kien_giang_vien' => $request->y_kien_giang_vien,
-                'ngay_bat_dau' => $request->ngay_bat_dau,
-                'ngay_ket_thuc' => $request->ngay_ket_thuc,
+                'dot_bao_cao_id' => $request->dot_bao_cao_id,
                 'nhom_id' => $request->nhom_id,
                 'giang_vien_id' => auth()->id(),
             ];
@@ -81,9 +81,12 @@ class DeTaiController extends Controller
         }
 
         $nhoms = Nhom::all();
+        $dotBaoCaos = DotBaoCao::whereIn('trang_thai', ['chua_bat_dau', 'dang_dien_ra'])
+            ->orWhere('id', $deTai->dot_bao_cao_id)
+            ->get();
         $daPhanCongCham = $deTai->phanCongCham()->exists();
         $daCoLichCham = $deTai->lichCham()->exists();
-        return view('giangvien.de-tai.edit', compact('deTai', 'nhoms', 'daPhanCongCham', 'daCoLichCham'));
+        return view('giangvien.de-tai.edit', compact('deTai', 'nhoms', 'daPhanCongCham', 'daCoLichCham', 'dotBaoCaos'));
     }
 
     public function update(Request $request, DeTai $deTai)
@@ -110,8 +113,7 @@ class DeTaiController extends Controller
             'ten_de_tai' => 'required|string',
             'mo_ta' => 'nullable|string',
             'y_kien_giang_vien' => 'nullable|string',
-            'ngay_bat_dau' => 'required|date',
-            'ngay_ket_thuc' => 'required|date|after:ngay_bat_dau',
+            'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
             'nhom_id' => 'nullable|exists:nhoms,id',
             'trang_thai' => 'required|integer|in:0,1,2,3,4'
         ]);
@@ -121,8 +123,7 @@ class DeTaiController extends Controller
                 'ten_de_tai' => $request->ten_de_tai,
                 'mo_ta' => $request->mo_ta,
                 'y_kien_giang_vien' => $request->y_kien_giang_vien,
-                'ngay_bat_dau' => $request->ngay_bat_dau,
-                'ngay_ket_thuc' => $request->ngay_ket_thuc,
+                'dot_bao_cao_id' => $request->dot_bao_cao_id,
                 'nhom_id' => $request->nhom_id,
                 'trang_thai' => $request->trang_thai
             ]);
@@ -177,7 +178,7 @@ class DeTaiController extends Controller
         }
 
         // Load dữ liệu liên quan
-        $deTai->load('nhom.sinhViens.lop', 'giangVien');
+        $deTai->load('nhom.sinhViens.lop', 'giangVien', 'dotBaoCao');
 
         // Tạo PDF
         $pdf = PDF::loadView('giangvien.de-tai.detail-pdf', compact('deTai'));
@@ -200,7 +201,7 @@ class DeTaiController extends Controller
         }
 
         // Load dữ liệu liên quan
-        $deTai->load('nhom.sinhViens.lop', 'giangVien');
+        $deTai->load('nhom.sinhViens.lop', 'giangVien', 'dotBaoCao');
 
         // Trả về view trực tiếp
         return view('giangvien.de-tai.detail-pdf', compact('deTai'));
@@ -214,7 +215,7 @@ class DeTaiController extends Controller
         }
 
         // Load dữ liệu liên quan
-        $deTai->load('nhom.sinhViens.lop', 'giangVien');
+        $deTai->load('nhom.sinhViens.lop', 'giangVien', 'dotBaoCao');
 
         // Tạo nội dung HTML
         $html = '
@@ -278,7 +279,7 @@ class DeTaiController extends Controller
             </div>
 
             <div class="section">
-                <div class="section-title">Thời gian thực hiện đề tài: từ ngày <span style="font-weight: bold;">' . ($deTai->ngay_bat_dau ? $deTai->ngay_bat_dau->format('d/m/Y') : 'N/A') . '</span> đến ngày <span style="font-weight: bold;">' . ($deTai->ngay_ket_thuc ? $deTai->ngay_ket_thuc->format('d/m/Y') : 'N/A') . '</span></div>
+                <div class="section-title">Thời gian thực hiện đề tài: từ ngày <span style="font-weight: bold;">' . (optional($deTai->dotBaoCao)->ngay_bat_dau ? $deTai->dotBaoCao->ngay_bat_dau->format('d/m/Y') : 'N/A') . '</span> đến ngày <span style="font-weight: bold;">' . (optional($deTai->dotBaoCao)->ngay_ket_thuc ? $deTai->dotBaoCao->ngay_ket_thuc->format('d/m/Y') : 'N/A') . '</span></div>
             </div>
 
             <div class="section">

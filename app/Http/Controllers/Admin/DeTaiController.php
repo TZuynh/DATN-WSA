@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DeTai;
 use App\Models\Nhom;
 use App\Models\TaiKhoan;
+use App\Models\DotBaoCao;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -15,7 +16,7 @@ class DeTaiController extends Controller
     public function index()
     {
         try {
-            $deTais = DeTai::with(['nhom.sinhViens', 'giangVien'])
+            $deTais = DeTai::with(['nhom.sinhViens', 'giangVien', 'dotBaoCao.hocKy'])
                 ->orderBy('created_at', 'desc')
                 ->paginate(10);
             return view('admin.de-tai.index', compact('deTais'));
@@ -29,7 +30,8 @@ class DeTaiController extends Controller
     {
         $nhoms = Nhom::all();
         $giangViens = TaiKhoan::where('vai_tro', 'giang_vien')->get();
-        return view('admin.de-tai.create', compact('nhoms', 'giangViens'));
+        $dotBaoCaos = DotBaoCao::whereIn('trang_thai', ['chua_bat_dau', 'dang_dien_ra'])->get();
+        return view('admin.de-tai.create', compact('nhoms', 'giangViens', 'dotBaoCaos'));
     }
 
     public function store(Request $request)
@@ -38,8 +40,7 @@ class DeTaiController extends Controller
             'ten_de_tai' => 'required|string',
             'mo_ta' => 'nullable|string',
             'y_kien_giang_vien' => 'nullable|string',
-            'ngay_bat_dau' => 'required|date',
-            'ngay_ket_thuc' => 'required|date|after:ngay_bat_dau',
+            'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
             'nhom_id' => 'nullable|exists:nhoms,id',
             'giang_vien_id' => 'required|exists:tai_khoans,id'
         ]);
@@ -49,8 +50,7 @@ class DeTaiController extends Controller
                 'ten_de_tai' => $request->ten_de_tai,
                 'mo_ta' => $request->mo_ta,
                 'y_kien_giang_vien' => $request->y_kien_giang_vien,
-                'ngay_bat_dau' => $request->ngay_bat_dau,
-                'ngay_ket_thuc' => $request->ngay_ket_thuc,
+                'dot_bao_cao_id' => $request->dot_bao_cao_id,
                 'nhom_id' => $request->nhom_id,
                 'giang_vien_id' => $request->giang_vien_id
             ];
@@ -67,44 +67,23 @@ class DeTaiController extends Controller
     {
         $nhoms = Nhom::all();
         $giangViens = TaiKhoan::where('vai_tro', 'giang_vien')->get();
-        return view('admin.de-tai.edit', compact('deTai', 'nhoms', 'giangViens'));
+        $dotBaoCaos = DotBaoCao::whereIn('trang_thai', ['chua_bat_dau', 'dang_dien_ra'])
+            ->orWhere('id', $deTai->dot_bao_cao_id)
+            ->get();
+        return view('admin.de-tai.edit', compact('deTai', 'nhoms', 'giangViens', 'dotBaoCaos'));
     }
 
     public function update(Request $request, DeTai $deTai)
     {
         $request->validate([
             'ten_de_tai' => 'required|string',
-            'mo_ta' => 'nullable|string',
-            'y_kien_giang_vien' => 'nullable|string',
-            'ngay_bat_dau' => 'required|date',
-            'ngay_ket_thuc' => 'required|date|after:ngay_bat_dau',
-            'nhom_id' => 'nullable|exists:nhoms,id',
-            'giang_vien_id' => 'required|exists:tai_khoans,id',
-            'trang_thai' => 'required|integer|in:0,1,2,3,4'
         ], [
             'ten_de_tai.required' => 'Vui lòng nhập tên đề tài',
-            'ngay_bat_dau.required' => 'Vui lòng chọn ngày bắt đầu',
-            'ngay_bat_dau.date' => 'Ngày bắt đầu không hợp lệ',
-            'ngay_ket_thuc.required' => 'Vui lòng chọn ngày kết thúc',
-            'ngay_ket_thuc.date' => 'Ngày kết thúc không hợp lệ',
-            'ngay_ket_thuc.after' => 'Ngày kết thúc phải sau ngày bắt đầu',
-            'giang_vien_id.required' => 'Vui lòng chọn giảng viên',
-            'giang_vien_id.exists' => 'Giảng viên không tồn tại',
-            'trang_thai.required' => 'Vui lòng chọn trạng thái',
-            'trang_thai.integer' => 'Trạng thái không hợp lệ',
-            'trang_thai.in' => 'Trạng thái không hợp lệ'
         ]);
 
         try {
             $deTai->update([
                 'ten_de_tai' => $request->ten_de_tai,
-                'mo_ta' => $request->mo_ta,
-                'y_kien_giang_vien' => $request->y_kien_giang_vien,
-                'ngay_bat_dau' => $request->ngay_bat_dau,
-                'ngay_ket_thuc' => $request->ngay_ket_thuc,
-                'nhom_id' => $request->nhom_id,
-                'giang_vien_id' => $request->giang_vien_id,
-                'trang_thai' => $request->trang_thai
             ]);
 
             return redirect()->route('admin.de-tai.index')
@@ -132,7 +111,7 @@ class DeTaiController extends Controller
     public function exportPdfDetail(DeTai $deTai)
     {
         // Load dữ liệu liên quan
-        $deTai->load('nhom.sinhViens.lop', 'giangVien');
+        $deTai->load('nhom.sinhViens.lop', 'giangVien', 'dotBaoCao');
 
         // Tạo PDF
         $pdf = PDF::loadView('admin.de-tai.detail-pdf', compact('deTai'));
@@ -150,7 +129,7 @@ class DeTaiController extends Controller
     public function previewPdfDetail(DeTai $deTai)
     {
         // Load dữ liệu liên quan
-        $deTai->load('nhom.sinhViens.lop', 'giangVien');
+        $deTai->load('nhom.sinhViens.lop', 'giangVien', 'dotBaoCao');
 
         // Trả về view trực tiếp
         return view('admin.de-tai.detail-pdf', compact('deTai'));
@@ -159,7 +138,7 @@ class DeTaiController extends Controller
     public function exportWordDetail(DeTai $deTai)
     {
         // Load dữ liệu liên quan
-        $deTai->load('nhom.sinhViens.lop', 'giangVien');
+        $deTai->load('nhom.sinhViens.lop', 'giangVien', 'dotBaoCao');
 
         // Tạo nội dung HTML
         $html = '
@@ -223,7 +202,7 @@ class DeTaiController extends Controller
             </div>
 
             <div class="section">
-                <div class="section-title">Thời gian thực hiện đề tài: từ ngày <span style="font-weight: bold;">' . ($deTai->ngay_bat_dau ? $deTai->ngay_bat_dau->format('d/m/Y') : 'N/A') . '</span> đến ngày <span style="font-weight: bold;">' . ($deTai->ngay_ket_thuc ? $deTai->ngay_ket_thuc->format('d/m/Y') : 'N/A') . '</span></div>
+                <div class="section-title">Thời gian thực hiện đề tài: từ ngày <span style="font-weight: bold;">' . (optional($deTai->dotBaoCao)->ngay_bat_dau ? $deTai->dotBaoCao->ngay_bat_dau->format('d/m/Y') : 'N/A') . '</span> đến ngày <span style="font-weight: bold;">' . (optional($deTai->dotBaoCao)->ngay_ket_thuc ? $deTai->dotBaoCao->ngay_ket_thuc->format('d/m/Y') : 'N/A') . '</span></div>
             </div>
 
             <div class="section">
