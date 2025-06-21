@@ -11,6 +11,7 @@ use App\Models\BangDiem;
 use App\Models\LichCham;
 use App\Models\BienBanNhanXet;
 use App\Models\PhanCongVaiTro;
+use App\Models\HocKy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -19,7 +20,7 @@ class DotBaoCaoController extends Controller
 {
     public function index()
     {
-        $dotBaoCaos = DotBaoCao::orderBy('created_at', 'desc')
+        $dotBaoCaos = DotBaoCao::with('hocKy')->orderBy('created_at', 'desc')
             ->paginate(10);
             
         return view('admin.dot-bao-cao.index', compact('dotBaoCaos'));
@@ -27,25 +28,34 @@ class DotBaoCaoController extends Controller
 
     public function create()
     {
-        return view('admin.dot-bao-cao.create');
+        $hocKys = HocKy::all();
+        return view('admin.dot-bao-cao.create', compact('hocKys'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'nam_hoc' => 'required|integer|min:2000|max:2100',
+            'hoc_ky_id' => 'required|exists:hoc_kys,id',
             'ngay_bat_dau' => 'required|date',
             'ngay_ket_thuc' => 'required|date|after:ngay_bat_dau'
         ]);
 
-        // Kiểm tra năm học có khớp với năm của ngày bắt đầu không
+        // Kiểm tra năm học + học kỳ không trùng
+        $exists = DotBaoCao::where('nam_hoc', $request->nam_hoc)
+            ->where('hoc_ky_id', $request->hoc_ky_id)
+            ->exists();
+        if ($exists) {
+            return back()->withErrors(['nam_hoc' => 'Năm học và học kỳ đã tồn tại.']);
+        }
+
         $namBatDau = date('Y', strtotime($request->ngay_bat_dau));
         if ($namBatDau != $request->nam_hoc) {
             return back()->withErrors(['nam_hoc' => 'Năm học phải khớp với năm của ngày bắt đầu.']);
         }
 
         $dotBaoCao = DotBaoCao::create($request->all());
-        $dotBaoCao->updateTrangThai(); // Cập nhật trạng thái sau khi tạo
+        $dotBaoCao->updateTrangThai();
 
         return redirect()->route('admin.dot-bao-cao.index')
             ->with('success', 'Thêm đợt báo cáo thành công.');
@@ -53,7 +63,8 @@ class DotBaoCaoController extends Controller
 
     public function edit(DotBaoCao $dotBaoCao)
     {
-        return view('admin.dot-bao-cao.edit', compact('dotBaoCao'));
+        $hocKys = HocKy::all();
+        return view('admin.dot-bao-cao.edit', compact('dotBaoCao', 'hocKys'));
     }
 
     public function update(Request $request, DotBaoCao $dotBaoCao)
@@ -63,26 +74,34 @@ class DotBaoCaoController extends Controller
 
             $request->validate([
                 'nam_hoc' => 'required|integer|min:2000|max:2100',
+                'hoc_ky_id' => 'required|exists:hoc_kys,id',
                 'ngay_bat_dau' => 'required|date',
                 'ngay_ket_thuc' => 'required|date|after:ngay_bat_dau'
             ]);
 
-            // Kiểm tra năm học có khớp với năm của ngày bắt đầu không
+            // Kiểm tra năm học + học kỳ không trùng (trừ bản ghi hiện tại)
+            $exists = DotBaoCao::where('nam_hoc', $request->nam_hoc)
+                ->where('hoc_ky_id', $request->hoc_ky_id)
+                ->where('id', '!=', $dotBaoCao->id)
+                ->exists();
+            if ($exists) {
+                return back()->withErrors(['nam_hoc' => 'Năm học và học kỳ đã tồn tại.']);
+            }
+
             $namBatDau = date('Y', strtotime($request->ngay_bat_dau));
             if ($namBatDau != $request->nam_hoc) {
                 return back()->withErrors(['nam_hoc' => 'Năm học phải khớp với năm của ngày bắt đầu.']);
             }
 
-            // Chỉ cập nhật các trường được phép
             $dotBaoCao->update([
                 'nam_hoc' => $request->nam_hoc,
+                'hoc_ky_id' => $request->hoc_ky_id,
                 'ngay_bat_dau' => $request->ngay_bat_dau,
                 'ngay_ket_thuc' => $request->ngay_ket_thuc,
                 'mo_ta' => $request->mo_ta,
                 'trang_thai' => $request->trang_thai
             ]);
 
-            // Cập nhật trạng thái
             $dotBaoCao->updateTrangThai();
 
             DB::commit();

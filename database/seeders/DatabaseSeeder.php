@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             PhanCongChamSeeder::class,
             TestPhanCongChamSeeder::class,
             LoaiGiangVienSeeder::class,
+            HocKySeeder::class,
         ]);
     }
 }

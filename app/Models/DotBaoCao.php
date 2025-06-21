@@ -5,21 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
+use App\Models\HocKy; // Added this import
 
 class DotBaoCao extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'nam_hoc',
-        'ngay_bat_dau',
-        'ngay_ket_thuc',
-        'trang_thai',
-        'mo_ta',
-        'so_luong_hoi_dong',
-        'so_luong_de_tai',
-        'so_luong_nhom',
-        'ti_do_hoan_thanh'
+        'nam_hoc', 'hoc_ky_id', 'ngay_bat_dau', 'ngay_ket_thuc', 'trang_thai', 'mo_ta'
     ];
 
     protected $casts = [
@@ -38,6 +31,11 @@ class DotBaoCao extends Model
     const TRANG_THAI_DA_HUY = 'da_huy';
 
     // Các mối quan hệ
+    public function hocKy()
+    {
+        return $this->belongsTo(HocKy::class);
+    }
+
     public function chiTietBaoCaos()
     {
         return $this->hasMany(ChiTietDeTaiBaoCao::class);

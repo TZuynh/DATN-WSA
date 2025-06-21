@@ -48,6 +48,7 @@
                     <tr style="background-color: #2d3748; color: white;">
                         <th style="padding: 12px 15px; text-align: left;">ID</th>
                         <th style="padding: 12px 15px; text-align: left;">Năm học</th>
+                        <th style="padding: 12px 15px; text-align: left;">Học kỳ</th>
                         <th style="padding: 12px 15px; text-align: left;">Thời gian</th>
                         <th style="padding: 12px 15px; text-align: left;">Trạng thái</th>
                         <th style="padding: 12px 15px; text-align: left;">Thống kê</th>
@@ -60,6 +61,7 @@
                         <tr style="border-bottom: 1px solid #e2e8f0;">
                             <td style="padding: 12px 15px;">{{ $dotBaoCao->id }}</td>
                             <td style="padding: 12px 15px; font-weight: 600;">{{ $dotBaoCao->nam_hoc }}</td>
+                            <td style="padding: 12px 15px;">{{ optional($dotBaoCao->hocKy)->ten ?? 'N/A' }}</td>
                             <td style="padding: 12px 15px;">
                                 <div style="font-size: 14px;">
                                     <div>Từ: {{ $dotBaoCao->ngay_bat_dau ? date('d/m/Y', strtotime($dotBaoCao->ngay_bat_dau)) : 'N/A' }}</div>

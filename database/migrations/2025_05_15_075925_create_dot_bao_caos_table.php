@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('dot_bao_caos', function (Blueprint $table) {
             $table->id();
             $table->year('nam_hoc');
+            $table->unsignedBigInteger('hoc_ky_id');
             $table->timestamps();
+            $table->foreign('hoc_ky_id')->references('id')->on('hoc_kys')->onDelete('cascade');
         });
     }
 
