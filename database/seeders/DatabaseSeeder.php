@@ -16,7 +16,8 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             VaiTroSeeder::class,
             PhanCongChamSeeder::class,
-            TestPhanCongChamSeeder::class
+            TestPhanCongChamSeeder::class,
+            LoaiGiangVienSeeder::class,
         ]);
     }
 }

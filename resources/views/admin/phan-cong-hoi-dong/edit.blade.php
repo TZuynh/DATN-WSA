@@ -28,7 +28,7 @@
                 @method('PUT')
                 
                 <div style="margin-bottom: 20px;">
-                    <label for="hoi_dong_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Hội đồng</label>
+                    <label for="hoi_dong_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Hội đồng <span style="color: red">*</span></label>
                     <select name="hoi_dong_id" id="hoi_dong_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn hội đồng">
                         <option value="">Chọn hội đồng</option>
                         @foreach($hoiDongs as $hoiDong)
@@ -40,7 +40,7 @@
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label for="tai_khoan_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Giảng viên</label>
+                    <label for="tai_khoan_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Giảng viên <span style="color: red">*</span></label>
                     <select name="tai_khoan_id" id="tai_khoan_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn giảng viên">
                         <option value="">Chọn giảng viên</option>
                         @foreach($taiKhoans as $taiKhoan)
@@ -55,8 +55,8 @@
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label for="vai_tro_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Vai trò</label>
-                    <select name="vai_tro_id" id="vai_tro_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn vai trò">
+                    <label for="vai_tro_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Vai trò <span style="color: red">*</span></label>
+                    <select name="vai_tro_id" id="vai_tro_id" class="vai-tro-select" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn vai trò">
                         <option value="">Chọn vai trò</option>
                         @foreach($vaiTros as $vaiTro)
                             <option value="{{ $vaiTro->id }}" 
@@ -74,6 +74,18 @@
                     </select>
                 </div>
 
+                <div id="loai_giang_vien_field" style="margin-bottom: 20px; display: none;">
+                    <label for="loai_giang_vien" style="display: block; margin-bottom: 5px; color: #4a5568;">Loại giảng viên <span style="color: red">*</span></label>
+                    <select name="loai_giang_vien" id="loai_giang_vien" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="Giảng Viên Phản Biện" {{ old('loai_giang_vien', $phanCongVaiTro->loai_giang_vien) == 'Giảng Viên Phản Biện' ? 'selected' : '' }}>Giảng Viên Phản Biện</option>
+                        <option value="Giảng Viên Khác" {{ old('loai_giang_vien', $phanCongVaiTro->loai_giang_vien) == 'Giảng Viên Khác' ? 'selected' : '' }}>Giảng Viên Khác</option>
+                    </select>
+                </div>
+                <div id="loai_giang_vien_text" style="margin-bottom: 20px; display: none;">
+                    <label style="display: block; margin-bottom: 5px; color: #4a5568;">Loại giảng viên</label>
+                    <input type="text" value="Giảng Viên Hướng Dẫn" class="form-control" disabled>
+                </div>
+
                 <div style="text-align: right;">
                     <button type="submit" style="padding: 10px 20px; background-color: #4299e1; color: white; border: none; border-radius: 4px; cursor: pointer;">
                         <i class="fas fa-save"></i> Lưu
@@ -84,33 +96,60 @@
     </div>
 
     <script>
-        document.getElementById('tai_khoan_id').addEventListener('change', function() {
-            const selectedGiangVienId = this.value;
-            const vaiTroSelect = document.getElementById('vai_tro_id');
-            const giangVienCoDeTai = @json($giangVienCoDeTai);
-            const vaiTroKhongDuocPhanCong = @json($vaiTroKhongDuocPhanCong);
-            const currentVaiTroId = {{ $phanCongVaiTro->vai_tro_id }};
+        // Lấy id các vai trò đặc biệt từ backend
+        const TRUONG_TIEU_BAN_ID = @json($vaiTros->where('ten', 'Trưởng tiểu ban')->first()->id ?? null);
+        const THU_KY_ID = @json($vaiTros->where('ten', 'Thư ký')->first()->id ?? null);
 
-            // Enable/disable các vai trò dựa trên giảng viên được chọn
-            Array.from(vaiTroSelect.options).forEach(option => {
-                if (option.value === '') return; // Bỏ qua option mặc định
-
-                if (in_array(parseInt(option.value), vaiTroKhongDuocPhanCong) && 
-                    in_array(parseInt(selectedGiangVienId), giangVienCoDeTai)) {
-                    option.disabled = true;
-                    // Nếu vai trò hiện tại bị disable, reset về giá trị mặc định
-                    if (parseInt(option.value) === currentVaiTroId) {
-                        vaiTroSelect.value = '';
-                    }
-                } else {
-                    option.disabled = false;
+        // Hàm cập nhật dropdown vai trò (nâng cao, dùng cho nhiều dòng nếu có)
+        function updateVaiTroDropdowns() {
+            let selectedSpecialRoles = [];
+            document.querySelectorAll('.vai-tro-select').forEach(function(select) {
+                let val = select.value;
+                if (val && (val == TRUONG_TIEU_BAN_ID || val == THU_KY_ID)) {
+                    selectedSpecialRoles.push(val);
                 }
             });
-        });
-
-        // Helper function để kiểm tra giá trị trong mảng
-        function in_array(needle, haystack) {
-            return haystack.indexOf(needle) !== -1;
+            document.querySelectorAll('.vai-tro-select').forEach(function(select) {
+                Array.from(select.options).forEach(function(option) {
+                    if ((option.value == TRUONG_TIEU_BAN_ID || option.value == THU_KY_ID) &&
+                        selectedSpecialRoles.includes(option.value) && select.value != option.value) {
+                        option.style.display = 'none';
+                    } else {
+                        option.style.display = '';
+                    }
+                });
+            });
         }
+        // Nếu chỉ có 1 dropdown thì vẫn hoạt động bình thường
+        document.querySelectorAll('.vai-tro-select').forEach(function(select) {
+            select.addEventListener('change', updateVaiTroDropdowns);
+        });
+        // Gọi khi load trang
+        updateVaiTroDropdowns();
+
+        function updateLoaiGiangVienField() {
+            var vaiTroSelect = document.getElementById('vai_tro_id');
+            var giangVienSelect = document.getElementById('tai_khoan_id');
+            var loaiGiangVienField = document.getElementById('loai_giang_vien_field');
+            var loaiGiangVienText = document.getElementById('loai_giang_vien_text');
+            var giangVienCoDeTai = @json($giangVienCoDeTai);
+            var thanhVienId = @json($vaiTros->where('ten', 'Thành viên')->first()->id ?? null);
+
+            if (vaiTroSelect.value == thanhVienId && giangVienSelect.value) {
+                if (giangVienCoDeTai.includes(parseInt(giangVienSelect.value))) {
+                    loaiGiangVienField.style.display = 'none';
+                    loaiGiangVienText.style.display = 'block';
+                } else {
+                    loaiGiangVienField.style.display = 'block';
+                    loaiGiangVienText.style.display = 'none';
+                }
+            } else {
+                loaiGiangVienField.style.display = 'none';
+                loaiGiangVienText.style.display = 'none';
+            }
+        }
+        document.getElementById('vai_tro_id').addEventListener('change', updateLoaiGiangVienField);
+        document.getElementById('tai_khoan_id').addEventListener('change', updateLoaiGiangVienField);
+        window.addEventListener('DOMContentLoaded', updateLoaiGiangVienField);
     </script>
 @endsection 

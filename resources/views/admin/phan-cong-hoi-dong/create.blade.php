@@ -27,7 +27,7 @@
                 @csrf
                 
                 <div style="margin-bottom: 20px;">
-                    <label for="hoi_dong_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Hội đồng</label>
+                    <label for="hoi_dong_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Hội đồng <span style="color: red">*</span></label>
                     <select name="hoi_dong_id" id="hoi_dong_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn hội đồng">
                         <option value="">Chọn hội đồng</option>
                         @foreach($hoiDongs as $hoiDong)
@@ -39,7 +39,7 @@
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label for="tai_khoan_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Giảng viên</label>
+                    <label for="tai_khoan_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Giảng viên <span style="color: red">*</span></label>
                     <select name="tai_khoan_id" id="tai_khoan_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn giảng viên">
                         <option value="">Chọn giảng viên</option>
                         @foreach($taiKhoans as $taiKhoan)
@@ -54,7 +54,7 @@
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label for="vai_tro_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Vai trò</label>
+                    <label for="vai_tro_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Vai trò <span style="color: red">*</span></label>
                     <select name="vai_tro_id" id="vai_tro_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn vai trò">
                         <option value="">Chọn vai trò</option>
                         @foreach($vaiTros as $vaiTro)
@@ -71,6 +71,18 @@
                             </option>
                         @endforeach
                     </select>
+                </div>
+
+                <div id="loai_giang_vien_field" style="margin-bottom: 20px; display: none;">
+                    <label for="loai_giang_vien" style="display: block; margin-bottom: 5px; color: #4a5568;">Loại giảng viên <span style="color: red">*</span></label>
+                    <select name="loai_giang_vien" id="loai_giang_vien" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="Giảng Viên Phản Biện">Giảng Viên Phản Biện</option>
+                        <option value="Giảng Viên Khác">Giảng Viên Khác</option>
+                    </select>
+                </div>
+                <div id="loai_giang_vien_text" style="margin-bottom: 20px; display: none;">
+                    <label style="display: block; margin-bottom: 5px; color: #4a5568;">Loại giảng viên</label>
+                    <input type="text" value="Giảng Viên Hướng Dẫn" class="form-control" disabled>
                 </div>
 
                 <div style="text-align: right;">
@@ -105,9 +117,72 @@
             });
         });
 
+        document.getElementById('hoi_dong_id').addEventListener('change', function() {
+            var hoiDongId = this.value;
+            window.location.href = '?hoi_dong_id=' + hoiDongId;
+        });
+
         // Helper function để kiểm tra giá trị trong mảng
         function in_array(needle, haystack) {
             return haystack.indexOf(needle) !== -1;
         }
+
+        function updateLoaiGiangVienField() {
+            var vaiTroSelect = document.getElementById('vai_tro_id');
+            var giangVienSelect = document.getElementById('tai_khoan_id');
+            var loaiGiangVienField = document.getElementById('loai_giang_vien_field');
+            var loaiGiangVienText = document.getElementById('loai_giang_vien_text');
+            var giangVienCoDeTai = @json($giangVienCoDeTai);
+
+            // Lấy id vai trò Thành viên (tìm trong $vaiTros)
+            var thanhVienId = @json($vaiTros->where('ten', 'Thành viên')->first()->id ?? null);
+
+            if (vaiTroSelect.value == thanhVienId && giangVienSelect.value) {
+                if (giangVienCoDeTai.includes(parseInt(giangVienSelect.value))) {
+                    loaiGiangVienField.style.display = 'none';
+                    loaiGiangVienText.style.display = 'block';
+                } else {
+                    loaiGiangVienField.style.display = 'block';
+                    loaiGiangVienText.style.display = 'none';
+                }
+            } else {
+                loaiGiangVienField.style.display = 'none';
+                loaiGiangVienText.style.display = 'none';
+            }
+        }
+
+        document.getElementById('vai_tro_id').addEventListener('change', updateLoaiGiangVienField);
+        document.getElementById('tai_khoan_id').addEventListener('change', updateLoaiGiangVienField);
+        window.addEventListener('DOMContentLoaded', updateLoaiGiangVienField);
+
+        // New functions for dynamic vai tro dropdowns
+        function updateVaiTroDropdowns() {
+            // Lấy tất cả các vai trò đặc biệt đã được chọn
+            let selectedSpecialRoles = [];
+            document.querySelectorAll('.vai-tro-select').forEach(function(select) {
+                let val = select.value;
+                if (val && (val == TRUONG_TIEU_BAN_ID || val == THU_KY_ID)) {
+                    selectedSpecialRoles.push(val);
+                }
+            });
+
+            // Cập nhật lại các dropdown
+            document.querySelectorAll('.vai-tro-select').forEach(function(select) {
+                Array.from(select.options).forEach(function(option) {
+                    // Nếu là vai trò đặc biệt và đã được chọn ở dòng khác thì ẩn
+                    if ((option.value == TRUONG_TIEU_BAN_ID || option.value == THU_KY_ID) &&
+                        selectedSpecialRoles.includes(option.value) && select.value != option.value) {
+                        option.style.display = 'none';
+                    } else {
+                        option.style.display = '';
+                    }
+                });
+            });
+        }
+
+        // Gọi hàm mỗi khi thay đổi dropdown vai trò
+        document.querySelectorAll('.vai-tro-select').forEach(function(select) {
+            select.addEventListener('change', updateVaiTroDropdowns);
+        });
     </script>
 @endsection 

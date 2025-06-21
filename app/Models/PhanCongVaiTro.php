@@ -14,7 +14,8 @@ class PhanCongVaiTro extends Model
     protected $fillable = [
         'hoi_dong_id',
         'tai_khoan_id',
-        'vai_tro_id'
+        'vai_tro_id',
+        'loai_giang_vien',
     ];
 
     public function hoiDong()
