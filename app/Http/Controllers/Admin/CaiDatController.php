@@ -56,7 +56,7 @@ class CaiDatController extends Controller
         config(['session.lifetime' => $data['thoi_gian_timeout']]);
 
         // Lưu cấu hình vào file config
-        $this->updateConfigFile('session', ['lifetime' => $data['thoi_gian_timeout']]);
+        // $this->updateConfigFile('session', ['lifetime' => $data['thoi_gian_timeout']]);
 
         // Cập nhật session hiện tại
         Session::put('settings', array_merge(Session::get('settings', []), $data));
