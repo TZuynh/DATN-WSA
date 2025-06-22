@@ -52,7 +52,6 @@
                         <th style="padding: 12px 15px; text-align: left;">Thời gian</th>
                         <th style="padding: 12px 15px; text-align: left;">Trạng thái</th>
                         <th style="padding: 12px 15px; text-align: left;">Thống kê</th>
-                        <th style="padding: 12px 15px; text-align: left;">Tiến độ</th>
                         <th style="padding: 12px 15px; text-align: left;">Thao tác</th>
                     </tr>
                 </thead>
@@ -75,17 +74,7 @@
                             </td>
                             <td style="padding: 12px 15px;">
                                 <div style="font-size: 14px;">
-                                    <div>Hội đồng: {{ $dotBaoCao->so_luong_hoi_dong }}</div>
-                                    <div>Đề tài: {{ $dotBaoCao->so_luong_de_tai }}</div>
-                                    <div>Nhóm: {{ $dotBaoCao->so_luong_nhom }}</div>
-                                </div>
-                            </td>
-                            <td style="padding: 12px 15px; width: 200px;">
-                                <div style="background: #edf2f7; height: 8px; border-radius: 4px; overflow: hidden;">
-                                    <div style="background: #4299e1; height: 100%; width: {{ $dotBaoCao->ti_do_hoan_thanh }}%;"></div>
-                                </div>
-                                <div style="font-size: 14px; color: #4a5568; margin-top: 4px;">
-                                    {{ number_format($dotBaoCao->ti_do_hoan_thanh, 1) }}%
+                                    Hội đồng: {{ $dotBaoCao->so_luong_hoi_dong_thuc_te }} | Đề tài: {{ $dotBaoCao->so_luong_de_tai_thuc_te }} | Nhóm: {{ $dotBaoCao->so_luong_nhom_thuc_te }}
                                 </div>
                             </td>
                             <td style="padding: 12px 15px;">
@@ -117,7 +106,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" style="padding: 20px; text-align: center; color: #718096;">
+                            <td colspan="6" style="padding: 20px; text-align: center; color: #718096;">
                                 Không có đợt báo cáo nào
                             </td>
                         </tr>

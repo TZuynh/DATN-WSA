@@ -23,6 +23,13 @@ class DotBaoCaoController extends Controller
         $dotBaoCaos = DotBaoCao::with('hocKy')->orderBy('created_at', 'desc')
             ->paginate(10);
             
+        // Lấy số lượng thực tế từ bảng cho từng đợt báo cáo
+        foreach ($dotBaoCaos as $dotBaoCao) {
+            $dotBaoCao->so_luong_hoi_dong_thuc_te = $dotBaoCao->hoiDongs()->count();
+            $dotBaoCao->so_luong_de_tai_thuc_te = $dotBaoCao->deTais()->count();
+            $dotBaoCao->so_luong_nhom_thuc_te = $dotBaoCao->deTais()->whereNotNull('nhom_id')->distinct('nhom_id')->count('nhom_id');
+        }
+
         return view('admin.dot-bao-cao.index', compact('dotBaoCaos'));
     }
 
@@ -197,18 +204,13 @@ class DotBaoCaoController extends Controller
 
     public function show(DotBaoCao $dotBaoCao)
     {
-        // Lấy thông tin chi tiết của đợt báo cáo
-        $thongTinChiTiet = $dotBaoCao->getThongTinChiTiet();
-        $thongKeChiTiet = $dotBaoCao->getThongKeChiTiet();
-        $danhSachHoiDong = $dotBaoCao->getDanhSachHoiDong();
-        $danhSachDeTai = $dotBaoCao->getDanhSachDeTai();
-
-        return view('admin.dot-bao-cao.show', compact(
-            'dotBaoCao',
-            'thongTinChiTiet',
-            'thongKeChiTiet',
-            'danhSachHoiDong',
-            'danhSachDeTai'
-        ));
+        // Eager load các quan hệ cần thiết để view truy cập object Eloquent
+        $dotBaoCao->load([
+            'deTais.chiTietBaoCao.hoiDong',
+            'deTais.nhom',
+            'deTais.giangVien',
+            'hoiDongs',
+        ]);
+        return view('admin.dot-bao-cao.show', compact('dotBaoCao'));
     }
 } 

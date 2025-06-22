@@ -24,7 +24,7 @@
                         </div>
 
                         <!-- Debug Information -->
-                        <div class="alert alert-warning">
+                        <!-- <div class="alert alert-warning">
                             <h5>Thông tin Debug:</h5>
                             <div class="row">
                                 <div class="col-md-6">
@@ -119,7 +119,7 @@
                                     </table>
                                 </div>
                             @endif
-                        </div>
+                        </div> -->
                     @else
                         <div class="table-responsive">
                             <table class="table table-bordered table-striped">
