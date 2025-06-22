@@ -29,6 +29,10 @@
                             <td>{{ $dotBaoCao->nam_hoc }}</td>
                         </tr>
                         <tr>
+                            <th class="w-1/3 text-left">Học kỳ</th>
+                            <td>{{ $dotBaoCao->hocKy->ten ?? 'N/A' }}</td>
+                        </tr>
+                        <tr>
                             <th class="w-1/3 text-left">Trạng thái</th>
                             <td>
                                 <span class="py-1 rounded-full text-sm {{ $dotBaoCao->trang_thai_class }}">
@@ -54,37 +58,6 @@
         </div>
     </div>
 
-    <!-- Thống kê tổng quan -->
-    <div class="card mb-6">
-        <div class="card-header">
-            <h2 class="text-xl font-semibold text-primary">Thống kê tổng quan</h2>
-        </div>
-        <div class="card-body">
-            <div class="overflow-x-auto">
-                <table class="table table-bordered">
-                    <tbody>
-                        <tr>
-                            <th class="w-1/3 text-left">Tổng số hội đồng</th>
-                            <td class="text-2xl font-bold text-blue-600">{{ $thongKeChiTiet['tong_so_hoi_dong'] }}</td>
-                        </tr>
-                        <tr>
-                            <th class="w-1/3 text-left">Tổng số đề tài</th>
-                            <td class="text-2xl font-bold text-green-600">{{ $thongKeChiTiet['tong_so_de_tai'] }}</td>
-                        </tr>
-                        <tr>
-                            <th class="w-1/3 text-left">Tổng số nhóm</th>
-                            <td class="text-2xl font-bold text-purple-600">{{ $thongKeChiTiet['tong_so_nhom'] }}</td>
-                        </tr>
-                        <tr>
-                            <th class="w-1/3 text-left">Tỷ lệ hoàn thành</th>
-                            <td class="text-2xl font-bold text-yellow-600">{{ number_format($thongKeChiTiet['ti_do_hoan_thanh'], 1) }}%</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
     <!-- Danh sách hội đồng -->
     <div class="card mb-6">
         <div class="card-header">
@@ -102,12 +75,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($danhSachHoiDong as $hoiDong)
+                        @forelse($dotBaoCao->hoiDongs as $hoiDong)
                         <tr>
                             <td>{{ $hoiDong['ma_hoi_dong'] }}</td>
                             <td>{{ $hoiDong['ten'] }}</td>
-                            <td class="text-center">{{ count($hoiDong['de_tai']) }}</td>
-                            <td class="text-center">{{ count($hoiDong['thanh_vien']) }}</td>
+                            <td class="text-center">{{ count($hoiDong->chiTietBaoCaos ?? []) }}</td>
+                            <td class="text-center">{{ count($hoiDong->phanCongVaiTros ?? []) }}</td>
                         </tr>
                         @empty
                         <tr>
@@ -143,13 +116,19 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($danhSachDeTai as $deTai)
+                        @forelse($dotBaoCao->deTais as $deTai)
                         <tr>
                             <td>{{ $deTai['ma_de_tai'] }}</td>
                             <td>{{ $deTai['tieu_de'] }}</td>
                             <td>{{ $deTai['nhom']['ten'] ?? 'Chưa có nhóm' }}</td>
                             <td>{{ $deTai['giang_vien']['ten'] ?? 'Chưa có giảng viên' }}</td>
-                            <td>{{ $deTai['hoi_dong']['ten'] ?? 'Chưa phân hội đồng' }}</td>
+                            <td>
+                                @php
+                                    $chiTiet = $deTai->chiTietBaoCao;
+                                    $hoiDongTen = $chiTiet && $chiTiet->hoiDong ? $chiTiet->hoiDong->ten : 'Chưa phân hội đồng';
+                                @endphp
+                                {{ $hoiDongTen }}
+                            </td>
                         </tr>
                         @empty
                         <tr>
