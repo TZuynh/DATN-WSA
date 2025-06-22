@@ -25,7 +25,7 @@ class LichChamController extends Controller
         $lichChams = LichCham::with(['hoiDong', 'dotBaoCao', 'nhom', 'deTai'])
                         ->orderBy('thu_tu', 'asc')
                         ->paginate(10);
-            
+
         return view('admin.lich-cham.index', compact('lichChams'));
     }
 
@@ -36,44 +36,25 @@ class LichChamController extends Controller
     {
         $hoiDongs = HoiDong::all();
         $dotBaoCaos = DotBaoCao::all();
-        
-        // Kiểm tra xem có đề tài nào đã được phân công chấm chưa
-        $deTaiDaPhanCong = DeTai::whereHas('phanCongCham')->exists();
-        if (!$deTaiDaPhanCong) {
-            return redirect()->route('admin.lich-cham.index')
-                ->with('error', 'Chưa có đề tài nào được phân công chấm. Vui lòng phân công chấm trước khi tạo lịch.');
-        }
-        
+
+        // Lấy danh sách de_tai_id đã được phân công chấm
+        $deTaiIds = PhanCongCham::pluck('de_tai_id')->toArray();
+
         // Lấy danh sách nhóm đã có lịch chấm
-        $nhomDaCoLichCham = LichCham::pluck('nhom_id')->toArray();
-        
-        // Lấy danh sách nhóm chưa có lịch chấm và có đề tài phù hợp
-        $nhoms = Nhom::where('trang_thai', 'hoat_dong')
-            ->whereHas('deTais', function($query) {
-                $query->whereHas('phanCongCham')
-                    ->whereNotIn('trang_thai', [
-                        DeTai::TRANG_THAI_CHO_DUYET,
-                        DeTai::TRANG_THAI_KHONG_XAY_RA_GVHD,
-                        DeTai::TRANG_THAI_KHONG_XAY_RA_GVPB
-                    ]);
+        $nhomDaCoLichCham = \App\Models\LichCham::pluck('nhom_id')->toArray();
+
+        // Lấy nhóm chưa có lịch chấm, có đề tài đã được phân công chấm
+        $nhoms = Nhom::whereNotIn('id', $nhomDaCoLichCham)
+            ->whereHas('deTai', function($query) use ($deTaiIds) {
+                $query->whereIn('id', $deTaiIds);
             })
-            ->whereNotIn('id', $nhomDaCoLichCham)
-            ->select('id', 'ma_nhom', 'ten', 'giang_vien_id')
-            ->with(['giangVien:id,ten', 'deTais' => function($query) {
-                $query->whereHas('phanCongCham')
-                    ->whereNotIn('trang_thai', [
-                        DeTai::TRANG_THAI_CHO_DUYET,
-                        DeTai::TRANG_THAI_KHONG_XAY_RA_GVHD,
-                        DeTai::TRANG_THAI_KHONG_XAY_RA_GVPB
-                    ]);
-            }])
             ->get();
-            
+
         if ($nhoms->isEmpty()) {
             return redirect()->route('admin.lich-cham.index')
                 ->with('error', 'Không có nhóm nào phù hợp để thêm vào lịch bảo vệ. Vui lòng kiểm tra trạng thái đề tài.');
         }
-            
+
         return view('admin.lich-cham.create', compact('hoiDongs', 'dotBaoCaos', 'nhoms'));
     }
 
@@ -149,15 +130,15 @@ class LichChamController extends Controller
     {
         $hoiDongs = HoiDong::all();
         $dotBaoCaos = DotBaoCao::all();
-        
+
         // Load relationship deTai
         $lichCham->load('deTai');
-        
+
         // Lấy danh sách nhóm đã có lịch chấm (trừ nhóm hiện tại)
         $nhomDaCoLichCham = LichCham::where('id', '!=', $lichCham->id)
             ->pluck('nhom_id')
             ->toArray();
-        
+
         // Lấy danh sách nhóm chưa có lịch chấm và nhóm hiện tại
         $nhoms = Nhom::where('trang_thai', 'hoat_dong')
             ->whereHas('deTais', function($query) {
@@ -182,7 +163,7 @@ class LichChamController extends Controller
                     ]);
             }])
             ->get();
-            
+
         return view('admin.lich-cham.edit', compact('lichCham', 'hoiDongs', 'dotBaoCaos', 'nhoms'));
     }
 
@@ -230,7 +211,7 @@ class LichChamController extends Controller
                 $lichChamKhac = LichCham::where('de_tai_id', $deTaiCu->id)
                     ->where('id', '!=', $lichCham->id)
                     ->exists();
-                
+
                 if (!$lichChamKhac) {
                     // Nếu đề tài cũ không còn lịch chấm nào khác, có thể reset trạng thái về GVHD
                     $deTaiCu->trang_thai = DeTai::TRANG_THAI_DANG_THUC_HIEN_GVHD;
@@ -294,7 +275,7 @@ class LichChamController extends Controller
     {
         $lichChams = LichCham::with([
             'hoiDong.phong',
-            'dotBaoCao', 
+            'dotBaoCao',
             'nhom.sinhViens.lop',
             'nhom.deTais',
             'nhom.giangVien',
@@ -364,19 +345,19 @@ class LichChamController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             $orders = $request->input('orders');
-            
+
             foreach ($orders as $order) {
                 LichCham::where('id', $order['id'])
                         ->update(['thu_tu' => $order['new_order']]);
             }
-            
+
             DB::commit();
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
-    }    
-} 
+    }
+}

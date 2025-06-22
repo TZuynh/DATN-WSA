@@ -54,7 +54,7 @@ class NhomController extends Controller
         try {
             // Tạo mã nhóm tự động
             $maNhom = Nhom::taoMaNhom();
-            
+
             $nhom = Nhom::create([
                 'ma_nhom' => $maNhom,
                 'ten' => $request->ten,
@@ -212,7 +212,7 @@ class NhomController extends Controller
     public function downloadTemplate()
     {
         $path = storage_path('app/templates/nhom_template.xlsx');
-        
+
         // Tạo thư mục templates nếu chưa tồn tại
         if (!file_exists(storage_path('app/templates'))) {
             mkdir(storage_path('app/templates'), 0755, true);
@@ -225,7 +225,7 @@ class NhomController extends Controller
                 'Tên nhóm',
                 'MSSV (cách nhau bằng dấu phẩy)'
             ];
-            
+
             $data = [
                 ['NH001', 'Nhóm 1', '0306211506,0306211507'],
                 ['NH002', 'Nhóm 2', '0306211508,0306211509']
@@ -267,27 +267,37 @@ class NhomController extends Controller
         $request->validate([
             'de_tai_id' => 'required|exists:de_tais,id'
         ]);
+
         $nhom = Nhom::findOrFail($id);
-        $deTaiMoi = $request->de_tai_id;
-        $deTaiCu = $nhom->de_tai_id;
+        $deTaiMoi = DeTai::findOrFail($request->de_tai_id);
 
-        // Tìm nhóm đang giữ đề tài mới (B)
-        $nhomKhac = Nhom::where('de_tai_id', $deTaiMoi)->first();
+        $deTaiCu = $nhom->deTai;
+        $nhomCu = $deTaiMoi->nhom;
 
-        // Gán đề tài mới cho nhóm hiện tại (A)
-        $nhom->de_tai_id = $deTaiMoi;
-        $nhom->save();
-
-        // Nếu có nhóm khác đang giữ đề tài mới, gán lại đề tài cũ cho nhóm đó (có thể là null)
-        if ($nhomKhac && $nhomKhac->id != $nhom->id) {
-            $nhomKhac->de_tai_id = $deTaiCu;
-            $nhomKhac->save();
+        // Cập nhật đề tài cũ (nếu có): bỏ liên kết với nhóm hiện tại
+        if ($deTaiCu) {
+            $deTaiCu->nhom_id = null;
+            $deTaiCu->save();
         }
 
-        if (is_null($deTaiCu) || is_null($nhomKhac)) {
-            return back()->with('error', 'Cả hai nhóm phải có đề tài để hoán đổi!');
+        // Cập nhật nhóm hiện tại với đề tài mới
+        $nhom->de_tai_id = $deTaiMoi->id;
+        $nhom->save();
+
+        $deTaiMoi->nhom_id = $nhom->id;
+        $deTaiMoi->save();
+
+        // Nếu đề tài mới từng gắn với nhóm khác => gán đề tài cũ cho nhóm đó
+        if ($nhomCu && $nhomCu->id != $nhom->id) {
+            $nhomCu->de_tai_id = $deTaiCu?->id;
+            $nhomCu->save();
+
+            if ($deTaiCu) {
+                $deTaiCu->nhom_id = $nhomCu->id;
+                $deTaiCu->save();
+            }
         }
 
         return redirect()->route('giangvien.nhom.index')->with('success', 'Chuyển đề tài thành công!');
     }
-} 
+}

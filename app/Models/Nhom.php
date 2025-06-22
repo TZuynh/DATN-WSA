@@ -40,7 +40,7 @@ class Nhom extends Model
      */
     public function deTai()
     {
-        return $this->belongsTo(\App\Models\DeTai::class, 'de_tai_id');
+        return $this->hasOne(\App\Models\DeTai::class, 'nhom_id', 'id');
     }
 
     /**

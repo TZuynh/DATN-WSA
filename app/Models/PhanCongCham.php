@@ -55,4 +55,18 @@ class PhanCongCham extends Model
     {
         return $this->getGiangVienByLoai('Giảng Viên Khác');
     }
-} 
+
+    public function getVaiTroChamFor($giangVienId)
+    {
+        if ((int)$this->giang_vien_phan_bien_id === (int)$giangVienId) {
+            return 'Phản biện';
+        }
+        if ((int)$this->giang_vien_khac_id === (int)$giangVienId) {
+            return 'Giảng viên khác';
+        }
+        if ((int)$this->giang_vien_huong_dan_id === (int)$giangVienId) {
+            return 'Hướng dẫn';
+        }
+        return 'N/A';
+    }
+}

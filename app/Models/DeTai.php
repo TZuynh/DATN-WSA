@@ -48,6 +48,11 @@ class DeTai extends Model
         return $this->hasMany(Nhom::class, 'de_tai_id');
     }
 
+    public function nhom()
+    {
+        return $this->belongsTo(Nhom::class, 'nhom_id');
+    }
+
     public function giangVien()
     {
         return $this->belongsTo(TaiKhoan::class, 'giang_vien_id');
@@ -65,7 +70,7 @@ class DeTai extends Model
 
     public function phanCongCham()
     {
-        return $this->hasOne(PhanCongCham::class);
+        return $this->hasOne(\App\Models\PhanCongCham::class, 'de_tai_id', 'id');
     }
 
     public function lichCham()
@@ -101,13 +106,13 @@ class DeTai extends Model
             return;
         }
 
-        if ($this->trang_thai === self::TRANG_THAI_KHONG_XAY_RA_GVHD || 
+        if ($this->trang_thai === self::TRANG_THAI_KHONG_XAY_RA_GVHD ||
             $this->trang_thai === self::TRANG_THAI_KHONG_XAY_RA_GVPB) {
             return;
         }
 
         $now = Carbon::now();
-        
+
         // Lấy ngày từ đợt báo cáo
         $ngayBatDau = $this->dotBaoCao->ngay_bat_dau;
         $ngayKetThuc = $this->dotBaoCao->ngay_ket_thuc;
@@ -115,7 +120,7 @@ class DeTai extends Model
         if ($now >= $ngayBatDau) {
             $this->trang_thai = self::TRANG_THAI_DANG_THUC_HIEN_GVHD;
         }
-        
+
         if ($now > $ngayKetThuc) {
             $this->trang_thai = self::TRANG_THAI_DANG_THUC_HIEN_GVPB;
         }

@@ -19,17 +19,17 @@
         <div class="card-body">
             <form action="{{ route('admin.lich-cham.store') }}" method="POST">
                 @csrf
-                
+
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="hoi_dong_id" class="form-label">Hội đồng <span class="text-danger">*</span></label>
-                        <select class="form-select @error('hoi_dong_id') is-invalid @enderror" 
-                                id="hoi_dong_id" 
-                                name="hoi_dong_id" 
+                        <select class="form-select @error('hoi_dong_id') is-invalid @enderror"
+                                id="hoi_dong_id"
+                                name="hoi_dong_id"
                                 required>
                             <option value="">Chọn hội đồng</option>
                             @foreach($hoiDongs as $hoiDong)
-                                <option value="{{ $hoiDong->id }}" 
+                                <option value="{{ $hoiDong->id }}"
                                     {{ old('hoi_dong_id') == $hoiDong->id ? 'selected' : '' }}>
                                     {{ $hoiDong->ten }}
                                 </option>
@@ -42,15 +42,15 @@
 
                     <div class="col-md-6">
                         <label for="dot_bao_cao_id" class="form-label">Đợt báo cáo <span class="text-danger">*</span></label>
-                        <select class="form-select @error('dot_bao_cao_id') is-invalid @enderror" 
-                                id="dot_bao_cao_id" 
-                                name="dot_bao_cao_id" 
+                        <select class="form-select @error('dot_bao_cao_id') is-invalid @enderror"
+                                id="dot_bao_cao_id"
+                                name="dot_bao_cao_id"
                                 required>
                             <option value="">Chọn đợt báo cáo</option>
                             @foreach($dotBaoCaos as $dotBaoCao)
                                 <option value="{{ $dotBaoCao->id }}"
                                     {{ old('dot_bao_cao_id') == $dotBaoCao->id ? 'selected' : '' }}>
-                                    {{ $dotBaoCao->nam_hoc }}
+                                    {{ $dotBaoCao->nam_hoc }} - {{ $dotBaoCao->hocKy->ten }}
                                 </option>
                             @endforeach
                         </select>
@@ -63,14 +63,14 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="nhom_id" class="form-label">Nhóm <span class="text-danger">*</span></label>
-                        <select class="form-select @error('nhom_id') is-invalid @enderror" 
-                                id="nhom_id" 
-                                name="nhom_id" 
+                        <select class="form-select @error('nhom_id') is-invalid @enderror"
+                                id="nhom_id"
+                                name="nhom_id"
                                 required>
                             <option value="">Chọn nhóm</option>
                             @foreach($nhoms as $nhom)
                                 <option value="{{ $nhom->id }}"
-                                    data-de-tai="{{ $nhom->deTais->first()->ten_de_tai ?? '' }}"
+                                    data-de-tai="{{ $nhom->deTai->ten_de_tai ?? '' }}"
                                     {{ old('nhom_id') == $nhom->id ? 'selected' : '' }}>
                                     {{ $nhom->ma_nhom }} - {{ $nhom->ten }} (GV: {{ $nhom->giangVien->ten }})
                                 </option>
@@ -83,9 +83,9 @@
 
                     <div class="col-md-6">
                         <label for="ten_de_tai" class="form-label">Tên đề tài</label>
-                        <input type="text" 
-                               class="form-control" 
-                               id="ten_de_tai" 
+                        <input type="text"
+                               class="form-control"
+                               id="ten_de_tai"
                                disabled>
                     </div>
                 </div>
@@ -93,10 +93,10 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="lich_tao" class="form-label">Thời gian <span class="text-danger">*</span></label>
-                        <input type="text" 
-                               class="form-control @error('lich_tao') is-invalid @enderror" 
-                               id="lich_tao" 
-                               name="lich_tao" 
+                        <input type="text"
+                               class="form-control @error('lich_tao') is-invalid @enderror"
+                               id="lich_tao"
+                               name="lich_tao"
                                value="{{ old('lich_tao', isset($lichCham) ? \Carbon\Carbon::parse($lichCham->lich_tao)->format('Y-m-d H:i') : '') }}"
                                placeholder="Chọn thời gian"
                                required>
@@ -127,7 +127,7 @@
             const selectedOption = e.target.options[e.target.selectedIndex];
             const tenDeTai = selectedOption.getAttribute('data-de-tai');
             document.getElementById('ten_de_tai').value = tenDeTai || '';
-            
+
             console.log('Đã chọn nhóm:', {
                 id: e.target.value,
                 text: e.target.options[e.target.selectedIndex].text,
@@ -175,7 +175,7 @@
         // Validate form trước khi submit
         document.querySelector('form').addEventListener('submit', function(e) {
             console.log('Bắt đầu validate form');
-            
+
             const formData = new FormData(this);
             const formDataObj = {};
             formData.forEach((value, key) => formDataObj[key] = value);
@@ -225,4 +225,4 @@
         @endif
     });
 </script>
-@endpush 
+@endpush
