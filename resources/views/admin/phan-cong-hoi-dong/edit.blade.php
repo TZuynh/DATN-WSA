@@ -44,7 +44,14 @@
                     <select name="tai_khoan_id" id="tai_khoan_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn giảng viên">
                         <option value="">Chọn giảng viên</option>
                         @foreach($taiKhoans as $taiKhoan)
-                            <option value="{{ $taiKhoan->id }}" {{ old('tai_khoan_id', $phanCongVaiTro->tai_khoan_id) == $taiKhoan->id ? 'selected' : '' }}>
+                            @php
+                                $disable = false;
+                                // Disable nếu giảng viên đã được phân công trong hội đồng này (trừ chính bản ghi đang sửa)
+                                if (in_array($taiKhoan->id, $giangViensDaPhanCong ?? [])) $disable = true;
+                            @endphp
+                            <option value="{{ $taiKhoan->id }}" 
+                                {{ old('tai_khoan_id', $phanCongVaiTro->tai_khoan_id) == $taiKhoan->id ? 'selected' : '' }}
+                                {{ $disable ? 'disabled' : '' }}>
                                 {{ $taiKhoan->ten }}
                                 @if(in_array($taiKhoan->id, $giangVienCoDeTai))
                                     (Đang có đề tài)

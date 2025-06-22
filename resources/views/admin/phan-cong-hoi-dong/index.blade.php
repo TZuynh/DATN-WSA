@@ -40,7 +40,12 @@
                             <td style="padding: 10px 15px;">{{ $phanCong->taiKhoan->ten ?? 'N/A' }}</td>
                             <td style="padding: 10px 15px;">
                                 @php
-                                    $loai = $phanCong->loai_giang_vien ?? $phanCong->vaiTro->ten;
+                                    $tenVaiTro = $phanCong->vaiTro->ten;
+                                    if ($tenVaiTro === 'Thành viên' && $phanCong->loai_giang_vien) {
+                                        $loai = $phanCong->loai_giang_vien;
+                                    } else {
+                                        $loai = $tenVaiTro;
+                                    }
                                     $color = '#3182ce';
                                     if (str_contains($loai, 'Trưởng tiểu ban')) {
                                         $color = '#e53e3e'; // Đỏ
@@ -61,9 +66,9 @@
                             <td style="padding: 10px 15px;">{{ $phanCong->created_at->format('d-m-Y') }}</td>
                             <td style="padding: 10px 15px;">
                                 <div style="display: flex; gap: 10px;">
-                                    <a href="{{ route('admin.phan-cong-hoi-dong.edit', $phanCong->id) }}" class="btn-edit" style="color: #3182ce;">
+                                    {{-- <a href="{{ route('admin.phan-cong-hoi-dong.edit', $phanCong->id) }}" class="btn-edit" style="color: #3182ce;">
                                         <i class="fas fa-edit"></i>
-                                    </a>
+                                    </a> --}}
                                     <form action="{{ route('admin.phan-cong-hoi-dong.destroy', $phanCong->id) }}" method="POST" style="display: inline;">
                                         @csrf
                                         @method('DELETE')
@@ -71,6 +76,9 @@
                                             <i class="fas fa-trash-alt"></i>
                                         </button>
                                     </form>
+                                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalChangeGV{{ $phanCong->id }}">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -88,6 +96,33 @@
             {{ $phanCongVaiTros->links() }}
         </div>
     </div>
+
+    <!-- Modal -->
+    @foreach ($phanCongVaiTros as $phanCong)
+        <div class="modal fade" id="modalChangeGV{{ $phanCong->id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <form action="{{ route('admin.phan-cong-hoi-dong.change-giang-vien', $phanCong->id) }}" method="POST">
+                    @csrf
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Chuyển giảng viên cho vai trò: {{ $phanCong->vaiTro->ten }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <select name="tai_khoan_id" class="form-select" required>
+                                @foreach($taiKhoansChuaPhanCong as $gv)
+                                    <option value="{{ $gv->id }}">{{ $gv->ten }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Lưu</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endforeach
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 @endsection

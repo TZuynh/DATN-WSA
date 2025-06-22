@@ -43,7 +43,12 @@
                     <select name="tai_khoan_id" id="tai_khoan_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn giảng viên">
                         <option value="">Chọn giảng viên</option>
                         @foreach($taiKhoans as $taiKhoan)
-                            <option value="{{ $taiKhoan->id }}" {{ old('tai_khoan_id') == $taiKhoan->id ? 'selected' : '' }}>
+                            @php
+                                $disable = false;
+                                // Nếu giảng viên đã được phân công trong hội đồng thì disable
+                                if (in_array($taiKhoan->id, $giangViensDaPhanCong ?? [])) $disable = true;
+                            @endphp
+                            <option value="{{ $taiKhoan->id }}" {{ $disable ? 'disabled' : '' }}>
                                 {{ $taiKhoan->ten }}
                                 @if(in_array($taiKhoan->id, $giangVienCoDeTai))
                                     (Đang có đề tài)
@@ -58,16 +63,12 @@
                     <select name="vai_tro_id" id="vai_tro_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn vai trò">
                         <option value="">Chọn vai trò</option>
                         @foreach($vaiTros as $vaiTro)
-                            <option value="{{ $vaiTro->id }}" 
-                                {{ old('vai_tro_id') == $vaiTro->id ? 'selected' : '' }}
-                                @if(in_array($vaiTro->id, $vaiTroKhongDuocPhanCong) && in_array(old('tai_khoan_id'), $giangVienCoDeTai))
-                                    disabled
-                                @endif
-                            >
+                            @php
+                                $disable = false;
+                                if (in_array($vaiTro->id, $vaiTrosDaPhanCong ?? [])) $disable = true;
+                            @endphp
+                            <option value="{{ $vaiTro->id }}" {{ $disable ? 'disabled' : '' }}>
                                 {{ $vaiTro->ten }}
-                                @if(in_array($vaiTro->id, $vaiTroKhongDuocPhanCong))
-                                    (Không áp dụng cho giảng viên có đề tài)
-                                @endif
                             </option>
                         @endforeach
                     </select>
@@ -76,8 +77,12 @@
                 <div id="loai_giang_vien_field" style="margin-bottom: 20px; display: none;">
                     <label for="loai_giang_vien" style="display: block; margin-bottom: 5px; color: #4a5568;">Loại giảng viên <span style="color: red">*</span></label>
                     <select name="loai_giang_vien" id="loai_giang_vien" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                        <option value="Giảng Viên Phản Biện">Giảng Viên Phản Biện</option>
-                        <option value="Giảng Viên Khác">Giảng Viên Khác</option>
+                        @foreach(['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện', 'Giảng Viên Khác'] as $loai)
+                            <option value="{{ $loai }}" 
+                                {{ in_array($loai, $loaiGiangVienDaPhanCong ?? []) ? 'disabled' : '' }}>
+                                {{ $loai }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
                 <div id="loai_giang_vien_text" style="margin-bottom: 20px; display: none;">
