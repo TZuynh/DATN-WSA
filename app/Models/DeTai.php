@@ -53,9 +53,9 @@ class DeTai extends Model
         return $this->belongsTo(TaiKhoan::class, 'giang_vien_id');
     }
 
-    public function chiTietBaoCaos()
+    public function chiTietBaoCao()
     {
-        return $this->hasMany(ChiTietDeTaiBaoCao::class, 'de_tai_id');
+        return $this->hasOne(\App\Models\ChiTietDeTaiBaoCao::class, 'de_tai_id');
     }
 
     public function dotBaoCao()

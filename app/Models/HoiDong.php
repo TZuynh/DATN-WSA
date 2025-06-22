@@ -90,6 +90,7 @@ class HoiDong extends Model
             ChiTietDeTaiBaoCao::create([
                 'hoi_dong_id' => $this->id,
                 'de_tai_id' => $deTai->id,
+                'dot_bao_cao_id' => $this->dot_bao_cao_id,
                 'trang_thai' => 0 // Trạng thái mặc định là chờ duyệt
             ]);
         }

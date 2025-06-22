@@ -10,9 +10,7 @@ class PhanCongCham extends Model
 
     protected $fillable = [
         'de_tai_id',
-        'giang_vien_huong_dan_id',
-        'giang_vien_phan_bien_id',
-        'giang_vien_khac_id',
+        'hoi_dong_id',
         'lich_cham'
     ];
 
@@ -25,18 +23,36 @@ class PhanCongCham extends Model
         return $this->belongsTo(DeTai::class, 'de_tai_id');
     }
 
-    public function giangVienHuongDan()
+    public function hoiDong()
     {
-        return $this->belongsTo(TaiKhoan::class, 'giang_vien_huong_dan_id');
+        return $this->belongsTo(HoiDong::class, 'hoi_dong_id');
     }
 
-    public function giangVienPhanBien()
+    public function getGiangVienByLoai($loai)
     {
-        return $this->belongsTo(TaiKhoan::class, 'giang_vien_phan_bien_id');
+        if (!$this->hoiDong) {
+            return null;
+        }
+
+        $phanCong = $this->hoiDong->phanCongVaiTros()
+            ->where('loai_giang_vien', $loai)
+            ->first();
+
+        return $phanCong ? $phanCong->taiKhoan : null;
     }
 
-    public function giangVienKhac()
+    public function getGiangVienHuongDanAttribute()
     {
-        return $this->belongsTo(TaiKhoan::class, 'giang_vien_khac_id');
+        return $this->getGiangVienByLoai('Giảng Viên Hướng Dẫn');
+    }
+
+    public function getGiangVienPhanBienAttribute()
+    {
+        return $this->getGiangVienByLoai('Giảng Viên Phản Biện');
+    }
+
+    public function getGiangVienKhacAttribute()
+    {
+        return $this->getGiangVienByLoai('Giảng Viên Khác');
     }
 } 

@@ -11,13 +11,11 @@ return new class extends Migration
         Schema::create('phan_cong_chams', function (Blueprint $table) {
             $table->id();
             $table->foreignId('de_tai_id')->constrained('de_tais')->onDelete('cascade');
-            $table->foreignId('giang_vien_huong_dan_id')->constrained('tai_khoans')->onDelete('cascade');
-            $table->foreignId('giang_vien_phan_bien_id')->constrained('tai_khoans')->onDelete('cascade');
-            $table->foreignId('giang_vien_khac_id')->constrained('tai_khoans')->onDelete('cascade');
-            $table->date('ngay_phan_cong');
+            $table->foreignId('hoi_dong_id')->constrained('hoi_dongs')->onDelete('cascade');
+            $table->dateTime('lich_cham')->nullable();
             $table->timestamps();
 
-            // Đảm bảo mỗi đề tài chỉ được phân công một lần trong một đợt báo cáo
+            // Đảm bảo mỗi đề tài chỉ được phân công một lần
             $table->unique(['de_tai_id']);
         });
     }

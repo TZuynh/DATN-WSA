@@ -10,4 +10,5 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/phan-bien/{id}/edit', [PhanCongChamController::class, 'edit'])->name('admin.phan-cong-cham.edit');
     Route::put('/admin/phan-bien/{id}', [PhanCongChamController::class, 'update'])->name('admin.phan-cong-cham.update');
     Route::delete('/admin/phan-bien/{id}', [PhanCongChamController::class, 'destroy'])->name('admin.phan-cong-cham.destroy');
+    Route::post('/admin/phan-bien/get-hoi-dong-info', [PhanCongChamController::class, 'getHoiDongInfo'])->name('admin.phan-cong-cham.getHoiDongInfo');
 }); 
