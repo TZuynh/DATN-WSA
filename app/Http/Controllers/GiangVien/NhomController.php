@@ -12,6 +12,7 @@ use App\Imports\NhomImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use App\Models\DeTai;
 
 class NhomController extends Controller
 {
@@ -252,5 +253,41 @@ class NhomController extends Controller
         }
 
         return response()->download($path, 'nhom_template.xlsx');
+    }
+
+    public function showChangeDeTaiForm($id)
+    {
+        $nhom = Nhom::findOrFail($id);
+        $deTais = DeTai::with(['nhoms.sinhViens'])->get(); // hoặc lọc theo điều kiện phù hợp
+        return view('giangvien.nhom.change_detai', compact('nhom', 'deTais'));
+    }
+
+    public function changeDeTai(Request $request, $id)
+    {
+        $request->validate([
+            'de_tai_id' => 'required|exists:de_tais,id'
+        ]);
+        $nhom = Nhom::findOrFail($id);
+        $deTaiMoi = $request->de_tai_id;
+        $deTaiCu = $nhom->de_tai_id;
+
+        // Tìm nhóm đang giữ đề tài mới (B)
+        $nhomKhac = Nhom::where('de_tai_id', $deTaiMoi)->first();
+
+        // Gán đề tài mới cho nhóm hiện tại (A)
+        $nhom->de_tai_id = $deTaiMoi;
+        $nhom->save();
+
+        // Nếu có nhóm khác đang giữ đề tài mới, gán lại đề tài cũ cho nhóm đó (có thể là null)
+        if ($nhomKhac && $nhomKhac->id != $nhom->id) {
+            $nhomKhac->de_tai_id = $deTaiCu;
+            $nhomKhac->save();
+        }
+
+        if (is_null($deTaiCu) || is_null($nhomKhac)) {
+            return back()->with('error', 'Cả hai nhóm phải có đề tài để hoán đổi!');
+        }
+
+        return redirect()->route('giangvien.nhom.index')->with('success', 'Chuyển đề tài thành công!');
     }
 } 

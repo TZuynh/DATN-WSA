@@ -9,7 +9,7 @@ class DeTai extends Model
 {
     protected $fillable = [
         'ma_de_tai', 'ten_de_tai', 'mo_ta', 'ngay_bat_dau', 'ngay_ket_thuc',
-        'nhom_id', 'giang_vien_id', 'dot_bao_cao_id', 'trang_thai', 'y_kien_giang_vien'
+        'giang_vien_id', 'dot_bao_cao_id', 'trang_thai', 'y_kien_giang_vien'
     ];
 
     // Các trạng thái của đề tài
@@ -43,9 +43,9 @@ class DeTai extends Model
         'trang_thai' => 'integer'
     ];
 
-    public function nhom()
+    public function nhoms()
     {
-        return $this->belongsTo(Nhom::class);
+        return $this->hasMany(Nhom::class, 'de_tai_id');
     }
 
     public function giangVien()

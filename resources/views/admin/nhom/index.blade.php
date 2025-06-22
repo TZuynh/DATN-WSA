@@ -35,6 +35,7 @@
                                     <th>STT</th>
                                     <th>Mã nhóm</th>
                                     <th>Tên nhóm</th>
+                                    <th>Đề tài</th>
                                     <th>Sinh viên</th>
                                     <th>Giảng viên hướng dẫn</th>
                                     <th>Trạng thái</th>
@@ -47,6 +48,7 @@
                                         <td>{{ $index + 1 }}</td>
                                         <td>{{ $nhom->ma_nhom }}</td>
                                         <td>{{ $nhom->ten }}</td>
+                                        <td>{{ $nhom->deTai->ten_de_tai ?? 'Chưa có đề tài' }}</td>
                                         <td>
                                             <ul class="list-unstyled mb-0">
                                                 @forelse($nhom->chiTietNhoms as $chiTiet)
@@ -85,7 +87,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="text-center">Không có dữ liệu</td>
+                                        <td colspan="8" class="text-center">Không có dữ liệu</td>
                                     </tr>
                                 @endforelse
                             </tbody>

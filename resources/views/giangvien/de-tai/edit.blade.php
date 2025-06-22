@@ -92,6 +92,9 @@
                     @enderror
                 </div>
 
+                @php
+                    $nhomDangGiu = $nhoms->firstWhere('de_tai_id', $deTai->id);
+                @endphp
                 <div style="margin-bottom: 20px;">
                     <label for="nhom_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Chọn nhóm</label>
                     <select name="nhom_id" id="nhom_id"
@@ -99,9 +102,10 @@
                         style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                         <option value="">-- Chọn nhóm --</option>
                         @foreach($nhoms as $nhom)
-                        <option value="{{ $nhom->id }}" {{ old('nhom_id', $deTai->nhom_id) == $nhom->id ? 'selected' : '' }}>
-                            {{ $nhom->ten }}
-                        </option>
+                            <option value="{{ $nhom->id }}"
+                                {{ old('nhom_id', optional($nhomDangGiu)->id) == $nhom->id ? 'selected' : '' }}>
+                                {{ $nhom->ten }}
+                            </option>
                         @endforeach
                     </select>
                     @error('nhom_id')

@@ -15,7 +15,8 @@ class Nhom extends Model
         'ma_nhom',
         'ten',
         'giang_vien_id',
-        'trang_thai'
+        'trang_thai',
+        'de_tai_id'
     ];
 
     /**
@@ -37,9 +38,9 @@ class Nhom extends Model
     /**
      * Lấy đề tài của nhóm
      */
-    public function deTais(): HasMany
+    public function deTai()
     {
-        return $this->hasMany(DeTai::class, 'nhom_id');
+        return $this->belongsTo(\App\Models\DeTai::class, 'de_tai_id');
     }
 
     /**
@@ -56,14 +57,6 @@ class Nhom extends Model
     public function lichChams(): HasMany
     {
         return $this->hasMany(LichCham::class);
-    }
-
-    /**
-     * Lấy đề tài duy nhất của nhóm
-     */
-    public function deTai()
-    {
-        return $this->hasOne(DeTai::class, 'nhom_id');
     }
 
     /**

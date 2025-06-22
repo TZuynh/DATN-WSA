@@ -41,10 +41,15 @@
                                     <td>{!! Str::limit($deTai->mo_ta, 20) !!}</td>
                                     <td>{!! Str::limit($deTai->y_kien_giang_vien, 20) !!}</td>
                                     <td>{{ optional($deTai->dotBaoCao)->nam_hoc }} - {{ optional(optional($deTai->dotBaoCao)->hocKy)->ten }}</td>
-                                    <td>{{ Str::limit($deTai->nhom->ten ?? 'N/A', 10) }}</td>
                                     <td>
-                                        @if($deTai->nhom && $deTai->nhom->sinhViens->count() > 0)
-                                            @foreach($deTai->nhom->sinhViens as $index => $sinhVien)
+                                        @foreach($deTai->nhoms as $nhom)
+                                            {{ $nhom->ten }}
+                                        @endforeach
+                                    </td>
+                                    <td>
+                                        @php $nhom = $deTai->nhoms->first(); @endphp
+                                        @if($nhom && $nhom->sinhViens->count() > 0)
+                                            @foreach($nhom->sinhViens as $index => $sinhVien)
                                                 {{ Str::limit($sinhVien->ten, 15) }}{{ !$loop->last ? ', ' : '' }}
                                             @endforeach
                                         @else

@@ -18,7 +18,7 @@ class DeTaiController extends Controller
     public function index()
     {
         $giangVienId = auth()->user()->id;
-        $deTais = DeTai::with(['nhom.sinhViens', 'dotBaoCao.hocKy'])
+        $deTais = DeTai::with(['nhoms.sinhViens', 'dotBaoCao.hocKy'])
             ->where('giang_vien_id', $giangVienId)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -28,7 +28,7 @@ class DeTaiController extends Controller
 
     public function create()
     {
-        $nhoms = Nhom::whereDoesntHave('deTais')->get();
+        $nhoms = Nhom::whereDoesntHave('deTai')->get();
         $dotBaoCaos = DotBaoCao::whereIn('trang_thai', ['chua_bat_dau', 'dang_dien_ra'])->get();
         return view('giangvien.de-tai.create', compact('nhoms', 'dotBaoCaos'));
     }
@@ -40,32 +40,26 @@ class DeTaiController extends Controller
             'mo_ta' => 'nullable|string',
             'y_kien_giang_vien' => 'nullable|string',
             'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
-            'nhom_id' => [
-                'nullable',
-                'exists:nhoms,id',
-                function ($attribute, $value, $fail) {
-                    if ($value) {
-                        $nhom = Nhom::find($value);
-                        if ($nhom && $nhom->deTais()->exists()) {
-                            $fail('Nhóm này đã có đề tài.');
-                        }
-                    }
-                },
-            ]
+            'nhom_id' => 'nullable|exists:nhoms,id',
         ]);
 
         try {
-            // Tạo mảng dữ liệu với các trường cần thiết
-            $data = [
+            $deTai = DeTai::create([
                 'ten_de_tai' => $request->ten_de_tai,
                 'mo_ta' => $request->mo_ta,
                 'y_kien_giang_vien' => $request->y_kien_giang_vien,
                 'dot_bao_cao_id' => $request->dot_bao_cao_id,
-                'nhom_id' => $request->nhom_id,
                 'giang_vien_id' => auth()->id(),
-            ];
+            ]);
 
-            DeTai::create($data);
+            if ($request->filled('nhom_id')) {
+                $nhom = Nhom::find($request->nhom_id);
+                if ($nhom) {
+                    $nhom->de_tai_id = $deTai->id;
+                    $nhom->save();
+                }
+            }
+
             return redirect()->route('giangvien.de-tai.index')->with('success', 'Thêm đề tài thành công');
         } catch (\Exception $e) {
             Log::error('Error creating de tai: ' . $e->getMessage());
@@ -80,7 +74,11 @@ class DeTaiController extends Controller
                 ->with('error', 'Bạn không có quyền chỉnh sửa đề tài này.');
         }
 
-        $nhoms = Nhom::all();
+        // Chỉ lấy nhóm chưa có đề tài hoặc đang giữ đề tài này
+        $nhoms = Nhom::whereNull('de_tai_id')
+            ->orWhere('de_tai_id', $deTai->id)
+            ->get();
+
         $dotBaoCaos = DotBaoCao::whereIn('trang_thai', ['chua_bat_dau', 'dang_dien_ra'])
             ->orWhere('id', $deTai->dot_bao_cao_id)
             ->get();
@@ -94,19 +92,6 @@ class DeTaiController extends Controller
         if ($deTai->giang_vien_id !== auth()->id()) {
             return redirect()->route('giangvien.de-tai.index')
                 ->with('error', 'Bạn không có quyền cập nhật đề tài này.');
-        }
-
-        // Kiểm tra xem đề tài đã có trong lịch bảo vệ chưa
-        if ($deTai->lichCham()->exists()) {
-            return redirect()->back()
-                ->with('error', 'Không thể cập nhật trạng thái đề tài vì đã có trong lịch bảo vệ.');
-        }
-
-        // Kiểm tra xem đề tài đã đượcphản biện chưa
-        if ($deTai->phanCongCham()->exists() && 
-            in_array($request->trang_thai, [DeTai::TRANG_THAI_CHO_DUYET, DeTai::TRANG_THAI_KHONG_XAY_RA_GVHD])) {
-            return redirect()->back()
-                ->with('error', 'Không thể chuyển đề tài sang trạng thái này vì đã được phản biện.');
         }
 
         $request->validate([
@@ -124,16 +109,26 @@ class DeTaiController extends Controller
                 'mo_ta' => $request->mo_ta,
                 'y_kien_giang_vien' => $request->y_kien_giang_vien,
                 'dot_bao_cao_id' => $request->dot_bao_cao_id,
-                'nhom_id' => $request->nhom_id,
                 'trang_thai' => $request->trang_thai
             ]);
+
+            // Gỡ đề tài khỏi các nhóm cũ
+            Nhom::where('de_tai_id', $deTai->id)->update(['de_tai_id' => null]);
+
+            // Gán đề tài cho nhóm mới (nếu có)
+            if ($request->filled('nhom_id')) {
+                $nhom = Nhom::find($request->nhom_id);
+                if ($nhom) {
+                    $nhom->de_tai_id = $deTai->id;
+                    $nhom->save();
+                }
+            }
 
             return redirect()->route('giangvien.de-tai.index')
                 ->with('success', 'Cập nhật đề tài thành công');
         } catch (\Exception $e) {
             Log::error('Error updating de tai: ' . $e->getMessage());
-            return redirect()->back()
-                ->with('error', 'Có lỗi xảy ra khi cập nhật đề tài');
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi cập nhật đề tài');
         }
     }
 
@@ -145,6 +140,9 @@ class DeTaiController extends Controller
         }
 
         try {
+            // Gỡ liên kết đề tài khỏi các nhóm trước khi xóa
+            $deTai->nhoms()->update(['de_tai_id' => null]);
+
             $deTai->delete();
             return redirect()->route('giangvien.de-tai.index')
                 ->with('success', 'Xóa đề tài thành công');
@@ -178,7 +176,7 @@ class DeTaiController extends Controller
         }
 
         // Load dữ liệu liên quan
-        $deTai->load('nhom.sinhViens.lop', 'giangVien', 'dotBaoCao');
+        $deTai->load('nhoms.sinhViens.lop', 'giangVien', 'dotBaoCao');
 
         // Tạo PDF
         $pdf = PDF::loadView('giangvien.de-tai.detail-pdf', compact('deTai'));
@@ -201,7 +199,7 @@ class DeTaiController extends Controller
         }
 
         // Load dữ liệu liên quan
-        $deTai->load('nhom.sinhViens.lop', 'giangVien', 'dotBaoCao');
+        $deTai->load('nhoms.sinhViens.lop', 'giangVien', 'dotBaoCao');
 
         // Trả về view trực tiếp
         return view('giangvien.de-tai.detail-pdf', compact('deTai'));
@@ -215,7 +213,7 @@ class DeTaiController extends Controller
         }
 
         // Load dữ liệu liên quan
-        $deTai->load('nhom.sinhViens.lop', 'giangVien', 'dotBaoCao');
+        $deTai->load('nhoms.sinhViens.lop', 'giangVien', 'dotBaoCao');
 
         // Tạo nội dung HTML
         $html = '
@@ -256,8 +254,8 @@ class DeTaiController extends Controller
 
             <div class="section">
                 <div class="section-title">SINH VIÊN THỰC HIỆN:</div>';
-                if ($deTai->nhom && $deTai->nhom->sinhViens->count() > 0) {
-                    foreach ($deTai->nhom->sinhViens as $index => $sinhVien) {
+                if ($deTai->nhoms && $deTai->nhoms->first()->sinhViens->count() > 0) {
+                    foreach ($deTai->nhoms->first()->sinhViens as $index => $sinhVien) {
                         $html .= '<div style="font-weight: bold; text-transform: uppercase;">' . ($index + 1) . '. ' . $sinhVien->ten . 
                                 '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' .
                                 '<span style="font-weight: normal;">MSSV: ' . $sinhVien->mssv . 

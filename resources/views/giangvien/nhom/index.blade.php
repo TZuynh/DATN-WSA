@@ -34,6 +34,7 @@
                                     <th>STT</th>
                                     <th>Mã nhóm</th>
                                     <th>Tên nhóm</th>
+                                    <th>Đề tài</th>
                                     <th>Sinh viên</th>
                                     <th>Trạng thái</th>
                                     <th>Thao tác</th>
@@ -45,6 +46,7 @@
                                         <td>{{ $index + 1 }}</td>
                                         <td>{{ $nhom->ma_nhom }}</td>
                                         <td>{{ $nhom->ten }}</td>
+                                        <td>{{ $nhom->deTai->ten_de_tai ?? 'Chưa có đề tài' }}</td>
                                         <td>
                                             <ul class="list-unstyled mb-0">
                                                 @forelse($nhom->chiTietNhoms as $chiTiet)
@@ -64,6 +66,9 @@
                                         <td>
                                             <a href="{{ route('giangvien.nhom.edit', $nhom) }}" class="btn btn-info btn-sm">
                                                 <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{{ route('giangvien.nhom.changeDetai', $nhom->id) }}" class="btn btn-warning btn-sm" title="Chuyển đề tài">
+                                                <i class="fas fa-random"></i>
                                             </a>
                                             <form action="{{ route('giangvien.nhom.destroy', $nhom) }}" method="POST" class="d-inline">
                                                 @csrf
