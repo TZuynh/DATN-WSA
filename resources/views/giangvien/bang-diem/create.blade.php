@@ -22,6 +22,9 @@
                             Điểm báo cáo và thuyết trình đã được điền từ điểm cũ.
                         </div>
                     @endif
+                    @if(session('error'))
+                        <div class="alert alert-danger">{{ session('error') }}</div>
+                    @endif
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <h5>Thông tin sinh viên</h5>
@@ -142,7 +145,7 @@
                                 <div class="form-group">
                                     <label for="diem_demo">Điểm demo <span class="text-danger">*</span></label>
                                     <input type="number"
-                                           class="form-control @error('diem_demo') is-invalid @enderror"
+                                           class="form-control @if($errors->has('diem_demo')) is-invalid @endif"
                                            id="diem_demo"
                                            name="diem_demo"
                                            value="{{ old('diem_demo') }}"
@@ -150,16 +153,16 @@
                                            max="10"
                                            step="0.1"
                                            required>
-                                    @error('diem_demo')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    @if($errors->has('diem_demo'))
+                                        <div class="invalid-feedback">{{ $errors->first('diem_demo') }}</div>
+                                    @endif
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="diem_cau_hoi">Điểm câu hỏi <span class="text-danger">*</span></label>
                                     <input type="number"
-                                           class="form-control @error('diem_cau_hoi') is-invalid @enderror"
+                                           class="form-control @if($errors->has('diem_cau_hoi')) is-invalid @endif"
                                            id="diem_cau_hoi"
                                            name="diem_cau_hoi"
                                            value="{{ old('diem_cau_hoi') }}"
@@ -167,9 +170,9 @@
                                            max="10"
                                            step="0.1"
                                            required>
-                                    @error('diem_cau_hoi')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    @if($errors->has('diem_cau_hoi'))
+                                        <div class="invalid-feedback">{{ $errors->first('diem_cau_hoi') }}</div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -179,7 +182,7 @@
                                 <div class="form-group">
                                     <label for="diem_cong">Điểm cộng</label>
                                     <input type="number"
-                                           class="form-control @error('diem_cong') is-invalid @enderror"
+                                           class="form-control @if($errors->has('diem_cong')) is-invalid @endif"
                                            id="diem_cong"
                                            name="diem_cong"
                                            value="{{ old('diem_cong', 0) }}"
@@ -187,9 +190,9 @@
                                            max="2"
                                            step="0.1">
                                     <small class="form-text text-muted">Điểm cộng tối đa là 2 điểm</small>
-                                    @error('diem_cong')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    @if($errors->has('diem_cong'))
+                                        <div class="invalid-feedback">{{ $errors->first('diem_cong') }}</div>
+                                    @endif
                                 </div>
                             </div>
                             @endif

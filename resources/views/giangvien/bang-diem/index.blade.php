@@ -51,6 +51,9 @@
                                 <tbody>
                                     @php $stt = 1; @endphp
                                     @foreach($phanCongChamsFiltered as $phanCongCham)
+                                        @if(!$phanCongCham->deTai->lichCham)
+                                            @continue
+                                        @endif
                                         @foreach($phanCongCham->deTai->nhom->sinhViens as $sinhVien)
                                             @php
                                                 $dotBaoCaoId = $phanCongCham->deTai?->lichCham?->dot_bao_cao_id;

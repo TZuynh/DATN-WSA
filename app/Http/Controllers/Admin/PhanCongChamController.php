@@ -37,9 +37,9 @@ class PhanCongChamController extends Controller
 
     public function create()
     {
-        $deTais = DeTai::where('trang_thai', DeTai::TRANG_THAI_DANG_THUC_HIEN_GVHD)
+        $deTais = DeTai::where('trang_thai', 2)
             ->whereDoesntHave('phanCongCham')
-            ->whereHas('chiTietBaoCao.hoiDong') // Chỉ lấy đề tài đã được gán vào hội đồng
+            ->whereHas('chiTietBaoCao.hoiDong')
             ->select('id', 'ma_de_tai', 'ten_de_tai')
             ->get();
 
@@ -47,7 +47,7 @@ class PhanCongChamController extends Controller
 
         if ($deTais->isEmpty()) {
             return redirect()->route('admin.phan-cong-cham.index')
-                ->with('error', 'Không có đề tài nào đủ điều kiện để phân công chấm. Đề tài phải ở trạng thái "Đang thực hiện", chưa được phân công chấm và đã được gán vào một hội đồng.');
+                ->with('error', 'Không có đề tài nào đủ điều kiện để phân công chấm. Đề tài phải đã được giảng viên phản biện duyệt, chưa được phân công chấm và đã được gán vào một hội đồng.');
         }
 
         return view('admin.phan-cong-cham.create', compact('deTais', 'giangViens'));
@@ -57,12 +57,11 @@ class PhanCongChamController extends Controller
     {
         $validated = $request->validate([
             'de_tai_id' => 'required|exists:de_tais,id|unique:phan_cong_chams,de_tai_id',
-            'lich_cham' => 'required|date_format:Y-m-d H:i'
+            'lich_cham' => 'required|date',
         ], [
             'de_tai_id.required' => 'Vui lòng chọn đề tài.',
             'de_tai_id.unique' => 'Đề tài này đã được phân công chấm.',
             'lich_cham.required' => 'Vui lòng chọn lịch chấm.',
-            'lich_cham.date_format' => 'Định dạng lịch chấm không hợp lệ (YYYY-MM-DD HH:mm).',
         ]);
 
         try {
@@ -73,14 +72,31 @@ class PhanCongChamController extends Controller
                 return redirect()->back()->with('error', 'Không tìm thấy hội đồng cho đề tài này. Vui lòng kiểm tra lại phân công hội đồng.');
             }
 
-            PhanCongCham::create([
+            $phanCongCham = PhanCongCham::create([
                 'de_tai_id' => $validated['de_tai_id'],
                 'hoi_dong_id' => $chiTiet->hoi_dong_id,
-                'lich_cham' => $validated['lich_cham'],
+                'lich_cham' => $request->input('lich_cham'),
             ]);
 
+            // Tự động tạo lịch chấm nếu chưa có
+            $deTai = \App\Models\DeTai::find($validated['de_tai_id']);
+            $nhomId = $deTai ? $deTai->nhom_id : null;
+            $dotBaoCaoId = $deTai ? $deTai->dot_bao_cao_id : null;
+            $coLichCham = \App\Models\LichCham::where('de_tai_id', $deTai->id)->exists();
+            if ($deTai && $nhomId && $dotBaoCaoId && !$coLichCham) {
+                \App\Models\LichCham::create([
+                    'hoi_dong_id' => $chiTiet->hoi_dong_id,
+                    'dot_bao_cao_id' => $dotBaoCaoId,
+                    'nhom_id' => $nhomId,
+                    'de_tai_id' => $deTai->id,
+                    'phan_cong_cham_id' => $phanCongCham->id,
+                    'lich_tao' => $validated['lich_cham'],
+                    'thu_tu' => 1,
+                ]);
+            }
+
             DB::commit();
-            return redirect()->route('admin.phan-cong-cham.index')->with('success', 'Phân công chấm thành công.');
+            return redirect()->route('admin.phan-cong-cham.index')->with('success', 'Phân công chấm và lịch chấm đã được tạo thành công.');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
@@ -91,7 +107,7 @@ class PhanCongChamController extends Controller
     {
         $phanCongCham = PhanCongCham::with(['deTai', 'hoiDong'])->findOrFail($id);
 
-        $deTais = DeTai::where('trang_thai', DeTai::TRANG_THAI_DANG_THUC_HIEN_GVHD)
+        $deTais = DeTai::where('trang_thai', 2)
             ->whereHas('chiTietBaoCao.hoiDong')
             ->where(function($query) use ($phanCongCham) {
                 $query->whereDoesntHave('phanCongCham')

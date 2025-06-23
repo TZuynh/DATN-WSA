@@ -24,12 +24,13 @@ class BangDiemController extends Controller
     {
         $giangVienId = (int)Auth::id();
 
-        // Lấy các phân công chấm có vai trò của giảng viên hiện tại trong hội đồng
+        // Lấy các phân công chấm có vai trò của giảng viên hiện tại trong hội đồng và có lịch chấm (có đợt báo cáo)
         $phanCongChams = PhanCongCham::with(['deTai.nhom.sinhViens', 'deTai.lichCham', 'hoiDong.phanCongVaiTros'])
             ->whereNotNull('hoi_dong_id')
             ->whereHas('hoiDong.phanCongVaiTros', function ($query) use ($giangVienId) {
                 $query->where('tai_khoan_id', $giangVienId);
             })
+            ->whereHas('deTai.lichCham') // Chỉ lấy đề tài đã có lịch chấm
             ->get();
 
         // Lọc phân công hợp lệ
@@ -121,6 +122,13 @@ class BangDiemController extends Controller
      */
     public function create($sinhVienId, $dotBaoCaoId = null)
     {
+        $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $sinhVienId)->first();
+        $deTai = $chiTietNhom && $chiTietNhom->nhom ? $chiTietNhom->nhom->deTai : null;
+        $coLichCham = $deTai && \App\Models\LichCham::where('de_tai_id', $deTai->id)->exists();
+        if (!$coLichCham) {
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ có thể chấm điểm khi đề tài đã có lịch chấm.');
+        }
+
         $bangDiem = new BangDiem();
         $bangDiem->sinh_vien_id = $sinhVienId;
         $bangDiem->dot_bao_cao_id = $dotBaoCaoId;
@@ -198,6 +206,13 @@ class BangDiemController extends Controller
      */
     public function store(Request $request)
     {
+        $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $request->sinh_vien_id)->first();
+        $deTai = $chiTietNhom && $chiTietNhom->nhom ? $chiTietNhom->nhom->deTai : null;
+        $coLichCham = $deTai && \App\Models\LichCham::where('de_tai_id', $deTai->id)->exists();
+        if (!$coLichCham) {
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ có thể chấm điểm khi đề tài đã có lịch chấm.');
+        }
+
         $rules = [
             'sinh_vien_id' => 'required|exists:sinh_viens,id',
             'binh_luan' => 'nullable|string|max:1000'
@@ -328,11 +343,15 @@ class BangDiemController extends Controller
             'dotBaoCao.hoiDong',
             'dotBaoCao.lichChams.hoiDong'
         ])->findOrFail($id);
-
-        // Kiểm tra quyền chỉnh sửa
         if ($bangDiem->giang_vien_id !== Auth::id()) {
             return redirect()->route('giangvien.bang-diem.index')
                 ->with('error', 'Bạn không có quyền chỉnh sửa điểm này.');
+        }
+        $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $bangDiem->sinh_vien_id)->first();
+        $deTai = $chiTietNhom && $chiTietNhom->nhom ? $chiTietNhom->nhom->deTai : null;
+        $coLichCham = $deTai && \App\Models\LichCham::where('de_tai_id', $deTai->id)->exists();
+        if (!$coLichCham) {
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ có thể sửa điểm khi đề tài đã có lịch chấm.');
         }
 
         // Xác định có đợt báo cáo hay không
@@ -382,11 +401,15 @@ class BangDiemController extends Controller
     public function update(Request $request, $id)
     {
         $bangDiem = BangDiem::findOrFail($id);
-
-        // Kiểm tra quyền chỉnh sửa
         if ($bangDiem->giang_vien_id !== Auth::id()) {
             return redirect()->route('giangvien.bang-diem.index')
                 ->with('error', 'Bạn không có quyền chỉnh sửa điểm này.');
+        }
+        $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $bangDiem->sinh_vien_id)->first();
+        $deTai = $chiTietNhom && $chiTietNhom->nhom ? $chiTietNhom->nhom->deTai : null;
+        $coLichCham = $deTai && \App\Models\LichCham::where('de_tai_id', $deTai->id)->exists();
+        if (!$coLichCham) {
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ có thể cập nhật điểm khi đề tài đã có lịch chấm.');
         }
 
         $rules = [];

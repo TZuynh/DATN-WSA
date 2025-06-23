@@ -67,6 +67,7 @@ class LichChamController extends Controller
             'hoi_dong_id' => 'required|exists:hoi_dongs,id',
             'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
             'nhom_id' => 'required|exists:nhoms,id',
+            'de_tai_id' => 'required|exists:de_tais,id',
             'lich_tao' => 'required|date'
         ]);
 
@@ -89,7 +90,7 @@ class LichChamController extends Controller
             }
 
             // Lấy thông tin phân công chấm
-            $phanCongCham = PhanCongCham::where('de_tai_id', $deTai->id)->first();
+            $phanCongCham = PhanCongCham::where('de_tai_id', $request->de_tai_id)->first();
             if (!$phanCongCham) {
                 throw new \Exception('Đề tài "' . $deTai->ten_de_tai . '" chưa được phân công chấm. Vui lòng phân công chấm trước khi tạo lịch.');
             }
@@ -102,7 +103,7 @@ class LichChamController extends Controller
             $lichCham->hoi_dong_id = $request->hoi_dong_id;
             $lichCham->dot_bao_cao_id = $request->dot_bao_cao_id;
             $lichCham->nhom_id = $request->nhom_id;
-            $lichCham->de_tai_id = $deTai->id;
+            $lichCham->de_tai_id = $request->de_tai_id;
             $lichCham->phan_cong_cham_id = $phanCongCham->id;
             $lichCham->lich_tao = $request->lich_tao;
             $lichCham->thu_tu = 1; // Luôn thêm mới ở vị trí đầu tiên

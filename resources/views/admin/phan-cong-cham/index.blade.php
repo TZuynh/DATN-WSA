@@ -55,19 +55,38 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <a href="{{ route('admin.phan-cong-cham.edit', $phanCongCham->id) }}"
-                                               class="btn btn-warning btn-sm">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <form action="{{ route('admin.phan-cong-cham.destroy', $phanCongCham->id) }}"
-                                                  method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm"
-                                                        onclick="return confirm('Bạn có chắc chắn muốn xóa phân công này?')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
+                                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                                <a href="{{ route('admin.phan-cong-cham.edit', $phanCongCham->id) }}"
+                                                   class="btn btn-warning btn-xs rounded-circle d-flex align-items-center justify-content-center"
+                                                   style="width: 28px; height: 28px; padding: 0; font-size: 1rem;" title="Sửa">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form action="{{ route('admin.phan-cong-cham.destroy', $phanCongCham->id) }}"
+                                                      method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger btn-xs rounded-circle d-flex align-items-center justify-content-center"
+                                                            style="width: 28px; height: 28px; padding: 0; font-size: 1rem;" title="Xóa"
+                                                            onclick="return confirm('Bạn có chắc chắn muốn xóa phân công này?')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                                @php $coLichCham = \App\Models\LichCham::where('de_tai_id', $phanCongCham->de_tai_id)->exists(); @endphp
+                                                @if(!$coLichCham)
+                                                    <form action="{{ route('admin.lich-cham.store') }}" method="POST" class="d-inline">
+                                                        @csrf
+                                                        <input type="hidden" name="de_tai_id" value="{{ $phanCongCham->de_tai_id }}">
+                                                        <input type="hidden" name="hoi_dong_id" value="{{ $phanCongCham->hoi_dong_id }}">
+                                                        <input type="hidden" name="nhom_id" value="{{ $phanCongCham->deTai->nhom_id }}">
+                                                        <input type="hidden" name="dot_bao_cao_id" value="{{ $phanCongCham->deTai->dot_bao_cao_id }}">
+                                                        <input type="hidden" name="lich_tao" value="{{ $phanCongCham->lich_cham }}">
+                                                        <button type="submit" class="btn btn-primary btn-xs rounded-circle d-flex align-items-center justify-content-center"
+                                                                style="width: 28px; height: 28px; padding: 0; font-size: 1rem;" title="Duyệt đề tài này lên lịch chấm">
+                                                            <i class="fas fa-arrow-up"></i>
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty
@@ -117,7 +136,17 @@
                                                 </span>
                                             </td>
                                             <td>
-                                                <span class="text-muted">Chưa phân công chấm</span>
+                                                <form action="{{ route('admin.phan-cong-cham.store') }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    <input type="hidden" name="de_tai_id" value="{{ $deTai->id }}">
+                                                    <div class="input-group input-group-sm mb-2" style="max-width: 350px; min-width: 220px;">
+                                                        <span class="input-group-text" id="label-lich-cham-{{ $deTai->id }}" style="min-width: 80px;">Lịch chấm</span>
+                                                        <input type="text" name="lich_cham" class="form-control lich-cham-flatpickr" aria-label="Lịch chấm" aria-describedby="label-lich-cham-{{ $deTai->id }}" required autocomplete="off" style="font-size: 1rem; height: 38px; min-width: 120px;">
+                                                    </div>
+                                                    <button type="submit" class="btn btn-success btn-sm w-100" title="Lưu vào phân công chấm">
+                                                        <i class="fas fa-save"></i> Lưu phân công chấm
+                                                    </button>
+                                                </form>
                                             </td>
                                         </tr>
                                     @endif
@@ -135,3 +164,27 @@
     </div>
 </div>
 @endsection
+
+@section('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+@endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vi.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.lich-cham-flatpickr').forEach(function(input) {
+            flatpickr(input, {
+                locale: "vi",
+                dateFormat: "Y-m-d H:i",
+                enableTime: true,
+                time_24hr: true,
+                minDate: "today",
+                allowInput: true,
+                placeholder: "Chọn lịch chấm",
+            });
+        });
+    });
+</script>
+@endpush
