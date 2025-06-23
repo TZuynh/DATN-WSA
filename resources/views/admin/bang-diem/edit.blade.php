@@ -52,6 +52,10 @@
                                     <td>{{ $bangDiem->dotBaoCao->nam_hoc }}</td>
                                 </tr>
                                 <tr>
+                                    <th>Học kỳ:</th>
+                                    <td>{{ $dotBaoCao->hocKy->ten }}</td>
+                                </tr>
+                                <tr>
                                     <th>Tên nhóm:</th>
                                     <td>
                                         @php
@@ -77,19 +81,19 @@
                     <form action="{{ route('admin.bang-diem.update', $bangDiem->id) }}" method="POST">
                         @csrf
                         @method('PUT')
-                        
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="diem_bao_cao">Điểm báo cáo <span class="text-danger">*</span></label>
-                                    <input type="number" 
-                                           class="form-control @error('diem_bao_cao') is-invalid @enderror" 
-                                           id="diem_bao_cao" 
-                                           name="diem_bao_cao" 
-                                           value="{{ old('diem_bao_cao', $bangDiem->diem_bao_cao) }}" 
-                                           min="0" 
-                                           max="10" 
-                                           step="0.1" 
+                                    <input type="number"
+                                           class="form-control @error('diem_bao_cao') is-invalid @enderror"
+                                           id="diem_bao_cao"
+                                           name="diem_bao_cao"
+                                           value="{{ old('diem_bao_cao', $bangDiem->diem_bao_cao) }}"
+                                           min="0"
+                                           max="10"
+                                           step="0.1"
                                            required>
                                     @error('diem_bao_cao')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -99,14 +103,14 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="diem_thuyet_trinh">Điểm thuyết trình <span class="text-danger">*</span></label>
-                                    <input type="number" 
-                                           class="form-control @error('diem_thuyet_trinh') is-invalid @enderror" 
-                                           id="diem_thuyet_trinh" 
-                                           name="diem_thuyet_trinh" 
-                                           value="{{ old('diem_thuyet_trinh', $bangDiem->diem_thuyet_trinh) }}" 
-                                           min="0" 
-                                           max="10" 
-                                           step="0.1" 
+                                    <input type="number"
+                                           class="form-control @error('diem_thuyet_trinh') is-invalid @enderror"
+                                           id="diem_thuyet_trinh"
+                                           name="diem_thuyet_trinh"
+                                           value="{{ old('diem_thuyet_trinh', $bangDiem->diem_thuyet_trinh) }}"
+                                           min="0"
+                                           max="10"
+                                           step="0.1"
                                            required>
                                     @error('diem_thuyet_trinh')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -119,14 +123,14 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="diem_demo">Điểm demo <span class="text-danger">*</span></label>
-                                    <input type="number" 
-                                           class="form-control @error('diem_demo') is-invalid @enderror" 
-                                           id="diem_demo" 
-                                           name="diem_demo" 
-                                           value="{{ old('diem_demo', $bangDiem->diem_demo) }}" 
-                                           min="0" 
-                                           max="10" 
-                                           step="0.1" 
+                                    <input type="number"
+                                           class="form-control @error('diem_demo') is-invalid @enderror"
+                                           id="diem_demo"
+                                           name="diem_demo"
+                                           value="{{ old('diem_demo', $bangDiem->diem_demo) }}"
+                                           min="0"
+                                           max="10"
+                                           step="0.1"
                                            required>
                                     @error('diem_demo')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -136,14 +140,14 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="diem_cau_hoi">Điểm câu hỏi <span class="text-danger">*</span></label>
-                                    <input type="number" 
-                                           class="form-control @error('diem_cau_hoi') is-invalid @enderror" 
-                                           id="diem_cau_hoi" 
-                                           name="diem_cau_hoi" 
-                                           value="{{ old('diem_cau_hoi', $bangDiem->diem_cau_hoi) }}" 
-                                           min="0" 
-                                           max="10" 
-                                           step="0.1" 
+                                    <input type="number"
+                                           class="form-control @error('diem_cau_hoi') is-invalid @enderror"
+                                           id="diem_cau_hoi"
+                                           name="diem_cau_hoi"
+                                           value="{{ old('diem_cau_hoi', $bangDiem->diem_cau_hoi) }}"
+                                           min="0"
+                                           max="10"
+                                           step="0.1"
                                            required>
                                     @error('diem_cau_hoi')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -156,13 +160,13 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="diem_cong">Điểm cộng</label>
-                                    <input type="number" 
-                                           class="form-control @error('diem_cong') is-invalid @enderror" 
-                                           id="diem_cong" 
-                                           name="diem_cong" 
-                                           value="{{ old('diem_cong', $bangDiem->diem_cong) }}" 
-                                           min="0" 
-                                           max="2" 
+                                    <input type="number"
+                                           class="form-control @error('diem_cong') is-invalid @enderror"
+                                           id="diem_cong"
+                                           name="diem_cong"
+                                           value="{{ old('diem_cong', $bangDiem->diem_cong) }}"
+                                           min="0"
+                                           max="2"
                                            step="0.1">
                                     <small class="form-text text-muted">Điểm cộng tối đa là 2 điểm</small>
                                     @error('diem_cong')
@@ -173,10 +177,10 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="tong_diem">Tổng điểm</label>
-                                    <input type="text" 
-                                           class="form-control" 
-                                           id="tong_diem" 
-                                           readonly 
+                                    <input type="text"
+                                           class="form-control"
+                                           id="tong_diem"
+                                           readonly
                                            value="{{ number_format($bangDiem->diem_bao_cao + $bangDiem->diem_thuyet_trinh + $bangDiem->diem_demo + $bangDiem->diem_cau_hoi + $bangDiem->diem_cong, 1) }}">
                                     <small class="form-text text-muted">Tổng điểm sẽ được tính tự động</small>
                                 </div>
@@ -185,10 +189,10 @@
 
                         <div class="form-group">
                             <label for="binh_luan">Bình luận</label>
-                            <textarea class="form-control @error('binh_luan') is-invalid @enderror" 
-                                      id="binh_luan" 
-                                      name="binh_luan" 
-                                      rows="4" 
+                            <textarea class="form-control @error('binh_luan') is-invalid @enderror"
+                                      id="binh_luan"
+                                      name="binh_luan"
+                                      rows="4"
                                       maxlength="1000">{{ old('binh_luan', $bangDiem->binh_luan) }}</textarea>
                             <small class="form-text text-muted">Tối đa 1000 ký tự</small>
                             @error('binh_luan')
@@ -226,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const demo = parseFloat(diemDemo.value) || 0;
         const cauHoi = parseFloat(diemCauHoi.value) || 0;
         const cong = parseFloat(diemCong.value) || 0;
-        
+
         const tong = baoCao + thuyetTrinh + demo + cauHoi + cong;
         tongDiem.value = tong.toFixed(1);
     }
@@ -238,4 +242,4 @@ document.addEventListener('DOMContentLoaded', function() {
     diemCong.addEventListener('input', tinhTongDiem);
 });
 </script>
-@endsection 
+@endsection

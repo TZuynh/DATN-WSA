@@ -68,17 +68,20 @@ class PhanCongHoiDongController extends Controller
         $thanhVienId = VaiTro::where('ten', 'Thành viên')->value('id');
 
         $giangViensDaPhanCong = [];
+
         if ($selectedHoiDong) {
             $giangViensDaPhanCong = PhanCongVaiTro::where('hoi_dong_id', $selectedHoiDong)
-                ->where('id', '!=', $selectedHoiDong) // Loại trừ chính bản ghi đang sửa
+                ->where('id', '!=', $selectedHoiDong) // dòng này không cần thiết
                 ->pluck('tai_khoan_id')
                 ->toArray();
         }
 
+        $giangViensDaPhanCong = PhanCongVaiTro::pluck('tai_khoan_id')->unique()->toArray();
+
         return view('admin.phan-cong-hoi-dong.create', compact(
-            'hoiDongs', 
-            'taiKhoans', 
-            'vaiTros', 
+            'hoiDongs',
+            'taiKhoans',
+            'vaiTros',
             'selectedHoiDong',
             'giangVienCoDeTai',
             'vaiTroKhongDuocPhanCong',
@@ -159,6 +162,12 @@ class PhanCongHoiDongController extends Controller
             }
 
             $data = $request->all();
+
+            // Nếu là Trưởng tiểu ban hoặc Thư ký, set loai_giang_vien = null
+            if (in_array($request->vai_tro_id, [$truongTieuBanId, $thuKyId])) {
+                $data['loai_giang_vien'] = null;
+            }
+
             $thanhVienId = VaiTro::where('ten', 'Thành viên')->value('id');
             if ($request->vai_tro_id == $thanhVienId) {
                 // Thành viên: chỉ kiểm tra trùng loại giảng viên
@@ -222,18 +231,19 @@ class PhanCongHoiDongController extends Controller
 
         $thanhVienId = VaiTro::where('ten', 'Thành viên')->value('id');
 
-        $giangViensDaPhanCong = [];
-        if ($phanCongVaiTro->hoi_dong_id) {
-            $giangViensDaPhanCong = PhanCongVaiTro::where('hoi_dong_id', $phanCongVaiTro->hoi_dong_id)
-                ->where('id', '!=', $phanCongVaiTro->id) // Loại trừ chính bản ghi đang sửa
+        if ($selectedHoiDong) {
+            $giangViensDaPhanCong = PhanCongVaiTro::where('hoi_dong_id', $selectedHoiDong)
+                ->where('id', '!=', $selectedHoiDong) // dòng này không cần thiết
                 ->pluck('tai_khoan_id')
                 ->toArray();
         }
 
+        $giangViensDaPhanCong = PhanCongVaiTro::pluck('tai_khoan_id')->unique()->toArray();
+
         return view('admin.phan-cong-hoi-dong.edit', compact(
-            'phanCongVaiTro', 
-            'hoiDongs', 
-            'taiKhoans', 
+            'phanCongVaiTro',
+            'hoiDongs',
+            'taiKhoans',
             'vaiTros',
             'giangVienCoDeTai',
             'vaiTroKhongDuocPhanCong',
@@ -310,6 +320,12 @@ class PhanCongHoiDongController extends Controller
             }
 
             $data = $request->all();
+
+            // Nếu là Trưởng tiểu ban hoặc Thư ký, set loai_giang_vien = null
+            if (in_array($request->vai_tro_id, [$truongTieuBanId, $thuKyId])) {
+                $data['loai_giang_vien'] = null;
+            }
+
             $thanhVienId = VaiTro::where('ten', 'Thành viên')->value('id');
             if ($request->vai_tro_id == $thanhVienId) {
                 // Thành viên: chỉ kiểm tra trùng loại giảng viên
@@ -374,4 +390,4 @@ class PhanCongHoiDongController extends Controller
         $phanCong->save();
         return back()->with('success', 'Chuyển giảng viên thành công!');
     }
-} 
+}

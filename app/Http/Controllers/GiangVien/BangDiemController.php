@@ -13,6 +13,7 @@ use App\Models\Nhom;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class BangDiemController extends Controller
 {
@@ -24,172 +25,252 @@ class BangDiemController extends Controller
         $giangVienId = (int)Auth::id();
 
         // Lấy các phân công chấm có vai trò của giảng viên hiện tại trong hội đồng
-        $phanCongChams = PhanCongCham::whereHas('hoiDong.phanCongVaiTros', function ($query) use ($giangVienId) {
-            $query->where('tai_khoan_id', $giangVienId);
-        })
-            ->with(['deTai.nhom.sinhViens', 'deTai.lichCham', 'hoiDong.phanCongVaiTros'])
+        $phanCongChams = PhanCongCham::with(['deTai.nhom.sinhViens', 'deTai.lichCham', 'hoiDong.phanCongVaiTros'])
+            ->whereNotNull('hoi_dong_id')
+            ->whereHas('hoiDong.phanCongVaiTros', function ($query) use ($giangVienId) {
+                $query->where('tai_khoan_id', $giangVienId);
+            })
             ->get();
 
-        // Lọc phân công hợp lệ (có đề tài + nhóm + sinh viên + lịch chấm)
+        // Lọc phân công hợp lệ
         $phanCongChamsFiltered = $phanCongChams->filter(function ($phanCong) {
             return $phanCong->deTai
                 && $phanCong->deTai->nhom
                 && $phanCong->deTai->nhom->sinhViens->count() > 0
-                && $phanCong->deTai->lichCham;
+                && $phanCong->deTai->lichCham
+                && $phanCong->deTai->lichCham->dot_bao_cao_id;
         });
 
-        // Gán vai trò chấm
-        $phanCongChamsFiltered = $phanCongChamsFiltered->map(function ($phanCong) use ($giangVienId) {
-            $phanCong->vai_tro_cham = 'N/A';
+        $coDeTaiNhungKhongCoLichCham = $phanCongChams->contains(function ($phanCong) {
+            return $phanCong->deTai && !$phanCong->deTai->lichCham;
+        });
 
-            if ((int)$phanCong->giang_vien_phan_bien_id === $giangVienId) {
-                $phanCong->vai_tro_cham = 'Phản biện';
-            } elseif ((int)$phanCong->giang_vien_khac_id === $giangVienId) {
-                $phanCong->vai_tro_cham = 'Giảng viên khác';
-            } elseif ((int)$phanCong->giang_vien_huong_dan_id === $giangVienId) {
-                $phanCong->vai_tro_cham = 'Hướng dẫn';
+        $phanCongChamsFiltered = $phanCongChams->map(function($phanCong) use ($giangVienId) {
+            $phanCong->vai_tro_cham = 'Không xác định';
+
+            if ($phanCong->hoiDong && $phanCong->hoiDong->phanCongVaiTros) {
+                $vaiTro = $phanCong->hoiDong->phanCongVaiTros->firstWhere('tai_khoan_id', $giangVienId);
+                if ($vaiTro) {
+                    switch ($vaiTro->loai_giang_vien) {
+                        case 'Giảng Viên Hướng Dẫn':
+                            $phanCong->vai_tro_cham = 'Hướng dẫn';
+                            break;
+                        case 'Giảng Viên Phản Biện':
+                            $phanCong->vai_tro_cham = 'Phản biện';
+                            break;
+                        case 'Giảng Viên Khác':
+                            $phanCong->vai_tro_cham = 'Giảng viên khác';
+                            break;
+                        default:
+                            $phanCong->vai_tro_cham = $vaiTro->loai_giang_vien;
+                    }
+                }
             }
 
             return $phanCong;
         });
 
-        // Lấy danh sách bảng điểm đã chấm
         $bangDiems = BangDiem::where('giang_vien_id', $giangVienId)
             ->with(['sinhVien', 'dotBaoCao'])
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Gán vai trò chấm cho bảng điểm
-        $bangDiems = $bangDiems->map(function ($bangDiem) use ($giangVienId) {
-            $bangDiem->vai_tro_cham = 'N/A';
+        $bangDiems = $bangDiems->map(function($bangDiem) use ($giangVienId) {
+            $bangDiem->vai_tro_cham = 'Không xác định';
 
-            $phanCongCham = PhanCongCham::where(function ($query) use ($giangVienId) {
-                $query->where('giang_vien_phan_bien_id', $giangVienId)
-                    ->orWhere('giang_vien_khac_id', $giangVienId)
-                    ->orWhere('giang_vien_huong_dan_id', $giangVienId);
-            })
-                ->whereHas('deTai.nhom.sinhViens', function ($query) use ($bangDiem) {
+            $phanCongCham = PhanCongCham::with('hoiDong.phanCongVaiTros', 'deTai.nhom.sinhViens')
+                ->whereHas('deTai.nhom.sinhViens', function($query) use ($bangDiem) {
                     $query->where('sinh_viens.id', $bangDiem->sinh_vien_id);
+                })
+                ->whereHas('hoiDong.phanCongVaiTros', function($query) use ($giangVienId) {
+                    $query->where('tai_khoan_id', $giangVienId);
                 })
                 ->first();
 
-            if ($phanCongCham) {
-                if ((int)$phanCongCham->giang_vien_phan_bien_id === $giangVienId) {
-                    $bangDiem->vai_tro_cham = 'Phản biện';
-                } elseif ((int)$phanCongCham->giang_vien_khac_id === $giangVienId) {
-                    $bangDiem->vai_tro_cham = 'Giảng viên khác';
-                } elseif ((int)$phanCongCham->giang_vien_huong_dan_id === $giangVienId) {
-                    $bangDiem->vai_tro_cham = 'Hướng dẫn';
+            if ($phanCongCham && $phanCongCham->hoiDong) {
+                $vaiTro = $phanCongCham->hoiDong->phanCongVaiTros->firstWhere('tai_khoan_id', $giangVienId);
+                if ($vaiTro) {
+                    switch ($vaiTro->loai_giang_vien) {
+                        case 'Giảng Viên Hướng Dẫn':
+                            $bangDiem->vai_tro_cham = 'Hướng dẫn';
+                            break;
+                        case 'Giảng Viên Phản Biện':
+                            $bangDiem->vai_tro_cham = 'Phản biện';
+                            break;
+                        case 'Giảng Viên Khác':
+                            $bangDiem->vai_tro_cham = 'Giảng viên khác';
+                            break;
+                        default:
+                            $bangDiem->vai_tro_cham = $vaiTro->loai_giang_vien;
+                    }
                 }
             }
 
             return $bangDiem;
         });
 
-        return view('giangvien.bang-diem.index', compact('phanCongChamsFiltered', 'bangDiems'));
+        return view('giangvien.bang-diem.index', compact(
+            'phanCongChamsFiltered',
+            'bangDiems',
+            'coDeTaiNhungKhongCoLichCham'
+        ));
     }
 
     /**
-     * Hiển thị form chấm điểm cho sinh viên
+     * Hiển thị form chấm điểm
      */
-    public function create($sinhVienId, $dotBaoCaoId)
+    public function create($sinhVienId, $dotBaoCaoId = null)
     {
-        $sinhVien = SinhVien::with(['lop', 'chiTietNhom.nhom.deTai'])->findOrFail($sinhVienId);
-        $dotBaoCao = DotBaoCao::with(['lichChams.hoiDong'])->findOrFail($dotBaoCaoId);
+        $bangDiem = new BangDiem();
+        $bangDiem->sinh_vien_id = $sinhVienId;
+        $bangDiem->dot_bao_cao_id = $dotBaoCaoId;
+
+        // Kiểm tra điểm cũ
+        $diemCu = null;
+        if (request()->has('diemCuId')) {
+            $diemCu = BangDiem::findOrFail(request()->diemCuId);
+        } else {
+            // Tìm điểm cũ không có đợt báo cáo
+            $diemCu = BangDiem::where('sinh_vien_id', $sinhVienId)
+                ->whereNull('dot_bao_cao_id')
+                ->where('giang_vien_id', Auth::id())
+                ->first();
+        }
+
+        // Nếu có điểm cũ và là điểm của giảng viên hiện tại
+        if ($diemCu && $diemCu->giang_vien_id === Auth::id()) {
+            $bangDiem->diem_bao_cao = $diemCu->diem_bao_cao;
+            $bangDiem->diem_thuyet_trinh = $diemCu->diem_thuyet_trinh;
+            $bangDiem->binh_luan = $diemCu->binh_luan;
+        }
+
+        $hasDotBaoCao = $dotBaoCaoId !== null;
+
+        // Lấy thông tin sinh viên
+        $sinhVien = SinhVien::with('lop')->findOrFail($sinhVienId);
+
+        // Lấy thông tin đợt báo cáo nếu có
+        $dotBaoCao = null;
+        $tenNhom = 'N/A';
+        $tenDeTai = 'N/A';
+        if ($dotBaoCaoId) {
+            $dotBaoCao = DotBaoCao::with(['lichChams.hoiDong', 'hocKy'])->findOrFail($dotBaoCaoId);
+            
+            // Lấy tên nhóm và tên đề tài
+            $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $sinhVienId)->first();
+            if ($chiTietNhom && $chiTietNhom->nhom) {
+                $tenNhom = $chiTietNhom->nhom->ten;
+                if ($chiTietNhom->nhom->deTai) {
+                    $tenDeTai = $chiTietNhom->nhom->deTai->ten_de_tai;
+                }
+            }
+        }
+
+        // Lấy vai trò chấm điểm
         $giangVienId = Auth::id();
-
-        // Kiểm tra giảng viên có quyền chấm điểm không và đề tài đã có trong lịch chấm
-        $coQuyenCham = PhanCongCham::where(function($query) use ($giangVienId) {
-            $query->where('giang_vien_phan_bien_id', $giangVienId)
-                  ->orWhere('giang_vien_khac_id', $giangVienId);
-        })
-        ->whereHas('deTai.nhom.sinhViens', function($query) use ($sinhVienId) {
-            $query->where('sinh_viens.id', $sinhVienId);
-        })
-        ->whereHas('deTai.lichCham')
-        ->exists();
-
-        if (!$coQuyenCham) {
-            return redirect()->route('giangvien.bang-diem.index')
-                ->with('error', 'Bạn không có quyền chấm điểm cho sinh viên này hoặc đề tài chưa có trong lịch chấm.');
+        $vaiTroCham = null;
+        $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $sinhVienId)->first();
+        if ($chiTietNhom && $chiTietNhom->nhom) {
+            $nhom = $chiTietNhom->nhom;
+            $deTai = $nhom->deTai ? $nhom->deTai : \App\Models\DeTai::where('nhom_id', $nhom->id)->first();
+            if ($deTai && $deTai->phanCongCham) {
+                $phanCongCham = $deTai->phanCongCham;
+                if ($phanCongCham->hoiDong && $phanCongCham->hoiDong->phanCongVaiTros) {
+                    $phanCongVaiTro = $phanCongCham->hoiDong->phanCongVaiTros->firstWhere('tai_khoan_id', $giangVienId);
+                    $vaiTroCham = $phanCongVaiTro ? $phanCongVaiTro->loai_giang_vien : null;
+                }
+            }
         }
 
-        // Kiểm tra đã chấm điểm chưa
-        $daChamDiem = BangDiem::where('giang_vien_id', $giangVienId)
-            ->where('sinh_vien_id', $sinhVienId)
-            ->where('dot_bao_cao_id', $dotBaoCaoId)
-            ->exists();
-
-        if ($daChamDiem) {
-            return redirect()->route('giangvien.bang-diem.index')
-                ->with('error', 'Bạn đã chấm điểm cho sinh viên này trong đợt báo cáo này.');
-        }
-
-        return view('giangvien.bang-diem.create', compact('sinhVien', 'dotBaoCao'));
+        return view('giangvien.bang-diem.create', compact(
+            'bangDiem',
+            'hasDotBaoCao',
+            'vaiTroCham',
+            'sinhVien',
+            'dotBaoCao',
+            'tenNhom',
+            'tenDeTai'
+        ));
     }
 
     /**
-     * Lưu điểm chấm
+     * Lưu điểm mới
      */
-    public function store(Request $request, $sinhVienId, $dotBaoCaoId)
+    public function store(Request $request)
     {
-        $request->validate([
-            'diem_bao_cao' => 'required|numeric|min:0|max:10',
-            'diem_thuyet_trinh' => 'required|numeric|min:0|max:10',
-            'diem_demo' => 'required|numeric|min:0|max:10',
-            'diem_cau_hoi' => 'required|numeric|min:0|max:10',
-            'diem_cong' => 'nullable|numeric|min:0|max:2',
+        $rules = [
+            'sinh_vien_id' => 'required|exists:sinh_viens,id',
             'binh_luan' => 'nullable|string|max:1000'
-        ]);
+        ];
 
-        $giangVienId = Auth::id();
+        $hasDotBaoCao = $request->filled('dot_bao_cao_id');
 
-        // Kiểm tra quyền chấm điểm và đề tài đã có trong lịch chấm
-        $coQuyenCham = PhanCongCham::where(function($query) use ($giangVienId) {
-            $query->where('giang_vien_phan_bien_id', $giangVienId)
-                  ->orWhere('giang_vien_khac_id', $giangVienId);
-        })
-        ->whereHas('deTai.nhom.sinhViens', function($query) use ($sinhVienId) {
-            $query->where('sinh_viens.id', $sinhVienId);
-        })
-        ->whereHas('deTai.lichCham')
-        ->exists();
+        // Tìm điểm cũ
+        $diemCu = BangDiem::where('sinh_vien_id', $request->sinh_vien_id)
+            ->whereNull('dot_bao_cao_id')
+            ->where('giang_vien_id', Auth::id())
+            ->first();
 
-        if (!$coQuyenCham) {
-            return redirect()->route('giangvien.bang-diem.index')
-                ->with('error', 'Bạn không có quyền chấm điểm cho sinh viên này hoặc đề tài chưa có trong lịch chấm.');
+        // Nếu không có đợt báo cáo, yêu cầu nhập điểm báo cáo và thuyết trình
+        if (!$hasDotBaoCao) {
+            $rules = array_merge($rules, [
+                'diem_bao_cao' => 'required|numeric|min:0|max:10',
+                'diem_thuyet_trinh' => 'required|numeric|min:0|max:10',
+            ]);
+        } else {
+            // Nếu có đợt báo cáo, điểm báo cáo và thuyết trình có thể null
+            $rules = array_merge($rules, [
+                'diem_bao_cao' => 'nullable|numeric|min:0|max:10',
+                'diem_thuyet_trinh' => 'nullable|numeric|min:0|max:10',
+            ]);
         }
 
-        // Kiểm tra đã chấm điểm chưa
-        $daChamDiem = BangDiem::where('giang_vien_id', $giangVienId)
-            ->where('sinh_vien_id', $sinhVienId)
-            ->where('dot_bao_cao_id', $dotBaoCaoId)
-            ->exists();
-
-        if ($daChamDiem) {
-            return redirect()->route('giangvien.bang-diem.index')
-                ->with('error', 'Bạn đã chấm điểm cho sinh viên này trong đợt báo cáo này.');
+        if ($hasDotBaoCao) {
+            $rules = array_merge($rules, [
+                'diem_bao_cao' => 'nullable|numeric|min:0|max:10',
+                'diem_thuyet_trinh' => 'nullable|numeric|min:0|max:10',
+                'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
+                'diem_demo' => 'required|numeric|min:0|max:10',
+                'diem_cau_hoi' => 'required|numeric|min:0|max:10',
+                'diem_cong' => 'nullable|numeric|min:0|max:2',
+            ]);
         }
+
+        $validated = $request->validate($rules);
 
         try {
-            BangDiem::create([
-                'giang_vien_id' => $giangVienId,
-                'sinh_vien_id' => $sinhVienId,
-                'dot_bao_cao_id' => $dotBaoCaoId,
-                'diem_bao_cao' => $request->diem_bao_cao,
-                'diem_thuyet_trinh' => $request->diem_thuyet_trinh,
-                'diem_demo' => $request->diem_demo,
-                'diem_cau_hoi' => $request->diem_cau_hoi,
-                'diem_cong' => $request->diem_cong ?? 0,
+            $data = [
+                'sinh_vien_id' => $request->sinh_vien_id,
+                'dot_bao_cao_id' => $request->dot_bao_cao_id,
+                'giang_vien_id' => Auth::id(),
                 'binh_luan' => $request->binh_luan
-            ]);
+            ];
+
+            // Nếu có đợt báo cáo, lấy điểm báo cáo và thuyết trình từ điểm cũ nếu có
+            if ($hasDotBaoCao) {
+                if ($diemCu) {
+                    $data['diem_bao_cao'] = $diemCu->diem_bao_cao;
+                    $data['diem_thuyet_trinh'] = $diemCu->diem_thuyet_trinh;
+                } else {
+                    $data['diem_bao_cao'] = $request->diem_bao_cao;
+                    $data['diem_thuyet_trinh'] = $request->diem_thuyet_trinh;
+                }
+                $data['diem_demo'] = $request->diem_demo;
+                $data['diem_cau_hoi'] = $request->diem_cau_hoi;
+                $data['diem_cong'] = $request->diem_cong ?? 0;
+            } else {
+                $data['diem_bao_cao'] = $request->diem_bao_cao;
+                $data['diem_thuyet_trinh'] = $request->diem_thuyet_trinh;
+            }
+
+            BangDiem::create($data);
 
             return redirect()->route('giangvien.bang-diem.index')
                 ->with('success', 'Chấm điểm thành công.');
         } catch (\Exception $e) {
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Có lỗi xảy ra khi chấm điểm: ' . $e->getMessage());
+                ->with('error', 'Có lỗi xảy ra khi lưu điểm: ' . $e->getMessage());
         }
     }
 
@@ -254,7 +335,45 @@ class BangDiemController extends Controller
                 ->with('error', 'Bạn không có quyền chỉnh sửa điểm này.');
         }
 
-        return view('giangvien.bang-diem.edit', compact('bangDiem'));
+        // Xác định có đợt báo cáo hay không
+        $hasDotBaoCao = $bangDiem->dot_bao_cao_id !== null;
+        $vaiTroCham = null;
+        $canEditBaoCaoAndThuyetTrinh = true;
+
+        // Lấy vai trò chấm điểm
+        $giangVienId = Auth::id();
+        $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $bangDiem->sinh_vien_id)->first();
+        if ($chiTietNhom && $chiTietNhom->nhom) {
+            $nhom = $chiTietNhom->nhom;
+            $deTai = $nhom->deTai ? $nhom->deTai : \App\Models\DeTai::where('nhom_id', $nhom->id)->first();
+            if ($deTai && $deTai->phanCongCham) {
+                $phanCongCham = $deTai->phanCongCham;
+                if ($phanCongCham->hoiDong && $phanCongCham->hoiDong->phanCongVaiTros) {
+                    $phanCongVaiTro = $phanCongCham->hoiDong->phanCongVaiTros->firstWhere('tai_khoan_id', $giangVienId);
+                    $vaiTroCham = $phanCongVaiTro ? $phanCongVaiTro->loai_giang_vien : null;
+                }
+            }
+        }
+
+        // Kiểm tra xem có được phép sửa điểm báo cáo và thuyết trình không
+        $canEditBaoCaoAndThuyetTrinh = !$hasDotBaoCao || 
+            (in_array($vaiTroCham, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện']) && 
+             (!$bangDiem->diem_bao_cao && !$bangDiem->diem_thuyet_trinh));
+
+        Log::info('Edit BangDiem Debug', [
+            'bangDiem_id' => $bangDiem->id,
+            'hasDotBaoCao' => $hasDotBaoCao,
+            'dot_bao_cao_id' => $bangDiem->dot_bao_cao_id,
+            'vaiTroCham' => $vaiTroCham,
+            'canEditBaoCaoAndThuyetTrinh' => $canEditBaoCaoAndThuyetTrinh
+        ]);
+
+        return view('giangvien.bang-diem.edit', compact(
+            'bangDiem', 
+            'hasDotBaoCao', 
+            'vaiTroCham',
+            'canEditBaoCaoAndThuyetTrinh'
+        ));
     }
 
     /**
@@ -270,24 +389,56 @@ class BangDiemController extends Controller
                 ->with('error', 'Bạn không có quyền chỉnh sửa điểm này.');
         }
 
-        $request->validate([
-            'diem_bao_cao' => 'required|numeric|min:0|max:10',
-            'diem_thuyet_trinh' => 'required|numeric|min:0|max:10',
-            'diem_demo' => 'required|numeric|min:0|max:10',
-            'diem_cau_hoi' => 'required|numeric|min:0|max:10',
-            'diem_cong' => 'nullable|numeric|min:0|max:2',
-            'binh_luan' => 'nullable|string|max:1000'
-        ]);
+        $rules = [];
+        $data = [];
 
-        try {
-            $bangDiem->update([
-                'diem_bao_cao' => $request->diem_bao_cao,
-                'diem_thuyet_trinh' => $request->diem_thuyet_trinh,
+        // Kiểm tra xem có được phép sửa điểm báo cáo và thuyết trình không
+        $hasDotBaoCao = $bangDiem->dot_bao_cao_id !== null;
+
+        // Nếu không có đợt báo cáo thì mới bắt buộc điểm báo cáo và thuyết trình
+        if (!$hasDotBaoCao) {
+            $rules = array_merge($rules, [
+                'diem_bao_cao' => 'required|numeric|min:0|max:10',
+                'diem_thuyet_trinh' => 'required|numeric|min:0|max:10',
+            ]);
+        } else {
+            // Nếu có đợt báo cáo, điểm báo cáo và thuyết trình có thể null
+            $rules = array_merge($rules, [
+                'diem_bao_cao' => 'nullable|numeric|min:0|max:10',
+                'diem_thuyet_trinh' => 'nullable|numeric|min:0|max:10',
+            ]);
+        }
+
+        // Nếu có đợt báo cáo thì yêu cầu nhập đủ các điểm còn lại
+        if ($hasDotBaoCao) {
+            $rules = array_merge($rules, [
+                'diem_demo' => 'required|numeric|min:0|max:10',
+                'diem_cau_hoi' => 'required|numeric|min:0|max:10',
+                'diem_cong' => 'nullable|numeric|min:0|max:2',
+            ]);
+            $data = array_merge($data, [
                 'diem_demo' => $request->diem_demo,
                 'diem_cau_hoi' => $request->diem_cau_hoi,
                 'diem_cong' => $request->diem_cong ?? 0,
-                'binh_luan' => $request->binh_luan
             ]);
+        }
+
+        $rules['binh_luan'] = 'nullable|string|max:1000';
+        $data['binh_luan'] = $request->binh_luan;
+
+        $validated = $request->validate($rules);
+
+        try {
+            // Nếu có đợt báo cáo, giữ nguyên điểm báo cáo và thuyết trình cũ
+            if ($hasDotBaoCao) {
+                $data['diem_bao_cao'] = $bangDiem->diem_bao_cao;
+                $data['diem_thuyet_trinh'] = $bangDiem->diem_thuyet_trinh;
+            } else {
+                $data['diem_bao_cao'] = $request->diem_bao_cao;
+                $data['diem_thuyet_trinh'] = $request->diem_thuyet_trinh;
+            }
+
+            $bangDiem->update($data);
 
             return redirect()->route('giangvien.bang-diem.index')
                 ->with('success', 'Cập nhật điểm thành công.');

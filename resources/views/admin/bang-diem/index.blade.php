@@ -28,7 +28,7 @@
                                     <select class="form-control" id="dot_bao_cao_id" name="dot_bao_cao_id">
                                         <option value="">Tất cả</option>
                                         @foreach($dotBaoCaos as $dotBaoCao)
-                                            <option value="{{ $dotBaoCao->id }}" 
+                                            <option value="{{ $dotBaoCao->id }}"
                                                     {{ request('dot_bao_cao_id') == $dotBaoCao->id ? 'selected' : '' }}>
                                                 {{ $dotBaoCao->ten_dot_bao_cao }}
                                             </option>
@@ -42,7 +42,7 @@
                                     <select class="form-control" id="giang_vien_id" name="giang_vien_id">
                                         <option value="">Tất cả</option>
                                         @foreach($giangViens as $giangVien)
-                                            <option value="{{ $giangVien->id }}" 
+                                            <option value="{{ $giangVien->id }}"
                                                     {{ request('giang_vien_id') == $giangVien->id ? 'selected' : '' }}>
                                                 {{ $giangVien->ten }}
                                             </option>
@@ -56,7 +56,7 @@
                                     <select class="form-control" id="sinh_vien_id" name="sinh_vien_id">
                                         <option value="">Tất cả</option>
                                         @foreach($sinhViens as $sinhVien)
-                                            <option value="{{ $sinhVien->id }}" 
+                                            <option value="{{ $sinhVien->id }}"
                                                     {{ request('sinh_vien_id') == $sinhVien->id ? 'selected' : '' }}>
                                                 {{ $sinhVien->mssv }} - {{ $sinhVien->ten }}
                                             </option>
@@ -109,14 +109,14 @@
                                 <tbody>
                                     @foreach($bangDiems as $bangDiem)
                                         @php
-                                            $tongDiem = $bangDiem->diem_bao_cao + $bangDiem->diem_thuyet_trinh + 
+                                            $tongDiem = $bangDiem->diem_bao_cao + $bangDiem->diem_thuyet_trinh +
                                                        $bangDiem->diem_demo + $bangDiem->diem_cau_hoi + $bangDiem->diem_cong;
                                         @endphp
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
                                             <td>{{ $bangDiem->sinhVien->mssv }}</td>
                                             <td>{{ $bangDiem->sinhVien->ten }}</td>
-                                            <td>{{ $bangDiem->dotBaoCao->nam_hoc }}</td>
+                                            <td>{{ $bangDiem->dotBaoCao->nam_hoc }} - {{ $bangDiem->dotBaoCao->hocKy->ten }}</td>
                                             <td>{{ $bangDiem->giangVien->ten }}</td>
                                             <td>
                                                 @if($bangDiem->vai_tro_cham == 'Phản biện')
@@ -137,19 +137,19 @@
                                             <td><strong>{{ number_format($tongDiem, 2) }}</strong></td>
                                             <td>{{ $bangDiem->created_at->format('d/m/Y H:i') }}</td>
                                             <td>
-                                                <a href="{{ route('admin.bang-diem.show', $bangDiem->id) }}" 
+                                                <a href="{{ route('admin.bang-diem.show', $bangDiem->id) }}"
                                                    class="btn btn-sm btn-info">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <a href="{{ route('admin.bang-diem.edit', $bangDiem->id) }}" 
+                                                <a href="{{ route('admin.bang-diem.edit', $bangDiem->id) }}"
                                                    class="btn btn-sm btn-warning">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                <form action="{{ route('admin.bang-diem.destroy', $bangDiem->id) }}" 
+                                                <form action="{{ route('admin.bang-diem.destroy', $bangDiem->id) }}"
                                                       method="POST" class="d-inline">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-danger" 
+                                                    <button type="submit" class="btn btn-sm btn-danger"
                                                             onclick="return confirm('Bạn có chắc muốn xóa điểm này?')">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
@@ -171,4 +171,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection

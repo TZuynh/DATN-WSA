@@ -52,6 +52,10 @@
                                     <td>{{ $bangDiem->dotBaoCao->nam_hoc }}</td>
                                 </tr>
                                 <tr>
+                                    <th>Học kỳ:</th>
+                                    <td>{{ $dotBaoCao->hocKy->ten }}</td>
+                                </tr>
+                                <tr>
                                     <th>Tên nhóm:</th>
                                     <td>
                                         @php
@@ -153,11 +157,11 @@
                             <a href="{{ route('giangvien.bang-diem.edit', $bangDiem->id) }}" class="btn btn-warning">
                                 <i class="fas fa-edit"></i> Chỉnh sửa
                             </a>
-                            <form action="{{ route('giangvien.bang-diem.destroy', $bangDiem->id) }}" 
+                            <form action="{{ route('giangvien.bang-diem.destroy', $bangDiem->id) }}"
                                   method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger" 
+                                <button type="submit" class="btn btn-danger"
                                         onclick="return confirm('Bạn có chắc muốn xóa điểm này?')">
                                     <i class="fas fa-trash"></i> Xóa
                                 </button>
@@ -169,4 +173,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection

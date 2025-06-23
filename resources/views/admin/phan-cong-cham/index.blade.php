@@ -36,9 +36,9 @@
                                         <td>{{ $phanCongCham->deTai->ma_de_tai }}</td>
                                         <td>{{ $phanCongCham->deTai->ten_de_tai }}</td>
                                         <td>{{ $phanCongCham->hoiDong->ten ?? 'N/A' }}</td>
-                                        <td>{{ $phanCongCham->giangVienHuongDan->ten ?? 'N/A' }}</td>
-                                        <td>{{ $phanCongCham->giangVienPhanBien->ten ?? 'N/A' }}</td>
-                                        <td>{{ $phanCongCham->giangVienKhac->ten ?? 'N/A' }}</td>
+                                        <td>{{ $phanCongCham->getGiangVienByLoai('Giảng Viên Hướng Dẫn')->ten ?? 'N/A' }}</td>
+                                        <td>{{ $phanCongCham->getGiangVienByLoai('Giảng Viên Phản Biện')->ten ?? 'N/A' }}</td>
+                                        <td>{{ $phanCongCham->getGiangVienByLoai('Giảng Viên Khác')->ten ?? 'N/A' }}</td>
                                         <td>{{ $phanCongCham->lich_cham ? \Carbon\Carbon::parse($phanCongCham->lich_cham)->format('d/m/Y H:i') : 'N/A' }}</td>
                                         <td>
                                             <a href="{{ route('admin.phan-cong-cham.edit', $phanCongCham->id) }}"
@@ -73,4 +73,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection

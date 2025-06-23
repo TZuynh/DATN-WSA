@@ -30,7 +30,7 @@ class PhanCongVaiTro extends Model
 
     public function taiKhoan()
     {
-        return $this->belongsTo(TaiKhoan::class);
+        return $this->belongsTo(TaiKhoan::class, 'tai_khoan_id');
     }
 
     /**

@@ -62,7 +62,7 @@ class HoiDong extends Model
      */
     public function phanCongVaiTros()
     {
-        return $this->hasMany(PhanCongVaiTro::class);
+        return $this->hasMany(PhanCongVaiTro::class, 'hoi_dong_id');
     }
 
     /**

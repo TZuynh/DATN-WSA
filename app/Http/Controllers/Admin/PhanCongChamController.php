@@ -14,9 +14,11 @@ class PhanCongChamController extends Controller
 {
     public function index()
     {
-        $phanCongChams = PhanCongCham::with(['deTai', 'hoiDong'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $phanCongChams = PhanCongCham::with([
+            'deTai',
+            'hoiDong',
+            'hoiDong.phanCongVaiTros.taiKhoan',
+        ])->latest()->paginate(10);
 
         return view('admin.phan-cong-cham.index', compact('phanCongChams'));
     }
@@ -53,7 +55,7 @@ class PhanCongChamController extends Controller
 
         try {
             DB::beginTransaction();
-            
+
             $chiTiet = ChiTietDeTaiBaoCao::where('de_tai_id', $validated['de_tai_id'])->first();
             if (!$chiTiet || !$chiTiet->hoi_dong_id) {
                 return redirect()->back()->with('error', 'Không tìm thấy hội đồng cho đề tài này. Vui lòng kiểm tra lại phân công hội đồng.');
@@ -85,7 +87,7 @@ class PhanCongChamController extends Controller
             })
             ->select('id', 'ma_de_tai', 'ten_de_tai')
             ->get();
-        
+
         $deTaiCoLichCham = \App\Models\LichCham::where('de_tai_id', $phanCongCham->de_tai_id)->exists();
 
         $giangViens = TaiKhoan::where('vai_tro', 'giang_vien')->select('id', 'ten')->get();
@@ -96,7 +98,7 @@ class PhanCongChamController extends Controller
     public function update(Request $request, $id)
     {
         $phanCongCham = PhanCongCham::findOrFail($id);
-        
+
         $validated = $request->validate([
             'de_tai_id' => 'required|exists:de_tais,id|unique:phan_cong_chams,de_tai_id,' . $id,
             'lich_cham' => 'required|date_format:Y-m-d H:i',
@@ -105,7 +107,7 @@ class PhanCongChamController extends Controller
             'de_tai_id.unique' => 'Đề tài này đã được phân công chấm.',
             'lich_cham.required' => 'Vui lòng chọn lịch chấm.',
         ]);
-        
+
         try {
             DB::beginTransaction();
 
@@ -141,40 +143,47 @@ class PhanCongChamController extends Controller
                 ->with('error', 'Xóa phân công chấm thất bại.');
         }
     }
-    
+
     public function getHoiDongInfo(Request $request)
     {
         $request->validate(['de_tai_id' => 'required|exists:de_tais,id']);
-    
+
         $chiTiet = ChiTietDeTaiBaoCao::with('hoiDong.phanCongVaiTros.taiKhoan', 'hoiDong.phanCongVaiTros.vaiTro')
             ->where('de_tai_id', $request->de_tai_id)
             ->first();
-    
+
         if (!$chiTiet || !$chiTiet->hoiDong) {
             return response()->json(['error' => 'Không tìm thấy hội đồng cho đề tài này.'], 404);
         }
-    
+
         $hoiDong = $chiTiet->hoiDong;
-    
+
         $members = $hoiDong->phanCongVaiTros->map(function ($phanCong) {
+            $vaiTro = $phanCong->vaiTro->ten ?? 'N/A';
+
+            // Nếu là trưởng tiểu ban hoặc thư ký thì không có loại giảng viên
+            if (in_array($vaiTro, ['Trưởng tiểu ban', 'Thư ký'])) {
+                $loai = '';
+            } else {
+                $loai = in_array($phanCong->loai_giang_vien, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện', 'Giảng Viên Khác'])
+                    ? $phanCong->loai_giang_vien
+                    : 'N/A';
+            }
+
             return [
                 'ten' => $phanCong->taiKhoan->ten ?? 'N/A',
-                'vai_tro' => $phanCong->vaiTro->ten ?? 'N/A',
-                'loai_giang_vien' => $phanCong->loai_giang_vien ?? 'N/A',
+                'vai_tro' => $vaiTro,
+                'loai_giang_vien' => $loai,
             ];
         });
-    
+
         // Sắp xếp giảng viên
         $sortedMembers = $members->sortBy(function ($member) {
             switch ($member['loai_giang_vien']) {
-                case 'Giảng Viên Hướng Dẫn':
-                    return 1;
-                case 'Giảng Viên Phản Biện':
-                    return 2;
-                case 'Giảng Viên Khác':
-                    return 3;
+                case 'Giảng Viên Hướng Dẫn': return 1;
+                case 'Giảng Viên Phản Biện': return 2;
+                case 'Giảng Viên Khác': return 3;
                 default:
-                    // Sắp xếp các vai trò khác (Trưởng tiểu ban, Thư ký) lên đầu
                     switch ($member['vai_tro']) {
                         case 'Trưởng tiểu ban': return -2;
                         case 'Thư ký': return -1;
@@ -182,10 +191,10 @@ class PhanCongChamController extends Controller
                     }
             }
         })->values();
-    
+
         return response()->json([
             'ten_hoi_dong' => $hoiDong->ten,
             'members' => $sortedMembers
         ]);
     }
-} 
+}
