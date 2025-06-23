@@ -17,13 +17,34 @@ class DeTaiController extends Controller
 {
     public function index()
     {
-        $giangVienId = auth()->user()->id;
-        $deTais = DeTai::with(['nhoms.sinhViens', 'dotBaoCao.hocKy'])
-            ->where('giang_vien_id', $giangVienId)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $user = auth()->user();
+        // Kiểm tra theo loai_giang_vien
+        $isPhanBien = \App\Models\PhanCongVaiTro::where('tai_khoan_id', $user->id ?? 0)
+            ->where('loai_giang_vien', 'Giảng Viên Phản Biện')
+            ->exists();
 
-        return view('giangvien.de-tai.index', compact('deTais'));
+        if ($isPhanBien) {
+            // Lấy các hội đồng mà user là phản biện
+            $hoiDongIds = \App\Models\PhanCongVaiTro::where('tai_khoan_id', $user->id)
+                ->where('loai_giang_vien', 'Giảng Viên Phản Biện')
+                ->pluck('hoi_dong_id');
+            // Lấy các giảng viên hướng dẫn trong các hội đồng đó
+            $giangVienHuongDanIds = \App\Models\PhanCongVaiTro::whereIn('hoi_dong_id', $hoiDongIds)
+                ->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')
+                ->pluck('tai_khoan_id');
+            // Lấy tất cả đề tài của các giảng viên hướng dẫn này (không lọc trạng thái)
+            $deTais = \App\Models\DeTai::with(['nhoms.sinhViens', 'dotBaoCao.hocKy', 'giangVien'])
+                ->whereIn('giang_vien_id', $giangVienHuongDanIds)
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } else {
+            $giangVienId = $user->id;
+            $deTais = \App\Models\DeTai::with(['nhoms.sinhViens', 'dotBaoCao.hocKy'])
+                ->where('giang_vien_id', $giangVienId)
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+        return view('giangvien.de-tai.index', compact('deTais', 'isPhanBien'));
     }
 
     public function create()
@@ -311,5 +332,25 @@ class DeTaiController extends Controller
             'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
             'Content-Length' => strlen($html)
         ]);
+    }
+
+    public function phanBienDuyet(Request $request, DeTai $deTai)
+    {
+        $user = auth()->user();
+        $isPhanBien = \App\Models\PhanCongVaiTro::where('tai_khoan_id', $user->id)
+            ->where('loai_giang_vien', 'Giảng Viên Phản Biện')
+            ->exists();
+        if (!$isPhanBien) {
+            abort(403, 'Bạn không có quyền thực hiện thao tác này.');
+        }
+        if ($request->action === 'approve') {
+            $deTai->trang_thai = 2; // 2 = Giảng viên phản biện đã duyệt
+            $msg = 'Đề tài đã được giảng viên phản biện duyệt.';
+        } else {
+            $deTai->trang_thai = 4; // 4 = Giảng viên phản biện từ chối
+            $msg = 'Đề tài đã bị giảng viên phản biện từ chối.';
+        }
+        $deTai->save();
+        return redirect()->route('giangvien.de-tai.index')->with('success', $msg);
     }
 } 

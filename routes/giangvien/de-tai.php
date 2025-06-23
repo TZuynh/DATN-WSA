@@ -13,4 +13,5 @@ Route::middleware(['auth', 'role:giang_vien'])->name('giangvien.')->group(functi
     Route::get('/giang-vien/de-tai/{deTai}/export-pdf', [DeTaiController::class, 'exportPdfDetail'])->name('de-tai.export-pdf-detail');
     Route::get('/giang-vien/de-tai/{deTai}/preview-pdf', [DeTaiController::class, 'previewPdfDetail'])->name('de-tai.preview-pdf-detail');
     Route::get('/giang-vien/de-tai/{deTai}/export-word', [DeTaiController::class, 'exportWordDetail'])->name('de-tai.export-word-detail');
+    Route::post('/giang-vien/de-tai/{deTai}/phanbien-duyet', [DeTaiController::class, 'phanBienDuyet'])->name('de-tai.phanbien-duyet');
 }); 

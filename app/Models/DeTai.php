@@ -92,12 +92,48 @@ class DeTai extends Model
     // Các phương thức hỗ trợ
     public function getTrangThaiTextAttribute()
     {
-        return self::TRANG_THAI_TEXT[$this->trang_thai] ?? 'Không xác định';
+        switch ($this->trang_thai) {
+            case 2:
+            case '2':
+                return 'Giảng viên phản biện đã duyệt';
+            case 4:
+            case '4':
+                return 'Giảng viên phản biện từ chối';
+            case 0:
+            case '0':
+                return 'Đang chờ duyệt';
+            case 1:
+            case '1':
+                return 'Đang thực hiện (giảng viên hướng dẫn đồng ý báo cáo)';
+            case 3:
+            case '3':
+                return 'Không xảy ra (giảng viên hướng dẫn không đồng ý)';
+            default:
+                return 'Không xác định';
+        }
     }
 
     public function getTrangThaiClassAttribute()
     {
-        return self::TRANG_THAI_CLASS[$this->trang_thai] ?? 'badge bg-secondary';
+        switch ($this->trang_thai) {
+            case 2:
+            case '2':
+                return 'bg-success';
+            case 4:
+            case '4':
+                return 'bg-danger';
+            case 0:
+            case '0':
+                return 'bg-warning';
+            case 1:
+            case '1':
+                return 'bg-primary';
+            case 3:
+            case '3':
+                return 'bg-secondary';
+            default:
+                return 'bg-secondary';
+        }
     }
 
     public function updateTrangThai()

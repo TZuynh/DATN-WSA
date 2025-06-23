@@ -8,11 +8,13 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Danh sách đề tài</h3>
+                    <h3 class="card-title">Danh sách đề tài phản biện</h3>
                     <div class="card-tools">
-                        <a href="{{ route('giangvien.de-tai.create') }}" class="btn btn-primary btn-sm">
-                            <i class="fas fa-plus"></i> Thêm mới
-                        </a>
+                    @if(!$isPhanBien)
+  <a href="{{ route('giangvien.de-tai.create') }}" class="btn btn-primary btn-sm">
+      <i class="fas fa-plus"></i> Thêm mới
+  </a>
+  @endif
                     </div>
                 </div>
                 <div class="card-body">
@@ -28,6 +30,7 @@
                                     <th style="width: 10%">Đợt báo cáo</th>
                                     <th style="width: 5%">Nhóm</th>
                                     <th style="width: 10%">Thành viên</th>
+                                    <th style="width: 10%">Giảng viên</th>
                                     <th style="width: 3%">Trạng thái</th>
                                     <th style="width: 5%">Thao tác</th>
                                 </tr>
@@ -56,33 +59,46 @@
                                             <span>N/A</span>
                                         @endif
                                     </td>
+                                    <td>{{ $deTai->giangVien->ten ?? 'N/A' }}</td>
                                     <td>
                                         <span class="badge {{ $deTai->trang_thai_class }}">
                                             {{ $deTai->trang_thai_text }}
                                         </span>
                                     </td>
                                     <td class="text-center">
-                                        <div class="d-flex justify-content-center gap-1">
-                                            <a href="{{ route('giangvien.de-tai.preview-pdf-detail', $deTai) }}" class="btn btn-sm btn-info" target="_blank">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="{{ route('giangvien.de-tai.export-pdf-detail', $deTai) }}" class="btn btn-sm btn-success">
-                                                <i class="fas fa-file-pdf"></i>
-                                            </a>
-                                            <a href="{{ route('giangvien.de-tai.export-word-detail', $deTai) }}" class="btn btn-sm btn-primary">
-                                                <i class="fas fa-file-word"></i>
-                                            </a>
-                                            <a href="{{ route('giangvien.de-tai.edit', $deTai) }}" class="btn btn-sm btn-warning">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <form action="{{ route('giangvien.de-tai.destroy', $deTai) }}" method="POST" class="d-inline">
+                                        @if($isPhanBien)
+                                            <form action="{{ route('giangvien.de-tai.phanbien-duyet', $deTai) }}" method="POST" class="d-flex justify-content-center gap-2">
                                                 @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa đề tài này?')">
-                                                    <i class="fas fa-trash"></i>
+                                                <button type="submit" name="action" value="approve" class="btn btn-success rounded-circle" style="width:40px; height:40px; display:flex; align-items:center; justify-content:center;" title="Duyệt đề tài">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                                <button type="submit" name="action" value="reject" class="btn btn-danger rounded-circle" style="width:40px; height:40px; display:flex; align-items:center; justify-content:center;" title="Từ chối duyệt">
+                                                    <i class="fas fa-times"></i>
                                                 </button>
                                             </form>
-                                        </div>
+                                        @else
+                                            <div class="d-flex justify-content-center gap-1">
+                                                <a href="{{ route('giangvien.de-tai.preview-pdf-detail', $deTai) }}" class="btn btn-sm btn-info" target="_blank">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ route('giangvien.de-tai.export-pdf-detail', $deTai) }}" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                                <a href="{{ route('giangvien.de-tai.export-word-detail', $deTai) }}" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-file-word"></i>
+                                                </a>
+                                                <a href="{{ route('giangvien.de-tai.edit', $deTai) }}" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form action="{{ route('giangvien.de-tai.destroy', $deTai) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa đề tài này?')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        @endif
                                     </td>
                                 </tr>
                                 @empty

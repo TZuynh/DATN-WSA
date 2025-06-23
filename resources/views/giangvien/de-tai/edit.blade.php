@@ -123,11 +123,9 @@
                         <option value="0" {{ old('trang_thai', $deTai->trang_thai) == 0 ? 'selected' : '' }}>Đang chờ duyệt</option>
                         @endif
                         <option value="1" {{ old('trang_thai', $deTai->trang_thai) == 1 ? 'selected' : '' }}>Đang thực hiện (giảng viên hướng dẫn đồng ý báo cáo)</option>
-                        <option value="2" {{ old('trang_thai', $deTai->trang_thai) == 2 ? 'selected' : '' }}>Đang thực hiện (giảng viên phản biện đồng ý báo cáo)</option>
                         @if(!$daPhanCongCham)
                         <option value="3" {{ old('trang_thai', $deTai->trang_thai) == 3 ? 'selected' : '' }}>Không xảy ra (giảng viên hướng dẫn không đồng ý)</option>
                         @endif
-                        <option value="4" {{ old('trang_thai', $deTai->trang_thai) == 4 ? 'selected' : '' }}>Không xảy ra (giảng viên phản biện không đồng ý)</option>
                     </select>
                     @if($daCoLichCham)
                     <small style="color: #e53e3e; display: block; margin-top: 5px;">Không thể thay đổi trạng thái vì đề tài đã có trong lịch bảo vệ</small>

@@ -1,3 +1,10 @@
+@php
+    use App\Models\PhanCongVaiTro;
+    $isPhanBien = PhanCongVaiTro::where('tai_khoan_id', auth()->id() ?? 0)
+        ->where('loai_giang_vien', 'Giảng Viên Phản Biện')
+        ->exists();
+@endphp
+
 <div class="admin-sidebar">
     <div class="sidebar-header">
         <img src="{{ asset('images/logo-caothang.png') }}" alt="Logo" class="logo-img" />
@@ -29,12 +36,14 @@
                 <span>Quản lý đăng ký</span>
             </a>
         </li> --}}
+        @if(!$isPhanBien)
         <li class="menu-item {{ request()->routeIs('giangvien.nhom.*') ? 'active' : '' }}">
             <a href="{{ route('giangvien.nhom.index') }}">
                 <i class="fas fa-user-plus"></i>
                 <span>Quản lý nhóm</span>
             </a>
         </li>
+        @endif
         {{-- <li class="menu-item {{ request()->routeIs('giangvien.de-tai-mau.*') ? 'active' : '' }}">
             <a href="{{ route('giangvien.de-tai-mau.index') }}">
                 <i class="fas fa-copy"></i>

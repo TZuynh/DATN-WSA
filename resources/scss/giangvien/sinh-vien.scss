@@ -175,3 +175,54 @@
         font-size: 0.875rem;
     }
 }
+
+/* Style cho dropdown thao tác giống select */
+.btn-group .dropdown-toggle {
+    background: #fff;
+    color: #4a5568;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 1rem;
+    box-shadow: none;
+    transition: border-color 0.2s;
+}
+.btn-group .dropdown-toggle:focus, 
+.btn-group .dropdown-toggle:active {
+    border-color: #3182ce;
+    outline: none;
+    box-shadow: 0 0 0 2px #bee3f8;
+}
+.btn-group .dropdown-menu {
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    min-width: 160px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.btn-group .dropdown-item {
+    padding: 8px 16px;
+    color: #4a5568;
+    font-size: 1rem;
+    transition: background 0.2s;
+}
+.btn-group .dropdown-item:hover, 
+.btn-group .dropdown-item:focus {
+    background: #f7fafc;
+    color: #2b6cb0;
+}
+
+/* Style cho badge trạng thái giống select */
+.table .badge {
+    display: inline-block;
+    background: #f7fafc;
+    color: #4a5568;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 1rem;
+    font-weight: 500;
+    min-width: 120px;
+    text-align: center;
+    box-shadow: none;
+    transition: border-color 0.2s;
+}

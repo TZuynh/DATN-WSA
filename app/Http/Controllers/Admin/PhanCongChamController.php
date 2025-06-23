@@ -14,13 +14,25 @@ class PhanCongChamController extends Controller
 {
     public function index()
     {
-        $phanCongChams = PhanCongCham::with([
+        // Lấy tất cả đề tài đã được giảng viên phản biện duyệt (trang_thai = 2)
+        $deTais = \App\Models\DeTai::with(['phanCongCham', 'dotBaoCao', 'giangVien', 'chiTietBaoCao.hoiDong.phanCongVaiTros.taiKhoan'])
+            ->where('trang_thai', 2)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Lấy các phân công chấm hiện có (vẫn paginate như cũ)
+        $phanCongChams = \App\Models\PhanCongCham::with([
             'deTai',
             'hoiDong',
             'hoiDong.phanCongVaiTros.taiKhoan',
-        ])->latest()->paginate(10);
+        ])
+        ->whereHas('deTai', function($query) {
+            $query->where('trang_thai', 2);
+        })
+        ->latest()
+        ->paginate(10);
 
-        return view('admin.phan-cong-cham.index', compact('phanCongChams'));
+        return view('admin.phan-cong-cham.index', compact('phanCongChams', 'deTais'));
     }
 
     public function create()
