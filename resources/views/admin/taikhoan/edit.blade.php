@@ -59,13 +59,19 @@
 
             <div style="margin-bottom: 20px;">
                 <label for="vai_tro" style="display: block; margin-bottom: 5px; color: #4a5568;">Vai trò</label>
-                <select name="vai_tro" id="vai_tro" required
-                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn vai trò">
-                    <option value="">Chọn vai trò</option>
-                    <option value="admin" {{ old('vai_tro', $taikhoan->vai_tro) == 'admin' ? 'selected' : '' }}>Admin</option>
-                    <option value="giang_vien" {{ old('vai_tro', $taikhoan->vai_tro) == 'giang_vien' ? 'selected' : '' }}>Giảng viên</option>
-                    <option value="sinh_vien" {{ old('vai_tro', $taikhoan->vai_tro) == 'sinh_vien' ? 'selected' : '' }}>Sinh viên</option>
-                </select>
+                @if($taikhoan->id == 1)
+                    <select name="vai_tro" id="vai_tro" disabled
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn vai trò">
+                        <option value="admin" selected>Admin</option>
+                    </select>
+                    <input type="hidden" name="vai_tro" value="admin">
+                @else
+                    <select name="vai_tro" id="vai_tro" required
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn vai trò">
+                        <option value="admin" {{ old('vai_tro', $taikhoan->vai_tro) == 'admin' ? 'selected' : '' }}>Admin</option>
+                        <option value="giang_vien" {{ old('vai_tro', $taikhoan->vai_tro) == 'giang_vien' ? 'selected' : '' }}>Giảng viên</option>
+                    </select>
+                @endif
             </div>
 
             <div style="display: flex; gap: 10px;">

@@ -54,17 +54,29 @@ class TaiKhoanController extends Controller
     {
         $taikhoan = TaiKhoan::findOrFail($id);
 
-        $validator = $request->validate([
-            'ten' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:tai_khoans,email,' . $id,
-            'vai_tro' => 'required|in:admin,giang_vien,sinh_vien',
-        ]);
-
-        $data = [
-            'ten' => $request->ten,
-            'email' => $request->email,
-            'vai_tro' => $request->vai_tro,
-        ];
+        // Nếu là admin chính (id=1) thì không cho đổi vai trò
+        if ($taikhoan->id == 1) {
+            $validator = $request->validate([
+                'ten' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:tai_khoans,email,' . $id,
+            ]);
+            $data = [
+                'ten' => $request->ten,
+                'email' => $request->email,
+                'vai_tro' => 'admin',
+            ];
+        } else {
+            $validator = $request->validate([
+                'ten' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:tai_khoans,email,' . $id,
+                'vai_tro' => 'required|in:admin,giang_vien',
+            ]);
+            $data = [
+                'ten' => $request->ten,
+                'email' => $request->email,
+                'vai_tro' => $request->vai_tro,
+            ];
+        }
 
         if ($request->filled('mat_khau')) {
             $data['mat_khau'] = Hash::make($request->mat_khau);
