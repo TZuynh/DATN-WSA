@@ -9,7 +9,8 @@ class DeTai extends Model
 {
     protected $fillable = [
         'ma_de_tai', 'ten_de_tai', 'mo_ta', 'ngay_bat_dau', 'ngay_ket_thuc',
-        'giang_vien_id', 'dot_bao_cao_id', 'trang_thai', 'y_kien_giang_vien'
+        'giang_vien_id', 'dot_bao_cao_id', 'trang_thai', 'y_kien_giang_vien',
+        'nhom_id'
     ];
 
     // Các trạng thái của đề tài
@@ -73,9 +74,14 @@ class DeTai extends Model
         return $this->hasOne(\App\Models\PhanCongCham::class, 'de_tai_id', 'id');
     }
 
+    public function lichChams()
+    {
+        return $this->hasMany(\App\Models\LichCham::class, 'de_tai_id');
+    }
+
     public function lichCham()
     {
-        return $this->hasOne(LichCham::class);
+        return $this->hasOne(\App\Models\LichCham::class, 'de_tai_id');
     }
 
     // Phương thức tạo mã đề tài tự động

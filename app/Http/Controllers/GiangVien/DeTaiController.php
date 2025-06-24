@@ -68,6 +68,7 @@ class DeTaiController extends Controller
             $deTai = DeTai::create([
                 'ten_de_tai' => $request->ten_de_tai,
                 'mo_ta' => $request->mo_ta,
+                'nhom_id' => $request->nhom_id,
                 'y_kien_giang_vien' => $request->y_kien_giang_vien,
                 'dot_bao_cao_id' => $request->dot_bao_cao_id,
                 'giang_vien_id' => auth()->id(),
@@ -128,6 +129,7 @@ class DeTaiController extends Controller
             $deTai->update([
                 'ten_de_tai' => $request->ten_de_tai,
                 'mo_ta' => $request->mo_ta,
+                'nhom_id' => $request->nhom_id,
                 'y_kien_giang_vien' => $request->y_kien_giang_vien,
                 'dot_bao_cao_id' => $request->dot_bao_cao_id,
                 'trang_thai' => $request->trang_thai

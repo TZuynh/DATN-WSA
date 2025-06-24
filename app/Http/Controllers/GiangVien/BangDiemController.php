@@ -122,10 +122,13 @@ class BangDiemController extends Controller
      */
     public function create($sinhVienId, $dotBaoCaoId = null)
     {
+        // Kiểm tra sinh viên có thuộc nhóm có đề tài đã có lịch chấm không
         $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $sinhVienId)->first();
-        $deTai = $chiTietNhom && $chiTietNhom->nhom ? $chiTietNhom->nhom->deTai : null;
-        $coLichCham = $deTai && \App\Models\LichCham::where('de_tai_id', $deTai->id)->exists();
-        if (!$coLichCham) {
+        if (!$chiTietNhom || !$chiTietNhom->nhom || !$chiTietNhom->nhom->deTai) {
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ có thể chấm điểm khi đề tài đã có lịch chấm.');
+        }
+        $deTai = $chiTietNhom->nhom->deTai;
+        if (!$deTai || !\App\Models\LichCham::where('de_tai_id', $deTai->id)->exists()) {
             return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ có thể chấm điểm khi đề tài đã có lịch chấm.');
         }
 
@@ -206,10 +209,13 @@ class BangDiemController extends Controller
      */
     public function store(Request $request)
     {
+        // Kiểm tra sinh viên có thuộc nhóm có đề tài đã có lịch chấm không
         $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $request->sinh_vien_id)->first();
-        $deTai = $chiTietNhom && $chiTietNhom->nhom ? $chiTietNhom->nhom->deTai : null;
-        $coLichCham = $deTai && \App\Models\LichCham::where('de_tai_id', $deTai->id)->exists();
-        if (!$coLichCham) {
+        if (!$chiTietNhom || !$chiTietNhom->nhom || !$chiTietNhom->nhom->deTai) {
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ có thể chấm điểm khi đề tài đã có lịch chấm.');
+        }
+        $deTai = $chiTietNhom->nhom->deTai;
+        if (!$deTai || !\App\Models\LichCham::where('de_tai_id', $deTai->id)->exists()) {
             return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ có thể chấm điểm khi đề tài đã có lịch chấm.');
         }
 
@@ -343,14 +349,19 @@ class BangDiemController extends Controller
             'dotBaoCao.hoiDong',
             'dotBaoCao.lichChams.hoiDong'
         ])->findOrFail($id);
+
+        // Kiểm tra quyền chỉnh sửa
         if ($bangDiem->giang_vien_id !== Auth::id()) {
             return redirect()->route('giangvien.bang-diem.index')
                 ->with('error', 'Bạn không có quyền chỉnh sửa điểm này.');
         }
+        // Kiểm tra đề tài có lịch chấm không
         $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $bangDiem->sinh_vien_id)->first();
-        $deTai = $chiTietNhom && $chiTietNhom->nhom ? $chiTietNhom->nhom->deTai : null;
-        $coLichCham = $deTai && \App\Models\LichCham::where('de_tai_id', $deTai->id)->exists();
-        if (!$coLichCham) {
+        if (!$chiTietNhom || !$chiTietNhom->nhom || !$chiTietNhom->nhom->deTai) {
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ có thể sửa điểm khi đề tài đã có lịch chấm.');
+        }
+        $deTai = $chiTietNhom->nhom->deTai;
+        if (!$deTai || !\App\Models\LichCham::where('de_tai_id', $deTai->id)->exists()) {
             return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ có thể sửa điểm khi đề tài đã có lịch chấm.');
         }
 
@@ -401,14 +412,19 @@ class BangDiemController extends Controller
     public function update(Request $request, $id)
     {
         $bangDiem = BangDiem::findOrFail($id);
+
+        // Kiểm tra quyền chỉnh sửa
         if ($bangDiem->giang_vien_id !== Auth::id()) {
             return redirect()->route('giangvien.bang-diem.index')
                 ->with('error', 'Bạn không có quyền chỉnh sửa điểm này.');
         }
+        // Kiểm tra đề tài có lịch chấm không
         $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $bangDiem->sinh_vien_id)->first();
-        $deTai = $chiTietNhom && $chiTietNhom->nhom ? $chiTietNhom->nhom->deTai : null;
-        $coLichCham = $deTai && \App\Models\LichCham::where('de_tai_id', $deTai->id)->exists();
-        if (!$coLichCham) {
+        if (!$chiTietNhom || !$chiTietNhom->nhom || !$chiTietNhom->nhom->deTai) {
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ có thể cập nhật điểm khi đề tài đã có lịch chấm.');
+        }
+        $deTai = $chiTietNhom->nhom->deTai;
+        if (!$deTai || !\App\Models\LichCham::where('de_tai_id', $deTai->id)->exists()) {
             return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ có thể cập nhật điểm khi đề tài đã có lịch chấm.');
         }
 
