@@ -15,7 +15,7 @@ class ChiTietDeTaiBaoCao extends Model
 
     public function hoiDong()
     {
-        return $this->belongsTo(HoiDong::class);
+        return $this->belongsTo(\App\Models\HoiDong::class, 'hoi_dong_id');
     }
 
     public function dotBaoCao()

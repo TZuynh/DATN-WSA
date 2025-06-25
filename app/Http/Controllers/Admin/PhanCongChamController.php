@@ -9,6 +9,8 @@ use App\Models\ChiTietDeTaiBaoCao;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\TaiKhoan;
+use App\Models\PhanCongVaiTro;
+use App\Models\HoiDong;
 
 class PhanCongChamController extends Controller
 {

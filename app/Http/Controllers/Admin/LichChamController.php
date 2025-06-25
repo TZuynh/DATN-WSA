@@ -22,9 +22,11 @@ class LichChamController extends Controller
      */
     public function index()
     {
+        // Lấy và group theo hội đồng
         $lichChams = LichCham::with(['hoiDong', 'dotBaoCao', 'nhom', 'deTai'])
-                        ->orderBy('thu_tu', 'asc')
-                        ->paginate(10);
+            ->orderBy('thu_tu', 'asc')
+            ->get()
+            ->groupBy('hoi_dong_id');
 
         return view('admin.lich-cham.index', compact('lichChams'));
     }
@@ -88,9 +90,10 @@ class LichChamController extends Controller
             if (!$deTai) {
                 throw new \Exception('Nhóm chưa được gán đề tài. Vui lòng kiểm tra lại thông tin nhóm.');
             }
+            $deTaiId = $deTai->id;
 
             // Lấy thông tin phân công chấm
-            $phanCongCham = PhanCongCham::where('de_tai_id', $request->de_tai_id)->first();
+            $phanCongCham = PhanCongCham::where('de_tai_id', $deTaiId)->first();
             if (!$phanCongCham) {
                 throw new \Exception('Đề tài "' . $deTai->ten_de_tai . '" chưa được phân công chấm. Vui lòng phân công chấm trước khi tạo lịch.');
             }
@@ -103,7 +106,7 @@ class LichChamController extends Controller
             $lichCham->hoi_dong_id = $request->hoi_dong_id;
             $lichCham->dot_bao_cao_id = $request->dot_bao_cao_id;
             $lichCham->nhom_id = $request->nhom_id;
-            $lichCham->de_tai_id = $request->de_tai_id;
+            $lichCham->de_tai_id = $deTaiId;
             $lichCham->phan_cong_cham_id = $phanCongCham->id;
             $lichCham->lich_tao = $request->lich_tao;
             $lichCham->thu_tu = 1; // Luôn thêm mới ở vị trí đầu tiên
@@ -321,16 +324,20 @@ class LichChamController extends Controller
                 'hoiDong' => $hoiDong,
                 'truongTieuBan' => $truongTieuBan,
                 'thuKy' => $thuKy,
-                'lichChams' => $lichChamsCollection->sortBy('thu_tu'),
+                'lichChams' => $lichChamsCollection->values(),
                 'lichTao' => $lichTao,
                 'thoiGianBatDau' => $thoiGianBatDau
             ];
         }
 
-        usort($groupedData, function($a, $b) {
-            $aFirstLichCham = $a['lichChams']->first();
-            $bFirstLichCham = $b['lichChams']->first();
-            return $aFirstLichCham->thu_tu <=> $bFirstLichCham->thu_tu;
+        // Lấy danh sách hội đồng theo thứ tự tạo (created_at tăng dần)
+        $orderedHoiDongIds = \App\Models\HoiDong::orderBy('created_at', 'asc')->pluck('id')->toArray();
+
+        // Sắp xếp lại $groupedData theo thứ tự hội đồng đã tạo
+        usort($groupedData, function($a, $b) use ($orderedHoiDongIds) {
+            $aIndex = array_search($a['hoiDong']->id, $orderedHoiDongIds);
+            $bIndex = array_search($b['hoiDong']->id, $orderedHoiDongIds);
+            return $aIndex <=> $bIndex;
         });
 
         $data = [

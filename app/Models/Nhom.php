@@ -40,7 +40,7 @@ class Nhom extends Model
      */
     public function deTai()
     {
-        return $this->hasOne(\App\Models\DeTai::class, 'nhom_id', 'id');
+        return $this->belongsTo(\App\Models\DeTai::class, 'de_tai_id');
     }
 
     /**
@@ -57,6 +57,14 @@ class Nhom extends Model
     public function lichChams(): HasMany
     {
         return $this->hasMany(LichCham::class);
+    }
+
+    /**
+     * Lấy danh sách đề tài của nhóm
+     */
+    public function deTais()
+    {
+        return $this->hasMany(\App\Models\DeTai::class, 'nhom_id');
     }
 
     /**

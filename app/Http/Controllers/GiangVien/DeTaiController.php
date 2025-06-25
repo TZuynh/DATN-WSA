@@ -12,6 +12,9 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\SimpleType\Jc;
+use App\Models\PhanCongCham;
+use App\Models\ChiTietDeTaiBaoCao;
+use App\Models\VaiTro;
 
 class DeTaiController extends Controller
 {
@@ -79,6 +82,23 @@ class DeTaiController extends Controller
                 if ($nhom) {
                     $nhom->de_tai_id = $deTai->id;
                     $nhom->save();
+                }
+            }
+
+            $chiTiet = ChiTietDeTaiBaoCao::where('de_tai_id', $deTai->id)->first();
+            if (!$chiTiet) {
+                // Bạn cần xác định hội đồng nào sẽ nhận đề tài này (ví dụ lấy theo đợt báo cáo hoặc logic riêng)
+                // Ở đây ví dụ lấy hội đồng đầu tiên của đợt báo cáo
+                $hoiDong = \App\Models\HoiDong::where('dot_bao_cao_id', $deTai->dot_bao_cao_id)->first();
+                if ($hoiDong) {
+                    $chiTiet = ChiTietDeTaiBaoCao::create([
+                        'dot_bao_cao_id' => $deTai->dot_bao_cao_id,
+                        'de_tai_id' => $deTai->id,
+                        'hoi_dong_id' => $hoiDong->id,
+                    ]);
+                } else {
+                    // Nếu không có hội đồng, có thể báo lỗi hoặc xử lý logic khác
+                    return redirect()->back()->with('error', 'Không tìm thấy hội đồng phù hợp cho đề tài này.');
                 }
             }
 
@@ -345,14 +365,87 @@ class DeTaiController extends Controller
         if (!$isPhanBien) {
             abort(403, 'Bạn không có quyền thực hiện thao tác này.');
         }
+
         if ($request->action === 'approve') {
-            $deTai->trang_thai = 2; // 2 = Giảng viên phản biện đã duyệt
+            $deTai->trang_thai = 2;
             $msg = 'Đề tài đã được giảng viên phản biện duyệt.';
         } else {
-            $deTai->trang_thai = 4; // 4 = Giảng viên phản biện từ chối
+            $deTai->trang_thai = 4;
             $msg = 'Đề tài đã bị giảng viên phản biện từ chối.';
         }
         $deTai->save();
+
+        // Tìm đúng hội đồng mà giảng viên phản biện đang thuộc về
+        $phanBien = \App\Models\PhanCongVaiTro::where('tai_khoan_id', $user->id)
+            ->where('loai_giang_vien', 'Giảng Viên Phản Biện')
+            ->whereHas('hoiDong', function($q) use ($deTai) {
+                $q->where('dot_bao_cao_id', $deTai->dot_bao_cao_id);
+            })
+            ->first();
+
+        if ($phanBien && $phanBien->hoi_dong_id) {
+            $hoiDongId = $phanBien->hoi_dong_id;
+        } else {
+            $hoiDong = \App\Models\HoiDong::where('dot_bao_cao_id', $deTai->dot_bao_cao_id)->first();
+            $hoiDongId = $hoiDong ? $hoiDong->id : null;
+        }
+
+        if ($hoiDongId) {
+            $chiTiet = \App\Models\ChiTietDeTaiBaoCao::updateOrCreate(
+                ['de_tai_id' => $deTai->id],
+                [
+                    'dot_bao_cao_id' => $deTai->dot_bao_cao_id,
+                    'hoi_dong_id' => $hoiDongId,
+                ]
+            );
+        } else {
+            return redirect()->back()->with('error', 'Không tìm thấy hội đồng phù hợp cho đề tài này.');
+        }
+
+        if ($chiTiet && $chiTiet->hoi_dong_id) {
+            // Lấy vai_tro_id cho từng loại giảng viên
+            $vaiTroGVPB = \App\Models\VaiTro::where('ten', 'Giảng viên phản biện')->first();
+            $vaiTroGVHD = \App\Models\VaiTro::where('ten', 'Giảng viên hướng dẫn')->first();
+
+            if (!$vaiTroGVPB || !$vaiTroGVHD) {
+                return redirect()->back()->with('error', 'Không tìm thấy vai trò phù hợp trong hệ thống.');
+            }
+
+            // Đảm bảo có bản ghi Giảng Viên Phản Biện
+            \App\Models\PhanCongVaiTro::updateOrCreate(
+                [
+                    'hoi_dong_id' => $chiTiet->hoi_dong_id,
+                    'tai_khoan_id' => $user->id,
+                ],
+                [
+                    'loai_giang_vien' => 'Giảng Viên Phản Biện',
+                    'vai_tro_id' => $vaiTroGVPB->id
+                ]
+            );
+
+            // Đảm bảo có bản ghi Giảng Viên Hướng Dẫn
+            if ($deTai->giang_vien_id) {
+                \App\Models\PhanCongVaiTro::updateOrCreate(
+                    [
+                        'hoi_dong_id' => $chiTiet->hoi_dong_id,
+                        'tai_khoan_id' => $deTai->giang_vien_id,
+                    ],
+                    [
+                        'loai_giang_vien' => 'Giảng Viên Hướng Dẫn',
+                        'vai_tro_id' => $vaiTroGVHD->id
+                    ]
+                );
+            }
+
+            // Tạo bản ghi phân công chấm nếu chưa có
+            \App\Models\PhanCongCham::firstOrCreate([
+                'de_tai_id' => $deTai->id,
+                'hoi_dong_id' => $chiTiet->hoi_dong_id,
+            ], [
+                'lich_cham' => now(),
+            ]);
+        }
+
         return redirect()->route('giangvien.de-tai.index')->with('success', $msg);
     }
 } 

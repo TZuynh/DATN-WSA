@@ -30,14 +30,11 @@ class PhanCongCham extends Model
 
     public function getGiangVienByLoai($loai)
     {
-        if (!$this->relationLoaded('hoiDong') || !$this->hoiDong->relationLoaded('phanCongVaiTros')) {
-            return null;
-        }
-
-        $phanCong = $this->hoiDong->phanCongVaiTros
-            ->firstWhere('loai_giang_vien', $loai);
-
-        return $phanCong?->taiKhoan;
+        if (!$this->hoiDong) return null;
+        $phanCong = $this->hoiDong->phanCongVaiTros()
+            ->where('loai_giang_vien', $loai)
+            ->first();
+        return $phanCong ? $phanCong->taiKhoan : null;
     }
 
     public function getGiangVienHuongDanAttribute()
@@ -53,5 +50,17 @@ class PhanCongCham extends Model
     public function getGiangVienKhacAttribute()
     {
         return $this->getGiangVienByLoai('Giảng Viên Khác');
+    }
+
+    public function giangVienPhanBien()
+    {
+        return $this->hasOneThrough(
+            \App\Models\TaiKhoan::class,
+            \App\Models\PhanCongVaiTro::class,
+            'hoi_dong_id',
+            'id',
+            'hoi_dong_id',
+            'tai_khoan_id'
+        )->where('loai_giang_vien', 'Giảng Viên Phản Biện');
     }
 }
