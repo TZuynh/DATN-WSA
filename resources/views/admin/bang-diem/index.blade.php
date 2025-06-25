@@ -119,14 +119,36 @@
                                             <td>{{ $bangDiem->dotBaoCao->nam_hoc }} - {{ $bangDiem->dotBaoCao->hocKy->ten }}</td>
                                             <td>{{ $bangDiem->giangVien->ten }}</td>
                                             <td>
-                                                @if($bangDiem->vai_tro_cham == 'Phản biện')
-                                                    <span class="badge bg-primary">{{ $bangDiem->vai_tro_cham }}</span>
-                                                @elseif($bangDiem->vai_tro_cham == 'Giảng viên khác')
-                                                    <span class="badge bg-info">{{ $bangDiem->vai_tro_cham }}</span>
-                                                @elseif($bangDiem->vai_tro_cham == 'Hướng dẫn')
-                                                    <span class="badge bg-success">{{ $bangDiem->vai_tro_cham }}</span>
+                                                @php
+                                                    $phanCongCham = \App\Models\PhanCongCham::where('de_tai_id', $bangDiem->de_tai_id)
+                                                        ->whereHas('hoiDong.phanCongVaiTros')
+                                                        ->first();
+                                                    $vaiTros = [];
+                                                    if ($phanCongCham && $phanCongCham->hoiDong) {
+                                                        $vaiTros = $phanCongCham->hoiDong->phanCongVaiTros;
+                                                    }
+                                                    // Debug log
+                                                    \Log::info('DEBUG VAITRO ADMIN BANGDIEM', [
+                                                        'bang_diem_id' => $bangDiem->id,
+                                                        'de_tai_id' => $bangDiem->de_tai_id,
+                                                        'phan_cong_cham_id' => $phanCongCham ? $phanCongCham->id : null,
+                                                        'vai_tros' => $vaiTros ? $vaiTros->map(function($v){ return [$v->tai_khoan_id, $v->loai_giang_vien]; }) : [],
+                                                    ]);
+                                                @endphp
+                                                @if(!empty($vaiTros) && $vaiTros->count())
+                                                    @foreach($vaiTros as $vaiTro)
+                                                        @php
+                                                            $badgeClass = 'bg-secondary';
+                                                            if($vaiTro->loai_giang_vien == 'Giảng Viên Phản Biện') $badgeClass = 'bg-primary';
+                                                            elseif($vaiTro->loai_giang_vien == 'Giảng Viên Hướng Dẫn') $badgeClass = 'bg-success';
+                                                            elseif($vaiTro->loai_giang_vien == 'Giảng Viên Khác') $badgeClass = 'bg-info';
+                                                        @endphp
+                                                        <span class="badge {{ $badgeClass }} mb-1">
+                                                            {{ $vaiTro->taiKhoan ? $vaiTro->taiKhoan->ten : 'N/A' }} - {{ $vaiTro->loai_giang_vien ?? 'Chưa phân vai' }}
+                                                        </span>
+                                                    @endforeach
                                                 @else
-                                                    <span class="badge bg-secondary">{{ $bangDiem->vai_tro_cham ?: 'N/A' }}</span>
+                                                    <span class="badge bg-secondary">N/A</span>
                                                 @endif
                                             </td>
                                             <td>{{ $bangDiem->diem_bao_cao }}</td>
@@ -156,6 +178,13 @@
                                                 </form>
                                             </td>
                                         </tr>
+                                        @if($phanCongCham)
+                                            <tr>
+                                                <td colspan="5"></td>
+                                                <td>Hội đồng: {{ $phanCongCham->hoiDong->id ?? 'null' }}</td>
+                                                <td>Vai trò count: {{ $phanCongCham->hoiDong->phanCongVaiTros->count() }}</td>
+                                            </tr>
+                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>

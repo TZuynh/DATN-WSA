@@ -359,6 +359,16 @@ class DeTaiController extends Controller
     public function phanBienDuyet(Request $request, DeTai $deTai)
     {
         $user = auth()->user();
+        \Log::info('DEBUG PHAN BIEN DUYET', [
+            'user_id' => $user->id,
+            'user_name' => $user->name ?? null,
+            'de_tai_id' => $deTai->id,
+            'de_tai_ten' => $deTai->ten_de_tai,
+            'action' => $request->action,
+            'phan_cong_vai_tro' => \App\Models\PhanCongVaiTro::where('tai_khoan_id', $user->id)->get()->toArray(),
+            'vai_tro_gvpb' => \App\Models\VaiTro::where('ten', 'Giảng viên phản biện')->first(),
+            'vai_tro_gvhd' => \App\Models\VaiTro::where('ten', 'Giảng viên hướng dẫn')->first(),
+        ]);
         $isPhanBien = \App\Models\PhanCongVaiTro::where('tai_khoan_id', $user->id)
             ->where('loai_giang_vien', 'Giảng Viên Phản Biện')
             ->exists();

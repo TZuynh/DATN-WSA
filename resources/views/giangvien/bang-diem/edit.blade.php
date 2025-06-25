@@ -108,16 +108,14 @@
                                                 <input type="hidden" name="diem_bao_cao" value="{{ $bangDiem->diem_bao_cao }}">
                                             @endif
                                             <input type="number" class="form-control @error('diem_bao_cao') is-invalid @enderror"
-                                                   id="diem_bao_cao" 
-                                                   {{ $canGradeBaoCaoAndThuyetTrinh ? 'name=diem_bao_cao' : '' }}
+                                                   id="diem_bao_cao"
+                                                   name="diem_bao_cao"
                                                    value="{{ old('diem_bao_cao', $bangDiem->diem_bao_cao) }}"
-                                                   min="0" max="10" step="0.1" 
-                                                   {{ $canGradeBaoCaoAndThuyetTrinh ? '' : 'disabled' }}
+                                                   min="0" max="10" step="0.1"
+                                                   @if(!$canGradeBaoCaoAndThuyetTrinh) readonly @endif
                                                    {{ $hasDotBaoCao ? '' : 'required' }}>
                                             @if(!$canGradeBaoCaoAndThuyetTrinh)
-                                                <small class="text-muted">
-                                                    Điểm báo cáo không thể thay đổi khi đã có lịch chấm
-                                                </small>
+                                                <small class="text-muted">Chỉ Giảng viên hướng dẫn và Giảng viên phản biện mới được chấm điểm này</small>
                                             @endif
                                             @error('diem_bao_cao')
                                             <div class="invalid-feedback">{{ $message }}</div>

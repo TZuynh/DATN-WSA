@@ -11,7 +11,7 @@
                     <h3 class="card-title">Danh sách sinh viên cần chấm điểm</h3>
                 </div>
                 <div class="card-body">
-                    @if($phanCongChamsFiltered->isEmpty())
+                    @if($dsSinhVien->isEmpty())
                         <div class="alert alert-info">
                             <p>Hiện tại không có sinh viên nào cần chấm điểm.</p>
                             <p>Điều này có thể do:</p>
@@ -39,7 +39,10 @@
                                         <th>Đợt báo cáo</th>
                                         <th>Lịch chấm</th>
                                         <th>Vai trò chấm</th>
-                                        <th>Điểm báo cáo</th>
+                                        @php $showDiemBaoCao = $dsSinhVien->contains(function($item) { return in_array($item['vai_tro_cham'], ['Hướng dẫn', 'Phản biện']); }); @endphp
+                                        @if($showDiemBaoCao)
+                                            <th>Điểm báo cáo</th>
+                                        @endif
                                         <th>Điểm thuyết trình</th>
                                         <th>Điểm demo</th>
                                         <th>Điểm câu hỏi</th>
@@ -49,112 +52,98 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @php $stt = 1; @endphp
-                                    @foreach($phanCongChamsFiltered as $phanCongCham)
-                                        @if(!$phanCongCham->deTai->lichCham)
-                                            @continue
-                                        @endif
-                                        @foreach($phanCongCham->deTai->nhom->sinhViens as $sinhVien)
-                                            @php
-                                                $dotBaoCaoId = $phanCongCham->deTai?->lichCham?->dot_bao_cao_id;
-                                                
-                                                $daChamDiem = $bangDiems->where('sinh_vien_id', $sinhVien->id)
-                                                    ->where('dot_bao_cao_id', $dotBaoCaoId)
-                                                    ->first();
-
-                                                $diemChuaLichCham = $bangDiems->where('sinh_vien_id', $sinhVien->id)
-                                                    ->whereNull('dot_bao_cao_id')
-                                                    ->first();
-
-                                                $tongDiem = 0;
-                                                if ($daChamDiem) {
-                                                    $tongDiem = $daChamDiem->diem_bao_cao + $daChamDiem->diem_thuyet_trinh +
-                                                               $daChamDiem->diem_demo + $daChamDiem->diem_cau_hoi + $daChamDiem->diem_cong;
-                                                } elseif ($diemChuaLichCham) {
-                                                    $tongDiem = $diemChuaLichCham->diem_bao_cao + $diemChuaLichCham->diem_thuyet_trinh;
-                                                }
-
-                                                $daChamDiemCoBan = ($daChamDiem && 
-                                                    !is_null($daChamDiem->diem_bao_cao) && 
-                                                    !is_null($daChamDiem->diem_thuyet_trinh)) ||
-                                                    ($diemChuaLichCham && 
-                                                    !is_null($diemChuaLichCham->diem_bao_cao) && 
-                                                    !is_null($diemChuaLichCham->diem_thuyet_trinh));
-
-                                                $canGradeBaoCaoAndThuyetTrinh = in_array($phanCongCham->vai_tro_cham, ['Hướng dẫn', 'Phản biện']);
-                                            @endphp
-                                            <tr>
-                                                <td>{{ $stt++ }}</td>
-                                                <td>{{ $sinhVien->mssv }}</td>
-                                                <td>{{ $sinhVien->ten }}</td>
-                                                <td>{{ $phanCongCham->deTai->nhom->ten }}</td>
-                                                <td>{{ $phanCongCham->deTai->ten_de_tai }}</td>
-                                                <td>{{ $phanCongCham->deTai->lichCham?->dotBaoCao?->nam_hoc ?? 'N/A' }} - {{ $phanCongCham->deTai->lichCham?->dotBaoCao?->hocKy?->ten ?? 'N/A' }}</td>
-                                                <td>{{ $phanCongCham->deTai->lichCham?->lich_tao ? \Carbon\Carbon::parse($phanCongCham->deTai->lichCham->lich_tao)->format('d/m/Y H:i') : 'N/A' }}</td>
-                                                <td>
-                                                    @if($phanCongCham->vai_tro_cham == 'Phản biện')
-                                                        <span class="badge bg-primary">{{ $phanCongCham->vai_tro_cham }}</span>
-                                                        <small class="d-block text-muted">Được chấm: Điểm báo cáo, Điểm thuyết trình, và các điểm khác</small>
-                                                    @elseif($phanCongCham->vai_tro_cham == 'Giảng viên khác')
-                                                        <span class="badge bg-info">{{ $phanCongCham->vai_tro_cham }}</span>
-                                                        <small class="d-block text-muted">Được chấm: Điểm demo, Điểm câu hỏi, Điểm cộng</small>
-                                                    @elseif($phanCongCham->vai_tro_cham == 'Hướng dẫn')
-                                                        <span class="badge bg-success">{{ $phanCongCham->vai_tro_cham }}</span>
-                                                        <small class="d-block text-muted">Được chấm: Điểm báo cáo, Điểm thuyết trình, và các điểm khác</small>
-                                                    @else
-                                                        <span class="badge bg-secondary">{{ $phanCongCham->vai_tro_cham ?: 'N/A' }}</span>
-                                                        <small class="d-block text-muted">Được chấm: Điểm demo, Điểm câu hỏi, Điểm cộng</small>
-                                                    @endif
-                                                </td>
+                                    @foreach($dsSinhVien as $item)
+                                        @php
+                                            $sinhVien = $item['sinh_vien'];
+                                            $nhom = $item['nhom'];
+                                            $deTai = $item['de_tai'];
+                                            $phanCongCham = $item['phan_cong'];
+                                            $vai_tro_cham = $item['vai_tro_cham'];
+                                            $dotBaoCaoId = $deTai?->lichCham?->dot_bao_cao_id;
+                                            $daChamDiem = $bangDiems->where('sinh_vien_id', $sinhVien->id)
+                                                ->where('dot_bao_cao_id', $dotBaoCaoId)
+                                                ->first();
+                                            $diemChuaLichCham = $bangDiems->where('sinh_vien_id', $sinhVien->id)
+                                                ->whereNull('dot_bao_cao_id')
+                                                ->first();
+                                            $tongDiem = 0;
+                                            if ($daChamDiem) {
+                                                $tongDiem = $daChamDiem->diem_bao_cao + $daChamDiem->diem_thuyet_trinh +
+                                                           $daChamDiem->diem_demo + $daChamDiem->diem_cau_hoi + $daChamDiem->diem_cong;
+                                            } elseif ($diemChuaLichCham) {
+                                                $tongDiem = $diemChuaLichCham->diem_bao_cao + $diemChuaLichCham->diem_thuyet_trinh;
+                                            }
+                                            $daChamDiemCoBan = ($daChamDiem && 
+                                                !is_null($daChamDiem->diem_bao_cao) && 
+                                                !is_null($daChamDiem->diem_thuyet_trinh)) ||
+                                                ($diemChuaLichCham && 
+                                                !is_null($diemChuaLichCham->diem_bao_cao) && 
+                                                !is_null($diemChuaLichCham->diem_thuyet_trinh));
+                                            $canGradeBaoCaoAndThuyetTrinh = in_array($vai_tro_cham, ['Hướng dẫn', 'Phản biện']);
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $sinhVien->mssv }}</td>
+                                            <td>{{ $sinhVien->ten }}</td>
+                                            <td>{{ $nhom->ten }}</td>
+                                            <td>{{ $deTai->ten_de_tai }}</td>
+                                            <td>{{ $deTai->lichCham?->dotBaoCao?->nam_hoc ?? 'N/A' }} - {{ $deTai->lichCham?->dotBaoCao?->hocKy?->ten ?? 'N/A' }}</td>
+                                            <td>{{ $deTai->lichCham?->lich_tao ? \Carbon\Carbon::parse($deTai->lichCham->lich_tao)->format('d/m/Y H:i') : 'N/A' }}</td>
+                                            <td>
+                                                @if($vai_tro_cham == 'Phản biện')
+                                                    <span class="badge bg-primary">{{ $vai_tro_cham }}</span>
+                                                    <small class="d-block text-muted">Được chấm: Điểm báo cáo, Điểm thuyết trình, và các điểm khác</small>
+                                                @elseif($vai_tro_cham == 'Giảng viên khác')
+                                                    <span class="badge bg-info">{{ $vai_tro_cham }}</span>
+                                                    <small class="d-block text-muted">Được chấm: Điểm demo, Điểm câu hỏi, Điểm cộng</small>
+                                                @elseif($vai_tro_cham == 'Hướng dẫn')
+                                                    <span class="badge bg-success">{{ $vai_tro_cham }}</span>
+                                                    <small class="d-block text-muted">Được chấm: Điểm báo cáo, Điểm thuyết trình, và các điểm khác</small>
+                                                @else
+                                                    <span class="badge bg-secondary">{{ $vai_tro_cham ?: 'N/A' }}</span>
+                                                    <small class="d-block text-muted">Được chấm: Điểm demo, Điểm câu hỏi, Điểm cộng</small>
+                                                @endif
+                                            </td>
+                                            @if(in_array($vai_tro_cham, ['Hướng dẫn', 'Phản biện']))
                                                 <td>{{ $daChamDiem ? number_format($daChamDiem->diem_bao_cao, 1) : ($diemChuaLichCham ? number_format($diemChuaLichCham->diem_bao_cao, 1) : 'Chưa chấm') }}</td>
-                                                <td>{{ $daChamDiem ? number_format($daChamDiem->diem_thuyet_trinh, 1) : ($diemChuaLichCham ? number_format($diemChuaLichCham->diem_thuyet_trinh, 1) : 'Chưa chấm') }}</td>
-                                                <td>{{ $daChamDiem ? number_format($daChamDiem->diem_demo, 1) : 'Chưa chấm' }}</td>
-                                                <td>{{ $daChamDiem ? number_format($daChamDiem->diem_cau_hoi, 1) : 'Chưa chấm' }}</td>
-                                                <td>{{ $daChamDiem ? number_format($daChamDiem->diem_cong, 1) : '0.0' }}</td>
-                                                <td><strong>{{ number_format($tongDiem, 1) }}</strong></td>
-                                                <td>
-                                                    @if($daChamDiem)
-                                                        {{-- Đã chấm điểm trong đợt báo cáo hiện tại --}}
-                                                        <a href="{{ route('giangvien.bang-diem.edit', $daChamDiem->id) }}" 
-                                                           class="btn btn-sm btn-warning">
-                                                            <i class="fas fa-edit"></i> 
-                                                            @if($daChamDiemCoBan && !$canGradeBaoCaoAndThuyetTrinh)
-                                                                Nhập điểm còn lại
-                                                            @else
-                                                                Sửa điểm
-                                                            @endif
-                                                        </a>
-                                                    @elseif($diemChuaLichCham && $dotBaoCaoId)
-                                                        {{-- Đã có điểm cũ, cần cập nhật cho đợt báo cáo mới --}}
-                                                        @php
-                                                            $routeParams = [
-                                                                'sinhVienId' => $sinhVien->id,
-                                                                'dotBaoCaoId' => $dotBaoCaoId,
-                                                                'diemCuId' => $diemChuaLichCham->id
-                                                            ];
-                                                        @endphp
-                                                        <a href="{{ route('giangvien.bang-diem.edit', $diemChuaLichCham->id) }}"
-                                                           class="btn btn-sm btn-info">
-                                                            <i class="fas fa-sync"></i> Sửa điểm
-                                                        </a>
-                                                    @else
-                                                        {{-- Chưa chấm điểm --}}
-                                                        @if(!$daChamDiemCoBan || $canGradeBaoCaoAndThuyetTrinh)
-                                                            @php
-                                                                $routeParams = ['sinhVienId' => $sinhVien->id];
-                                                                if ($dotBaoCaoId) {
-                                                                    $routeParams['dotBaoCaoId'] = $dotBaoCaoId;
-                                                                }
-                                                            @endphp
-                                                            <a href="{{ route('giangvien.bang-diem.create', $routeParams) }}"
-                                                               class="btn btn-sm btn-primary">
-                                                                <i class="fas fa-plus"></i> Chấm điểm
-                                                            </a>
+                                            @endif
+                                            <td>{{ $daChamDiem ? number_format($daChamDiem->diem_thuyet_trinh, 1) : ($diemChuaLichCham ? number_format($diemChuaLichCham->diem_thuyet_trinh, 1) : 'Chưa chấm') }}</td>
+                                            <td>{{ $daChamDiem ? number_format($daChamDiem->diem_demo, 1) : 'Chưa chấm' }}</td>
+                                            <td>{{ $daChamDiem ? number_format($daChamDiem->diem_cau_hoi, 1) : 'Chưa chấm' }}</td>
+                                            <td>{{ $daChamDiem ? number_format($daChamDiem->diem_cong, 1) : '0.0' }}</td>
+                                            <td><strong>{{ number_format($tongDiem, 1) }}</strong></td>
+                                            <td>
+                                                @if($daChamDiem)
+                                                    <a href="{{ route('giangvien.bang-diem.edit', $daChamDiem->id) }}" 
+                                                       class="btn btn-sm btn-warning">
+                                                        <i class="fas fa-edit"></i> 
+                                                        @if($daChamDiemCoBan && !$canGradeBaoCaoAndThuyetTrinh)
+                                                            Nhập điểm còn lại
+                                                        @else
+                                                            Sửa điểm
                                                         @endif
+                                                    </a>
+                                                @elseif($diemChuaLichCham && $dotBaoCaoId)
+                                                    <a href="{{ route('giangvien.bang-diem.edit', $diemChuaLichCham->id) }}"
+                                                       class="btn btn-sm btn-info">
+                                                        <i class="fas fa-sync"></i> Sửa điểm
+                                                    </a>
+                                                @else
+                                                    @if(!$daChamDiemCoBan || $canGradeBaoCaoAndThuyetTrinh)
+                                                        @php
+                                                            $routeParams = ['sinhVienId' => $sinhVien->id];
+                                                            if ($dotBaoCaoId) {
+                                                                $routeParams['dotBaoCaoId'] = $dotBaoCaoId;
+                                                            }
+                                                        @endphp
+                                                        <a href="{{ route('giangvien.bang-diem.create', $routeParams) }}"
+                                                           class="btn btn-sm btn-primary">
+                                                            <i class="fas fa-plus"></i> Chấm điểm
+                                                        </a>
                                                     @endif
-                                                </td>
-                                            </tr>
-                                        @endforeach
+                                                @endif
+                                            </td>
+                                        </tr>
                                     @endforeach
                                 </tbody>
                             </table>

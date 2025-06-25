@@ -46,30 +46,46 @@ class BangDiemController extends Controller
             return $phanCong->deTai && !$phanCong->deTai->lichCham;
         });
 
-        $phanCongChamsFiltered = $phanCongChams->map(function($phanCong) use ($giangVienId) {
-            $phanCong->vai_tro_cham = 'Không xác định';
-
+        // Tạo collection phẳng các sinh viên cần chấm điểm
+        $dsSinhVien = collect();
+        foreach ($phanCongChamsFiltered as $phanCong) {
+            $vai_tro_cham = 'Không xác định';
             if ($phanCong->hoiDong && $phanCong->hoiDong->phanCongVaiTros) {
                 $vaiTro = $phanCong->hoiDong->phanCongVaiTros->firstWhere('tai_khoan_id', $giangVienId);
                 if ($vaiTro) {
                     switch ($vaiTro->loai_giang_vien) {
                         case 'Giảng Viên Hướng Dẫn':
-                            $phanCong->vai_tro_cham = 'Hướng dẫn';
+                            $vai_tro_cham = 'Hướng dẫn';
                             break;
                         case 'Giảng Viên Phản Biện':
-                            $phanCong->vai_tro_cham = 'Phản biện';
+                            $vai_tro_cham = 'Phản biện';
                             break;
                         case 'Giảng Viên Khác':
-                            $phanCong->vai_tro_cham = 'Giảng viên khác';
+                            $vai_tro_cham = 'Giảng viên khác';
                             break;
                         default:
-                            $phanCong->vai_tro_cham = $vaiTro->loai_giang_vien;
+                            $vai_tro_cham = $vaiTro->loai_giang_vien;
                     }
                 }
             }
+            if ($phanCong->deTai && $phanCong->deTai->nhom && $phanCong->deTai->nhom->sinhViens) {
+                foreach ($phanCong->deTai->nhom->sinhViens as $sinhVien) {
+                    $dsSinhVien->push([
+                        'phan_cong' => $phanCong,
+                        'sinh_vien' => $sinhVien,
+                        'nhom' => $phanCong->deTai->nhom,
+                        'de_tai' => $phanCong->deTai,
+                        'vai_tro_cham' => $vai_tro_cham,
+                    ]);
+                }
+            }
+        }
 
-            return $phanCong;
-        });
+        // Sắp xếp theo tên nhóm, sau đó theo tên sinh viên
+        $dsSinhVien = $dsSinhVien->sortBy([
+            ['nhom.ten', 'asc'],
+            ['sinh_vien.ten', 'asc'],
+        ])->values();
 
         $bangDiems = BangDiem::where('giang_vien_id', $giangVienId)
             ->with(['sinhVien', 'dotBaoCao'])
@@ -111,7 +127,7 @@ class BangDiemController extends Controller
         });
 
         return view('giangvien.bang-diem.index', compact(
-            'phanCongChamsFiltered',
+            'dsSinhVien',
             'bangDiems',
             'coDeTaiNhungKhongCoLichCham'
         ));
@@ -183,7 +199,10 @@ class BangDiemController extends Controller
         $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $sinhVienId)->first();
         if ($chiTietNhom && $chiTietNhom->nhom) {
             $nhom = $chiTietNhom->nhom;
-            $deTai = $nhom->deTai ? $nhom->deTai : \App\Models\DeTai::where('nhom_id', $nhom->id)->first();
+            $deTai = $nhom->deTai;
+            if (!$deTai) {
+                $deTai = \App\Models\DeTai::where('nhom_id', $nhom->id)->first();
+            }
             if ($deTai && $deTai->phanCongCham) {
                 $phanCongCham = $deTai->phanCongCham;
                 if ($phanCongCham->hoiDong && $phanCongCham->hoiDong->phanCongVaiTros) {
@@ -209,12 +228,29 @@ class BangDiemController extends Controller
      */
     public function store(Request $request)
     {
-        // Kiểm tra sinh viên có thuộc nhóm có đề tài đã có lịch chấm không
+        // DEBUG LOG
         $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $request->sinh_vien_id)->first();
-        if (!$chiTietNhom || !$chiTietNhom->nhom || !$chiTietNhom->nhom->deTai) {
+        $nhom = $chiTietNhom ? $chiTietNhom->nhom : null;
+        $deTai = $nhom ? $nhom->deTai : null;
+        if (!$deTai && $nhom) {
+            $deTai = \App\Models\DeTai::where('nhom_id', $nhom->id)->first();
+        }
+        $hasLichCham = $deTai ? \App\Models\LichCham::where('de_tai_id', $deTai->id)->exists() : null;
+        \Log::info('DEBUG CHAM DIEM', [
+            'sinh_vien_id' => $request->sinh_vien_id,
+            'chiTietNhom' => $chiTietNhom,
+            'nhom' => $nhom,
+            'deTai' => $deTai,
+            'hasLichCham' => $hasLichCham,
+        ]);
+
+        // Kiểm tra sinh viên có thuộc nhóm có đề tài đã có lịch chấm không
+        if (!$chiTietNhom || !$chiTietNhom->nhom) {
             return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ có thể chấm điểm khi đề tài đã có lịch chấm.');
         }
-        $deTai = $chiTietNhom->nhom->deTai;
+        $nhom = $chiTietNhom->nhom;
+        // Lấy đề tài từ quan hệ hoặc truy vấn trực tiếp nếu chưa có
+        $deTai = $nhom->deTai;
         if (!$deTai || !\App\Models\LichCham::where('de_tai_id', $deTai->id)->exists()) {
             return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ có thể chấm điểm khi đề tài đã có lịch chấm.');
         }
@@ -264,7 +300,8 @@ class BangDiemController extends Controller
                 'sinh_vien_id' => $request->sinh_vien_id,
                 'dot_bao_cao_id' => $request->dot_bao_cao_id,
                 'giang_vien_id' => Auth::id(),
-                'binh_luan' => $request->binh_luan
+                'binh_luan' => $request->binh_luan,
+                'de_tai_id' => $deTai ? $deTai->id : null
             ];
 
             // Nếu có đợt báo cáo, lấy điểm báo cáo và thuyết trình từ điểm cũ nếu có
@@ -315,23 +352,30 @@ class BangDiemController extends Controller
 
         // Thêm thông tin vai trò chấm
         $bangDiem->vai_tro_cham = '';
-        $phanCongCham = PhanCongCham::where(function($query) use ($bangDiem) {
-            $query->where('giang_vien_phan_bien_id', $bangDiem->giang_vien_id)
-                  ->orWhere('giang_vien_khac_id', $bangDiem->giang_vien_id)
-                  ->orWhere('giang_vien_huong_dan_id', $bangDiem->giang_vien_id);
+        $phanCongCham = PhanCongCham::whereHas('hoiDong.phanCongVaiTros', function($query) use ($bangDiem) {
+            $query->where('tai_khoan_id', $bangDiem->giang_vien_id);
         })
         ->whereHas('deTai.nhom.sinhViens', function($query) use ($bangDiem) {
             $query->where('sinh_viens.id', $bangDiem->sinh_vien_id);
         })
         ->first();
 
-        if ($phanCongCham) {
-            if ($phanCongCham->giang_vien_phan_bien_id == $bangDiem->giang_vien_id) {
-                $bangDiem->vai_tro_cham = 'Phản biện';
-            } elseif ($phanCongCham->giang_vien_khac_id == $bangDiem->giang_vien_id) {
-                $bangDiem->vai_tro_cham = 'Giảng viên khác';
-            } elseif ($phanCongCham->giang_vien_huong_dan_id == $bangDiem->giang_vien_id) {
-                $bangDiem->vai_tro_cham = 'Hướng dẫn';
+        if ($phanCongCham && $phanCongCham->hoiDong) {
+            $vaiTro = $phanCongCham->hoiDong->phanCongVaiTros->firstWhere('tai_khoan_id', $bangDiem->giang_vien_id);
+            if ($vaiTro) {
+                switch ($vaiTro->loai_giang_vien) {
+                    case 'Giảng Viên Hướng Dẫn':
+                        $bangDiem->vai_tro_cham = 'Hướng dẫn';
+                        break;
+                    case 'Giảng Viên Phản Biện':
+                        $bangDiem->vai_tro_cham = 'Phản biện';
+                        break;
+                    case 'Giảng Viên Khác':
+                        $bangDiem->vai_tro_cham = 'Giảng viên khác';
+                        break;
+                    default:
+                        $bangDiem->vai_tro_cham = $vaiTro->loai_giang_vien;
+                }
             }
         }
 
@@ -375,7 +419,10 @@ class BangDiemController extends Controller
         $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $bangDiem->sinh_vien_id)->first();
         if ($chiTietNhom && $chiTietNhom->nhom) {
             $nhom = $chiTietNhom->nhom;
-            $deTai = $nhom->deTai ? $nhom->deTai : \App\Models\DeTai::where('nhom_id', $nhom->id)->first();
+            $deTai = $nhom->deTai;
+            if (!$deTai) {
+                $deTai = \App\Models\DeTai::where('nhom_id', $nhom->id)->first();
+            }
             if ($deTai && $deTai->phanCongCham) {
                 $phanCongCham = $deTai->phanCongCham;
                 if ($phanCongCham->hoiDong && $phanCongCham->hoiDong->phanCongVaiTros) {
@@ -477,7 +524,9 @@ class BangDiemController extends Controller
                 $data['diem_thuyet_trinh'] = $request->diem_thuyet_trinh;
             }
 
-            $bangDiem->update($data);
+            $bangDiem->update(array_merge($data, [
+                'de_tai_id' => $deTai ? $deTai->id : null
+            ]));
 
             return redirect()->route('giangvien.bang-diem.index')
                 ->with('success', 'Cập nhật điểm thành công.');
@@ -522,9 +571,8 @@ class BangDiemController extends Controller
         $debugData = [
             'giang_vien_id' => $giangVienId,
             'phan_cong_chams_total' => PhanCongCham::count(),
-            'phan_cong_chams_for_giang_vien' => PhanCongCham::where(function($query) use ($giangVienId) {
-                $query->where('giang_vien_phan_bien_id', $giangVienId)
-                      ->orWhere('giang_vien_khac_id', $giangVienId);
+            'phan_cong_chams_for_giang_vien' => PhanCongCham::whereHas('hoiDong.phanCongVaiTros', function($query) use ($giangVienId) {
+                $query->where('tai_khoan_id', $giangVienId);
             })->count(),
             'lich_chams_total' => LichCham::count(),
             'de_tais_total' => DeTai::count(),
@@ -535,9 +583,8 @@ class BangDiemController extends Controller
         ];
 
         // Kiểm tra chi tiết phân công chấm
-        $phanCongChamQuery = PhanCongCham::where(function($query) use ($giangVienId) {
-            $query->where('giang_vien_phan_bien_id', $giangVienId)
-                  ->orWhere('giang_vien_khac_id', $giangVienId);
+        $phanCongChamQuery = PhanCongCham::whereHas('hoiDong.phanCongVaiTros', function($query) use ($giangVienId) {
+            $query->where('tai_khoan_id', $giangVienId);
         });
 
         $debugData['phan_cong_cham_basic'] = $phanCongChamQuery->count();
@@ -641,9 +688,8 @@ class BangDiemController extends Controller
         $phanCongCham = null;
         if ($deTaiMoiNhat) {
             $phanCongCham = PhanCongCham::where('de_tai_id', $deTaiMoiNhat->de_tai_id)
-                ->where(function($query) use ($giangVienId) {
-                    $query->where('giang_vien_phan_bien_id', $giangVienId)
-                          ->orWhere('giang_vien_khac_id', $giangVienId);
+                ->whereHas('hoiDong.phanCongVaiTros', function($query) use ($giangVienId) {
+                    $query->where('tai_khoan_id', $giangVienId);
                 })
                 ->first();
         }
@@ -663,13 +709,10 @@ class BangDiemController extends Controller
             ] : 'Không có đề tài nào trong lịch chấm',
             'phan_cong_cham' => $phanCongCham ? [
                 'id' => $phanCongCham->id,
-                'giang_vien_phan_bien_id' => $phanCongCham->giang_vien_phan_bien_id,
-                'giang_vien_khac_id' => $phanCongCham->giang_vien_khac_id,
-                'co_phan_cong' => $phanCongCham->giang_vien_phan_bien_id == $giangVienId || $phanCongCham->giang_vien_khac_id == $giangVienId,
+                'co_phan_cong' => true,
             ] : 'Không có phân công chấm cho đề tài này',
-            'tat_ca_phan_cong_cham' => PhanCongCham::where(function($query) use ($giangVienId) {
-                $query->where('giang_vien_phan_bien_id', $giangVienId)
-                      ->orWhere('giang_vien_khac_id', $giangVienId);
+            'tat_ca_phan_cong_cham' => PhanCongCham::whereHas('hoiDong.phanCongVaiTros', function($query) use ($giangVienId) {
+                $query->where('tai_khoan_id', $giangVienId);
             })->count(),
         ];
 

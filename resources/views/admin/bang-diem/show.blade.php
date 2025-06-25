@@ -126,6 +126,36 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <th colspan="2">Tất cả giảng viên & vai trò trong hội đồng</th>
+                                </tr>
+                                @php
+                                    $phanCongCham = \App\Models\PhanCongCham::where('de_tai_id', $bangDiem->de_tai_id)
+                                        ->whereHas('hoiDong.phanCongVaiTros')
+                                        ->first();
+                                    $vaiTros = [];
+                                    if ($phanCongCham && $phanCongCham->hoiDong) {
+                                        $vaiTros = $phanCongCham->hoiDong->phanCongVaiTros;
+                                    }
+                                @endphp
+                                @if(!empty($vaiTros) && $vaiTros->count())
+                                    @foreach($vaiTros as $vaiTro)
+                                        <tr>
+                                            <td>{{ $vaiTro->taiKhoan ? $vaiTro->taiKhoan->ten : 'N/A' }}</td>
+                                            <td>
+                                                @php
+                                                    $badgeClass = 'bg-secondary';
+                                                    if($vaiTro->loai_giang_vien == 'Giảng Viên Phản Biện') $badgeClass = 'bg-primary';
+                                                    elseif($vaiTro->loai_giang_vien == 'Giảng Viên Hướng Dẫn') $badgeClass = 'bg-success';
+                                                    elseif($vaiTro->loai_giang_vien == 'Giảng Viên Khác') $badgeClass = 'bg-info';
+                                                @endphp
+                                                <span class="badge {{ $badgeClass }}">{{ $vaiTro->loai_giang_vien }}</span>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    <tr><td colspan="2"><span class="badge bg-secondary">N/A</span></td></tr>
+                                @endif
+                                <tr>
                                     <th>Ngày chấm:</th>
                                     <td>{{ $bangDiem->created_at->format('d/m/Y H:i') }}</td>
                                 </tr>

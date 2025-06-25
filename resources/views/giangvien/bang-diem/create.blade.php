@@ -80,6 +80,10 @@
 
                     <form action="{{ route('giangvien.bang-diem.store', [$sinhVien->id, $dotBaoCao->id ?? null]) }}" method="POST">
                         @csrf
+                        <input type="hidden" name="sinh_vien_id" value="{{ $sinhVien->id }}">
+                        @if($dotBaoCao)
+                            <input type="hidden" name="dot_bao_cao_id" value="{{ $dotBaoCao->id }}">
+                        @endif
 
                         @php
                             $canGradeBaoCaoAndThuyetTrinh = in_array($vaiTroCham, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện']);
@@ -105,10 +109,8 @@
                                            min="0"
                                            max="10"
                                            step="0.1"
-                                           {{ ($shouldDisableBasicScores || !$canGradeBaoCaoAndThuyetTrinh) ? '' : '' }}>
-                                    @if($shouldDisableBasicScores)
-                                        <small class="text-muted">Điểm báo cáo được giữ nguyên từ điểm cũ</small>
-                                    @elseif(!$canGradeBaoCaoAndThuyetTrinh)
+                                           @if(!$canGradeBaoCaoAndThuyetTrinh) readonly @endif>
+                                    @if(!$canGradeBaoCaoAndThuyetTrinh)
                                         <small class="text-muted">Chỉ Giảng viên hướng dẫn và Giảng viên phản biện mới được chấm điểm này</small>
                                     @endif
                                     @error('diem_bao_cao')
