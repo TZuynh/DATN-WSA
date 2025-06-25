@@ -14,7 +14,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Log;
 
 class LichChamController extends Controller
 {
@@ -66,8 +65,6 @@ class LichChamController extends Controller
      */
     public function store(Request $request)
     {
-        Log::info('Đã vào hàm store lịch chấm', $request->all());
-
         $request->validate([
             'hoi_dong_id' => 'required|exists:hoi_dongs,id',
             'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
@@ -179,8 +176,6 @@ class LichChamController extends Controller
      */
     public function update(Request $request, LichCham $lichCham)
     {
-        Log::info('Đã vào hàm update lịch chấm', $request->all());
-
         $request->validate([
             'hoi_dong_id' => 'required|exists:hoi_dongs,id',
             'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
