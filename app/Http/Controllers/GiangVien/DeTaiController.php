@@ -14,6 +14,7 @@ use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\SimpleType\Jc;
 use App\Models\PhanCongCham;
 use App\Models\ChiTietDeTaiBaoCao;
+use App\Models\VaiTro;
 
 class DeTaiController extends Controller
 {
@@ -364,6 +365,7 @@ class DeTaiController extends Controller
         if (!$isPhanBien) {
             abort(403, 'Bạn không có quyền thực hiện thao tác này.');
         }
+
         if ($request->action === 'approve') {
             $deTai->trang_thai = 2;
             $msg = 'Đề tài đã được giảng viên phản biện duyệt.';
@@ -373,22 +375,42 @@ class DeTaiController extends Controller
         }
         $deTai->save();
 
-        // Tạo chi tiết đề tài báo cáo nếu chưa có
-        $chiTiet = ChiTietDeTaiBaoCao::where('de_tai_id', $deTai->id)->first();
-        if (!$chiTiet) {
+        // Tìm đúng hội đồng mà giảng viên phản biện đang thuộc về
+        $phanBien = \App\Models\PhanCongVaiTro::where('tai_khoan_id', $user->id)
+            ->where('loai_giang_vien', 'Giảng Viên Phản Biện')
+            ->whereHas('hoiDong', function($q) use ($deTai) {
+                $q->where('dot_bao_cao_id', $deTai->dot_bao_cao_id);
+            })
+            ->first();
+
+        if ($phanBien && $phanBien->hoi_dong_id) {
+            $hoiDongId = $phanBien->hoi_dong_id;
+        } else {
             $hoiDong = \App\Models\HoiDong::where('dot_bao_cao_id', $deTai->dot_bao_cao_id)->first();
-            if ($hoiDong) {
-                $chiTiet = ChiTietDeTaiBaoCao::create([
+            $hoiDongId = $hoiDong ? $hoiDong->id : null;
+        }
+
+        if ($hoiDongId) {
+            $chiTiet = \App\Models\ChiTietDeTaiBaoCao::updateOrCreate(
+                ['de_tai_id' => $deTai->id],
+                [
                     'dot_bao_cao_id' => $deTai->dot_bao_cao_id,
-                    'de_tai_id' => $deTai->id,
-                    'hoi_dong_id' => $hoiDong->id,
-                ]);
-            } else {
-                return redirect()->back()->with('error', 'Không tìm thấy hội đồng phù hợp cho đề tài này.');
-            }
+                    'hoi_dong_id' => $hoiDongId,
+                ]
+            );
+        } else {
+            return redirect()->back()->with('error', 'Không tìm thấy hội đồng phù hợp cho đề tài này.');
         }
 
         if ($chiTiet && $chiTiet->hoi_dong_id) {
+            // Lấy vai_tro_id cho từng loại giảng viên
+            $vaiTroGVPB = \App\Models\VaiTro::where('ten', 'Giảng viên phản biện')->first();
+            $vaiTroGVHD = \App\Models\VaiTro::where('ten', 'Giảng viên hướng dẫn')->first();
+
+            if (!$vaiTroGVPB || !$vaiTroGVHD) {
+                return redirect()->back()->with('error', 'Không tìm thấy vai trò phù hợp trong hệ thống.');
+            }
+
             // Đảm bảo có bản ghi Giảng Viên Phản Biện
             \App\Models\PhanCongVaiTro::updateOrCreate(
                 [
@@ -397,6 +419,7 @@ class DeTaiController extends Controller
                 ],
                 [
                     'loai_giang_vien' => 'Giảng Viên Phản Biện',
+                    'vai_tro_id' => $vaiTroGVPB->id
                 ]
             );
 
@@ -409,6 +432,7 @@ class DeTaiController extends Controller
                     ],
                     [
                         'loai_giang_vien' => 'Giảng Viên Hướng Dẫn',
+                        'vai_tro_id' => $vaiTroGVHD->id
                     ]
                 );
             }

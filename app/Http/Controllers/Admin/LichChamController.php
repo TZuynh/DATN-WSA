@@ -22,9 +22,11 @@ class LichChamController extends Controller
      */
     public function index()
     {
+        // Lấy và group theo hội đồng
         $lichChams = LichCham::with(['hoiDong', 'dotBaoCao', 'nhom', 'deTai'])
-                        ->orderBy('thu_tu', 'asc')
-                        ->paginate(10);
+            ->orderBy('thu_tu', 'asc')
+            ->get()
+            ->groupBy('hoi_dong_id');
 
         return view('admin.lich-cham.index', compact('lichChams'));
     }

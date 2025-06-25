@@ -271,6 +271,12 @@ class NhomController extends Controller
         $nhom = Nhom::findOrFail($id);
         $deTaiMoi = DeTai::findOrFail($request->de_tai_id);
 
+        // Nếu đề tài mới đã được giảng viên phản biện đồng ý thì không cho chuyển
+        if ($deTaiMoi->trang_thai == 2) {
+            return redirect()->route('giangvien.nhom.index')
+                ->with('error', 'Không thể chuyển sang đề tài đã được giảng viên phản biện đồng ý!');
+        }
+
         $deTaiCu = $nhom->deTai;
         $nhomCu = $deTaiMoi->nhom;
 
