@@ -51,4 +51,16 @@ class PhanCongCham extends Model
     {
         return $this->getGiangVienByLoai('Giảng Viên Khác');
     }
+
+    public function giangVienPhanBien()
+    {
+        return $this->hasOneThrough(
+            \App\Models\TaiKhoan::class,
+            \App\Models\PhanCongVaiTro::class,
+            'hoi_dong_id',
+            'id',
+            'hoi_dong_id',
+            'tai_khoan_id'
+        )->where('loai_giang_vien', 'Giảng Viên Phản Biện');
+    }
 }

@@ -7,9 +7,9 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0 text-gray-800">Quản lý lịch bảo vệ</h1>
         <div>
-            <a href="{{ route('admin.lich-cham.create') }}" class="btn btn-primary me-2">
+            {{-- <a href="{{ route('admin.lich-cham.create') }}" class="btn btn-primary me-2">
                 <i class="fas fa-plus me-2"></i> Thêm lịch bảo vệ
-            </a>
+            </a> --}}
             <a href="{{ route('admin.lich-cham.export-pdf') }}" class="btn btn-danger">
                 <i class="fas fa-file-pdf me-2"></i> Xuất PDF
             </a>
@@ -46,17 +46,17 @@
                                         <i class="fas fa-grip-vertical me-2 text-muted"></i>
                                         {{ $lichCham->thu_tu }}
                                     </td>
-                                    <td>{{ $lichCham->dotBaoCao->nam_hoc }}</td>
+                                    <td>{{ $lichCham->dotBaoCao->nam_hoc }} - {{ $lichCham->dotBaoCao->hocKy->ten }}</td>
                                     <td>{{ $lichCham->nhom->ten }}</td>
                                     <td>{{ $lichCham->deTai->ten_de_tai }}</td>
                                     <td>{{ \Carbon\Carbon::parse($lichCham->lich_tao)->format('d/m/Y H:i') }}</td>
                                     <td>
                                         <div class="btn-group" role="group">
-                                            <a href="{{ route('admin.lich-cham.edit', $lichCham) }}" 
+                                            {{-- <a href="{{ route('admin.lich-cham.edit', $lichCham) }}" 
                                                class="btn btn-sm btn-warning" 
                                                title="Sửa">
                                                 <i class="fas fa-edit"></i>
-                                            </a>
+                                            </a> --}}
                                             <form action="{{ route('admin.lich-cham.destroy', $lichCham) }}" 
                                                   method="POST" 
                                                   class="d-inline"
