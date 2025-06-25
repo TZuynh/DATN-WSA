@@ -22,7 +22,11 @@ class PhanCongChamController extends Controller
 
         // Lấy các phân công chấm hiện có (vẫn paginate như cũ)
         $phanCongChams = \App\Models\PhanCongCham::with([
-            'deTai',
+            'deTai.nhoms',
+            'deTai.lichCham',
+            'deTai.dotBaoCao',
+            'deTai.giangVien',
+            'deTai.chiTietBaoCao.hoiDong.phanCongVaiTros.taiKhoan',
             'hoiDong',
             'hoiDong.phanCongVaiTros.taiKhoan',
         ])

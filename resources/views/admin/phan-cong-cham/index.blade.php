@@ -77,7 +77,7 @@
                                                         @csrf
                                                         <input type="hidden" name="de_tai_id" value="{{ $phanCongCham->de_tai_id }}">
                                                         <input type="hidden" name="hoi_dong_id" value="{{ $phanCongCham->hoi_dong_id }}">
-                                                        <input type="hidden" name="nhom_id" value="{{ $phanCongCham->deTai->nhom_id }}">
+                                                        <input type="hidden" name="nhom_id" value="{{ $phanCongCham->deTai->nhoms->first()->id ?? '' }}">
                                                         <input type="hidden" name="dot_bao_cao_id" value="{{ $phanCongCham->deTai->dot_bao_cao_id }}">
                                                         <input type="hidden" name="lich_tao" value="{{ $phanCongCham->lich_cham }}">
                                                         <button type="submit" class="btn btn-primary btn-xs rounded-circle d-flex align-items-center justify-content-center"
