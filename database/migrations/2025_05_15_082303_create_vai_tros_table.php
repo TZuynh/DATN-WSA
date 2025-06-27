@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('vai_tros', function (Blueprint $table) {
             $table->id();
-            $table->string('ten'); // VD: "chủ tịch hội đồng", "giáo viên phản biện", "giáo viên thư ký", "giáo viên hướng dẫn"
+            $table->string('ten');
             $table->timestamps();
         });
     }

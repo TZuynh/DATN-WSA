@@ -20,8 +20,6 @@ return new class extends Migration
                 ->comment('Số lượng hội đồng trong đợt báo cáo');
             $table->integer('so_luong_nhom')->default(0)->after('so_luong_hoi_dong')
                 ->comment('Số lượng nhóm sinh viên tham gia');
-            $table->decimal('ti_do_hoan_thanh', 5, 2)->default(0)->after('so_luong_nhom')
-                ->comment('Tỷ lệ hoàn thành báo cáo (%)');
         });
     }
 
@@ -36,8 +34,7 @@ return new class extends Migration
                 'mo_ta',
                 'so_luong_hoi_dong',
                 'so_luong_de_tai',
-                'so_luong_nhom',
-                'ti_do_hoan_thanh'
+                'so_luong_nhom'
             ]);
         });
     }

@@ -121,7 +121,7 @@
                             <td>{{ $deTai['ma_de_tai'] }}</td>
                             <td>{{ $deTai['ten_de_tai'] }}</td>
                             <td>{{ $deTai['nhom']['ten'] ?? 'Chưa có nhóm' }}</td>
-                            <td>{{ $deTai['taikhoan']['ten'] ?? 'Chưa có giảng viên' }}</td>
+                            <td>{{ $deTai->giangVien->ten ?? 'Chưa có giảng viên' }}</td>
                             <td>
                                 @php
                                     $chiTiet = $deTai->chiTietBaoCao;

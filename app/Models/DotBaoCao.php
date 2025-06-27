@@ -21,7 +21,6 @@ class DotBaoCao extends Model
         'so_luong_hoi_dong' => 'integer',
         'so_luong_de_tai' => 'integer',
         'so_luong_nhom' => 'integer',
-        'ti_do_hoan_thanh' => 'decimal:2'
     ];
 
     // Các trạng thái có thể có của đợt báo cáo
@@ -124,7 +123,7 @@ class DotBaoCao extends Model
         $this->so_luong_hoi_dong = $this->hoiDongs()->count();
         $this->so_luong_de_tai = $this->deTais()->count();
         $this->so_luong_nhom = $this->deTais()->whereNotNull('nhom_id')->count();
-        
+
         $tongSoBaoCao = $this->chiTietBaoCaos()->count();
         if ($tongSoBaoCao > 0) {
             $baoCaoDaNop = $this->chiTietBaoCaos()->whereNotNull('ngay_nop')->count();
