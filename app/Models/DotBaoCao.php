@@ -262,7 +262,7 @@ class DotBaoCao extends Model
                     ] : null,
                     'giang_vien' => $deTai->giangVien ? [
                         'id' => $deTai->giangVien->id,
-                        'ten' => $deTai->giangVien->ho_ten
+                        'ten' => $deTai->giangVien->ten
                     ] : null,
                     'hoi_dong' => $deTai->chiTietBaoCaos->map(function($chiTiet) {
                         return [

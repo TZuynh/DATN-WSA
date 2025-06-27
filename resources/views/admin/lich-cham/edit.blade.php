@@ -51,7 +51,7 @@
                             @foreach($dotBaoCaos as $dotBaoCao)
                                 <option value="{{ $dotBaoCao->id }}"
                                     {{ (old('dot_bao_cao_id', $lichCham->dot_bao_cao_id) == $dotBaoCao->id) ? 'selected' : '' }}>
-                                    {{ $dotBaoCao->nam_hoc }}
+                                    {{ $dotBaoCao->nam_hoc }} - {{ $dotBaoCao->hocKy->ten }}
                                 </option>
                             @endforeach
                         </select>

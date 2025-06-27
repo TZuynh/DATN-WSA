@@ -52,11 +52,11 @@
                                     <td>{{ \Carbon\Carbon::parse($lichCham->lich_tao)->format('d/m/Y H:i') }}</td>
                                     <td>
                                         <div class="btn-group" role="group">
-                                            {{-- <a href="{{ route('admin.lich-cham.edit', $lichCham) }}" 
+                                            <a href="{{ route('admin.lich-cham.edit', $lichCham) }}" 
                                                class="btn btn-sm btn-warning" 
                                                title="Sửa">
                                                 <i class="fas fa-edit"></i>
-                                            </a> --}}
+                                            </a>
                                             <form action="{{ route('admin.lich-cham.destroy', $lichCham) }}" 
                                                   method="POST" 
                                                   class="d-inline"

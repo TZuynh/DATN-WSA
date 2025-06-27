@@ -119,9 +119,9 @@
                         @forelse($dotBaoCao->deTais as $deTai)
                         <tr>
                             <td>{{ $deTai['ma_de_tai'] }}</td>
-                            <td>{{ $deTai['tieu_de'] }}</td>
+                            <td>{{ $deTai['ten_de_tai'] }}</td>
                             <td>{{ $deTai['nhom']['ten'] ?? 'Chưa có nhóm' }}</td>
-                            <td>{{ $deTai['giang_vien']['ten'] ?? 'Chưa có giảng viên' }}</td>
+                            <td>{{ $deTai['taikhoan']['ten'] ?? 'Chưa có giảng viên' }}</td>
                             <td>
                                 @php
                                     $chiTiet = $deTai->chiTietBaoCao;
