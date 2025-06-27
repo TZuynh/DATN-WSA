@@ -36,64 +36,35 @@ class PhanCongHoiDongController extends Controller
         $taiKhoans = TaiKhoan::where('vai_tro', 'giang_vien')->get();
         $vaiTros = VaiTro::all();
 
-        $phanBienId = VaiTro::where('ten', 'Giảng Viên Phản Biện')->value('id');
-        $khacId = VaiTro::where('ten', 'Giảng Viên Khác')->value('id');
-
-        $phanBienDaPhanCong = [];
-        $khacDaPhanCong = [];
-
         $selectedHoiDong = $request->get('hoi_dong_id');
-        $thanhVienId = VaiTro::where('ten', 'Thành viên')->value('id');
-        $loaiGiangVienDaPhanCong = [];
+        $truongTieuBanId = VaiTro::where('ten', 'Trưởng tiểu ban')->value('id');
+        $thuKyId = VaiTro::where('ten', 'Thư ký')->value('id');
+
+        // Lấy danh sách vai trò đã được phân công trong hội đồng này
+        $vaiTrosDaPhanCong = [];
         if ($selectedHoiDong) {
-            $loaiGiangVienDaPhanCong = PhanCongVaiTro::where('hoi_dong_id', $selectedHoiDong)
-                ->where('vai_tro_id', $thanhVienId)
-                ->pluck('loai_giang_vien')
+            $vaiTrosDaPhanCong = PhanCongVaiTro::where('hoi_dong_id', $selectedHoiDong)
+                ->pluck('vai_tro_id')
                 ->toArray();
         }
 
-        // Lấy danh sách giảng viên đang có đề tài
-        $giangVienCoDeTai = DeTai::where('trang_thai', '!=', 4) // Không tính các đề tài đã bị từ chối
-            ->pluck('giang_vien_id')
-            ->unique()
-            ->toArray();
-
-        // Lấy danh sách vai trò không được phân công cho giảng viên có đề tài
-        $vaiTroKhongDuocPhanCong = VaiTro::whereIn('ten', ['Trưởng tiểu ban', 'Thư ký'])
-            ->pluck('id')
-            ->toArray();
-
-        $truongTieuBanId = VaiTro::where('ten', 'Trưởng tiểu ban')->value('id');
-        $thuKyId = VaiTro::where('ten', 'Thư ký')->value('id');
-        $thanhVienId = VaiTro::where('ten', 'Thành viên')->value('id');
-
+        // Lấy danh sách giảng viên đã được phân công trong hội đồng này
         $giangViensDaPhanCong = [];
-
         if ($selectedHoiDong) {
             $giangViensDaPhanCong = PhanCongVaiTro::where('hoi_dong_id', $selectedHoiDong)
-                ->where('id', '!=', $selectedHoiDong) // dòng này không cần thiết
                 ->pluck('tai_khoan_id')
                 ->toArray();
         }
-
-        $giangViensDaPhanCong = PhanCongVaiTro::pluck('tai_khoan_id')->unique()->toArray();
 
         return view('admin.phan-cong-hoi-dong.create', compact(
             'hoiDongs',
             'taiKhoans',
             'vaiTros',
             'selectedHoiDong',
-            'giangVienCoDeTai',
-            'vaiTroKhongDuocPhanCong',
-            'phanBienDaPhanCong',
-            'khacDaPhanCong',
-            'phanBienId',
-            'khacId',
-            'loaiGiangVienDaPhanCong',
-            'thanhVienId',
+            'vaiTrosDaPhanCong',
+            'giangViensDaPhanCong',
             'truongTieuBanId',
-            'thuKyId',
-            'giangViensDaPhanCong'
+            'thuKyId'
         ));
     }
 
@@ -117,40 +88,14 @@ class PhanCongHoiDongController extends Controller
                 throw new \Exception('Hội đồng này đã đủ 5 giảng viên.');
             }
 
-            // Kiểm tra trùng vai trò Giảng Viên Phản Biện hoặc Giảng Viên Khác trong cùng hội đồng
-            $phanBienId = VaiTro::where('ten', 'Giảng Viên Phản Biện')->value('id');
-            $khacId = VaiTro::where('ten', 'Giảng Viên Khác')->value('id');
-
-            if (in_array($request->vai_tro_id, [$phanBienId, $khacId])) {
-                $exists = PhanCongVaiTro::where('hoi_dong_id', $request->hoi_dong_id)
+            // Nếu là Trưởng tiểu ban hoặc Thư ký, chỉ được 1 người duy nhất trong hội đồng
+            if (in_array($request->vai_tro_id, [$truongTieuBanId, $thuKyId])) {
+                $existsRole = PhanCongVaiTro::where('hoi_dong_id', $request->hoi_dong_id)
                     ->where('vai_tro_id', $request->vai_tro_id)
                     ->exists();
-                if ($exists) {
+                if ($existsRole) {
                     throw new \Exception('Vai trò này đã được phân công cho một giảng viên khác trong hội đồng!');
                 }
-            }
-
-            // Không cho giảng viên đã ở hội đồng khác được phân công tiếp
-            $existsOther = PhanCongVaiTro::where('tai_khoan_id', $request->tai_khoan_id)
-                ->where('hoi_dong_id', '!=', $request->hoi_dong_id)
-                ->exists();
-            if ($existsOther) {
-                throw new \Exception('Giảng viên này đã được phân công vào một hội đồng khác.');
-            }
-
-            // Kiểm tra xem giảng viên có đang hướng dẫn đề tài không
-            $giangVienCoDeTai = DeTai::where('giang_vien_id', $request->tai_khoan_id)
-                ->where('trang_thai', '!=', DeTai::TRANG_THAI_KHONG_XAY_RA_GVHD)
-                ->where('trang_thai', '!=', DeTai::TRANG_THAI_KHONG_XAY_RA_GVPB)
-                ->exists();
-
-            // Kiểm tra xem vai trò có phải là Trưởng tiểu ban hoặc Thư ký không
-            $vaiTroKhongDuocPhanCong = VaiTro::whereIn('ten', ['Trưởng tiểu ban', 'Thư ký'])
-                ->where('id', $request->vai_tro_id)
-                ->exists();
-
-            if ($giangVienCoDeTai && $vaiTroKhongDuocPhanCong) {
-                throw new \Exception('Giảng viên đang hướng dẫn đề tài không thể được phân công làm Trưởng tiểu ban hoặc Thư ký.');
             }
 
             // Không cho trùng giảng viên trong cùng hội đồng
@@ -161,41 +106,8 @@ class PhanCongHoiDongController extends Controller
                 throw new \Exception('Giảng viên này đã được phân công vào hội đồng này!');
             }
 
-            $data = $request->all();
-
-            // Nếu là Trưởng tiểu ban hoặc Thư ký, set loai_giang_vien = null
-            if (in_array($request->vai_tro_id, [$truongTieuBanId, $thuKyId])) {
-                $data['loai_giang_vien'] = null;
-            }
-
-            $thanhVienId = VaiTro::where('ten', 'Thành viên')->value('id');
-            if ($request->vai_tro_id == $thanhVienId) {
-                // Thành viên: chỉ kiểm tra trùng loại giảng viên
-                $existsLoai = PhanCongVaiTro::where('hoi_dong_id', $request->hoi_dong_id)
-                    ->where('vai_tro_id', $thanhVienId)
-                    ->where('loai_giang_vien', $request->loai_giang_vien)
-                    ->exists();
-                if ($existsLoai) {
-                    throw new \Exception('Loại giảng viên này đã được phân công cho một thành viên khác trong hội đồng!');
-                }
-            } elseif (in_array($request->vai_tro_id, [$truongTieuBanId, $thuKyId])) {
-                // Trưởng tiểu ban, Thư ký: chỉ được 1 người duy nhất
-                $existsRole = PhanCongVaiTro::where('hoi_dong_id', $request->hoi_dong_id)
-                    ->where('vai_tro_id', $request->vai_tro_id)
-                    ->exists();
-                if ($existsRole) {
-                    throw new \Exception('Vai trò này đã được phân công cho một giảng viên khác trong hội đồng!');
-                }
-            }
-
-            // Tạo phân công vai trò
+            $data = $request->only(['hoi_dong_id', 'tai_khoan_id', 'vai_tro_id']);
             $phanCongVaiTro = PhanCongVaiTro::create($data);
-
-            // Nếu giảng viên có đề tài, thêm tất cả đề tài của họ vào hội đồng
-            if ($giangVienCoDeTai) {
-                $hoiDong = HoiDong::find($request->hoi_dong_id);
-                $hoiDong->themDeTaiCuaGiangVien($request->tai_khoan_id);
-            }
 
             DB::commit();
             return redirect()->route('admin.phan-cong-hoi-dong.index')
@@ -210,45 +122,32 @@ class PhanCongHoiDongController extends Controller
     {
         $hoiDongs = HoiDong::all();
         $taiKhoans = TaiKhoan::where('vai_tro', 'giang_vien')->get();
+        $truongTieuBanId = VaiTro::where('ten', 'Trưởng tiểu ban')->value('id');
+        $thuKyId = VaiTro::where('ten', 'Thư ký')->value('id');
 
-        $usedVaiTroIds = PhanCongVaiTro::where('hoi_dong_id', $phanCongVaiTro->hoi_dong_id)
+        // Lấy danh sách vai trò đã được phân công trong hội đồng này (trừ chính bản ghi đang sửa)
+        $vaiTrosDaPhanCong = PhanCongVaiTro::where('hoi_dong_id', $phanCongVaiTro->hoi_dong_id)
             ->where('id', '!=', $phanCongVaiTro->id)
             ->pluck('vai_tro_id')
             ->toArray();
 
-        $vaiTros = VaiTro::whereNotIn('id', $usedVaiTroIds)->get();
-
-        // Lấy danh sách giảng viên đang có đề tài
-        $giangVienCoDeTai = DeTai::where('trang_thai', '!=', 4)
-            ->pluck('giang_vien_id')
-            ->unique()
+        // Lấy danh sách giảng viên đã được phân công trong hội đồng này (trừ chính bản ghi đang sửa)
+        $giangViensDaPhanCong = PhanCongVaiTro::where('hoi_dong_id', $phanCongVaiTro->hoi_dong_id)
+            ->where('id', '!=', $phanCongVaiTro->id)
+            ->pluck('tai_khoan_id')
             ->toArray();
 
-        // Lấy danh sách vai trò không được phân công cho giảng viên có đề tài
-        $vaiTroKhongDuocPhanCong = VaiTro::whereIn('ten', ['Trưởng tiểu ban', 'Thư ký'])
-            ->pluck('id')
-            ->toArray();
-
-        $thanhVienId = VaiTro::where('ten', 'Thành viên')->value('id');
-
-        if ($selectedHoiDong) {
-            $giangViensDaPhanCong = PhanCongVaiTro::where('hoi_dong_id', $selectedHoiDong)
-                ->where('id', '!=', $selectedHoiDong) // dòng này không cần thiết
-                ->pluck('tai_khoan_id')
-                ->toArray();
-        }
-
-        $giangViensDaPhanCong = PhanCongVaiTro::pluck('tai_khoan_id')->unique()->toArray();
+        $vaiTros = VaiTro::all();
 
         return view('admin.phan-cong-hoi-dong.edit', compact(
             'phanCongVaiTro',
             'hoiDongs',
             'taiKhoans',
             'vaiTros',
-            'giangVienCoDeTai',
-            'vaiTroKhongDuocPhanCong',
-            'thanhVienId',
-            'giangViensDaPhanCong'
+            'vaiTrosDaPhanCong',
+            'giangViensDaPhanCong',
+            'truongTieuBanId',
+            'thuKyId'
         ));
     }
 
@@ -274,86 +173,28 @@ class PhanCongHoiDongController extends Controller
                 throw new \Exception('Hội đồng này đã đủ 5 giảng viên.');
             }
 
-            // Kiểm tra trùng vai trò Giảng Viên Phản Biện hoặc Giảng Viên Khác trong cùng hội đồng
-            $phanBienId = VaiTro::where('ten', 'Giảng Viên Phản Biện')->value('id');
-            $khacId = VaiTro::where('ten', 'Giảng Viên Khác')->value('id');
-
-            if (in_array($request->vai_tro_id, [$phanBienId, $khacId])) {
-                $exists = PhanCongVaiTro::where('hoi_dong_id', $request->hoi_dong_id)
-                    ->where('vai_tro_id', $request->vai_tro_id)
-                    ->exists();
-                if ($exists) {
-                    throw new \Exception('Vai trò này đã được phân công cho một giảng viên khác trong hội đồng!');
-                }
-            }
-
-            // Không cho giảng viên đã ở hội đồng khác được phân công tiếp (trừ chính bản ghi đang sửa)
-            $existsOther = PhanCongVaiTro::where('tai_khoan_id', $request->tai_khoan_id)
-                ->where('hoi_dong_id', '!=', $request->hoi_dong_id)
-                ->where('id', '!=', $phanCongVaiTro->id)
-                ->exists();
-            if ($existsOther) {
-                throw new \Exception('Giảng viên này đã được phân công vào một hội đồng khác.');
-            }
-
-            // Kiểm tra xem giảng viên có đang hướng dẫn đề tài không
-            $giangVienCoDeTai = DeTai::where('giang_vien_id', $request->tai_khoan_id)
-                ->where('trang_thai', '!=', DeTai::TRANG_THAI_KHONG_XAY_RA_GVHD)
-                ->where('trang_thai', '!=', DeTai::TRANG_THAI_KHONG_XAY_RA_GVPB)
-                ->exists();
-
-            // Kiểm tra xem vai trò có phải là Trưởng tiểu ban hoặc Thư ký không
-            $vaiTroKhongDuocPhanCong = VaiTro::whereIn('ten', ['Trưởng tiểu ban', 'Thư ký'])
-                ->where('id', $request->vai_tro_id)
-                ->exists();
-
-            if ($giangVienCoDeTai && $vaiTroKhongDuocPhanCong) {
-                throw new \Exception('Giảng viên đang hướng dẫn đề tài không thể được phân công làm Trưởng tiểu ban hoặc Thư ký.');
-            }
-
-            // Không cho trùng giảng viên trong cùng hội đồng
-            $existsGV = PhanCongVaiTro::where('hoi_dong_id', $request->hoi_dong_id)
-                ->where('tai_khoan_id', $request->tai_khoan_id)
-                ->exists();
-            if ($existsGV) {
-                throw new \Exception('Giảng viên này đã được phân công vào hội đồng này!');
-            }
-
-            $data = $request->all();
-
-            // Nếu là Trưởng tiểu ban hoặc Thư ký, set loai_giang_vien = null
+            // Nếu là Trưởng tiểu ban hoặc Thư ký, chỉ được 1 người duy nhất trong hội đồng
             if (in_array($request->vai_tro_id, [$truongTieuBanId, $thuKyId])) {
-                $data['loai_giang_vien'] = null;
-            }
-
-            $thanhVienId = VaiTro::where('ten', 'Thành viên')->value('id');
-            if ($request->vai_tro_id == $thanhVienId) {
-                // Thành viên: chỉ kiểm tra trùng loại giảng viên
-                $existsLoai = PhanCongVaiTro::where('hoi_dong_id', $request->hoi_dong_id)
-                    ->where('vai_tro_id', $thanhVienId)
-                    ->where('loai_giang_vien', $request->loai_giang_vien)
-                    ->exists();
-                if ($existsLoai) {
-                    throw new \Exception('Loại giảng viên này đã được phân công cho một thành viên khác trong hội đồng!');
-                }
-            } elseif (in_array($request->vai_tro_id, [$truongTieuBanId, $thuKyId])) {
-                // Trưởng tiểu ban, Thư ký: chỉ được 1 người duy nhất
                 $existsRole = PhanCongVaiTro::where('hoi_dong_id', $request->hoi_dong_id)
                     ->where('vai_tro_id', $request->vai_tro_id)
+                    ->where('id', '!=', $phanCongVaiTro->id)
                     ->exists();
                 if ($existsRole) {
                     throw new \Exception('Vai trò này đã được phân công cho một giảng viên khác trong hội đồng!');
                 }
             }
 
-            // Cập nhật phân công vai trò
-            $phanCongVaiTro->update($data);
-
-            // Nếu giảng viên có đề tài và đã thay đổi hội đồng, thêm tất cả đề tài của họ vào hội đồng mới
-            if ($giangVienCoDeTai && $request->hoi_dong_id != $phanCongVaiTro->hoi_dong_id) {
-                $hoiDong = HoiDong::find($request->hoi_dong_id);
-                $hoiDong->themDeTaiCuaGiangVien($request->tai_khoan_id);
+            // Không cho trùng giảng viên trong cùng hội đồng (trừ chính bản ghi đang sửa)
+            $existsGV = PhanCongVaiTro::where('hoi_dong_id', $request->hoi_dong_id)
+                ->where('tai_khoan_id', $request->tai_khoan_id)
+                ->where('id', '!=', $phanCongVaiTro->id)
+                ->exists();
+            if ($existsGV) {
+                throw new \Exception('Giảng viên này đã được phân công vào hội đồng này!');
             }
+
+            $data = $request->only(['hoi_dong_id', 'tai_khoan_id', 'vai_tro_id']);
+            $phanCongVaiTro->update($data);
 
             DB::commit();
             return redirect()->route('admin.phan-cong-hoi-dong.index')

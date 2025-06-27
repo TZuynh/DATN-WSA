@@ -53,9 +53,6 @@
                                 {{ old('tai_khoan_id', $phanCongVaiTro->tai_khoan_id) == $taiKhoan->id ? 'selected' : '' }}
                                 {{ $disable ? 'disabled' : '' }}>
                                 {{ $taiKhoan->ten }}
-                                @if(in_array($taiKhoan->id, $giangVienCoDeTai))
-                                    (Đang có đề tài)
-                                @endif
                             </option>
                         @endforeach
                     </select>
@@ -66,31 +63,17 @@
                     <select name="vai_tro_id" id="vai_tro_id" class="vai-tro-select" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn vai trò">
                         <option value="">Chọn vai trò</option>
                         @foreach($vaiTros as $vaiTro)
+                            @php
+                                $disable = false;
+                                if (in_array($vaiTro->id, $vaiTrosDaPhanCong ?? []) && in_array($vaiTro->id, [$truongTieuBanId, $thuKyId])) $disable = true;
+                            @endphp
                             <option value="{{ $vaiTro->id }}" 
                                 {{ old('vai_tro_id', $phanCongVaiTro->vai_tro_id) == $vaiTro->id ? 'selected' : '' }}
-                                @if(in_array($vaiTro->id, $vaiTroKhongDuocPhanCong) && in_array(old('tai_khoan_id', $phanCongVaiTro->tai_khoan_id), $giangVienCoDeTai))
-                                    disabled
-                                @endif
-                            >
+                                {{ $disable ? 'disabled' : '' }}>
                                 {{ $vaiTro->ten }}
-                                @if(in_array($vaiTro->id, $vaiTroKhongDuocPhanCong))
-                                    (Không áp dụng cho giảng viên có đề tài)
-                                @endif
                             </option>
                         @endforeach
                     </select>
-                </div>
-
-                <div id="loai_giang_vien_field" style="margin-bottom: 20px; display: none;">
-                    <label for="loai_giang_vien" style="display: block; margin-bottom: 5px; color: #4a5568;">Loại giảng viên <span style="color: red">*</span></label>
-                    <select name="loai_giang_vien" id="loai_giang_vien" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                        <option value="Giảng Viên Phản Biện" {{ old('loai_giang_vien', $phanCongVaiTro->loai_giang_vien) == 'Giảng Viên Phản Biện' ? 'selected' : '' }}>Giảng Viên Phản Biện</option>
-                        <option value="Giảng Viên Khác" {{ old('loai_giang_vien', $phanCongVaiTro->loai_giang_vien) == 'Giảng Viên Khác' ? 'selected' : '' }}>Giảng Viên Khác</option>
-                    </select>
-                </div>
-                <div id="loai_giang_vien_text" style="margin-bottom: 20px; display: none;">
-                    <label style="display: block; margin-bottom: 5px; color: #4a5568;">Loại giảng viên</label>
-                    <input type="text" value="Giảng Viên Hướng Dẫn" class="form-control" disabled>
                 </div>
 
                 <div style="text-align: right;">
@@ -139,17 +122,11 @@
             var giangVienSelect = document.getElementById('tai_khoan_id');
             var loaiGiangVienField = document.getElementById('loai_giang_vien_field');
             var loaiGiangVienText = document.getElementById('loai_giang_vien_text');
-            var giangVienCoDeTai = @json($giangVienCoDeTai);
             var thanhVienId = @json($vaiTros->where('ten', 'Thành viên')->first()->id ?? null);
 
             if (vaiTroSelect.value == thanhVienId && giangVienSelect.value) {
-                if (giangVienCoDeTai.includes(parseInt(giangVienSelect.value))) {
-                    loaiGiangVienField.style.display = 'none';
-                    loaiGiangVienText.style.display = 'block';
-                } else {
-                    loaiGiangVienField.style.display = 'block';
-                    loaiGiangVienText.style.display = 'none';
-                }
+                loaiGiangVienField.style.display = 'none';
+                loaiGiangVienText.style.display = 'block';
             } else {
                 loaiGiangVienField.style.display = 'none';
                 loaiGiangVienText.style.display = 'none';

@@ -50,9 +50,6 @@
                             @endphp
                             <option value="{{ $taiKhoan->id }}" {{ $disable ? 'disabled' : '' }}>
                                 {{ $taiKhoan->ten }}
-                                @if(in_array($taiKhoan->id, $giangVienCoDeTai))
-                                    (Đang có đề tài)
-                                @endif
                             </option>
                         @endforeach
                     </select>
@@ -65,29 +62,13 @@
                         @foreach($vaiTros as $vaiTro)
                             @php
                                 $disable = false;
-                                if (in_array($vaiTro->id, $vaiTrosDaPhanCong ?? [])) $disable = true;
+                                if (in_array($vaiTro->id, $vaiTrosDaPhanCong ?? []) && in_array($vaiTro->id, [$truongTieuBanId, $thuKyId])) $disable = true;
                             @endphp
                             <option value="{{ $vaiTro->id }}" {{ $disable ? 'disabled' : '' }}>
                                 {{ $vaiTro->ten }}
                             </option>
                         @endforeach
                     </select>
-                </div>
-
-                <div id="loai_giang_vien_field" style="margin-bottom: 20px; display: none;">
-                    <label for="loai_giang_vien" style="display: block; margin-bottom: 5px; color: #4a5568;">Loại giảng viên <span style="color: red">*</span></label>
-                    <select name="loai_giang_vien" id="loai_giang_vien" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                        @foreach(['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện', 'Giảng Viên Khác'] as $loai)
-                            <option value="{{ $loai }}" 
-                                {{ in_array($loai, $loaiGiangVienDaPhanCong ?? []) ? 'disabled' : '' }}>
-                                {{ $loai }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div id="loai_giang_vien_text" style="margin-bottom: 20px; display: none;">
-                    <label style="display: block; margin-bottom: 5px; color: #4a5568;">Loại giảng viên</label>
-                    <input type="text" value="Giảng Viên Hướng Dẫn" class="form-control" disabled>
                 </div>
 
                 <div style="text-align: right;">
@@ -100,94 +81,9 @@
     </div>
 
     <script>
-        document.getElementById('tai_khoan_id').addEventListener('change', function() {
-            const selectedGiangVienId = this.value;
-            const vaiTroSelect = document.getElementById('vai_tro_id');
-            const giangVienCoDeTai = @json($giangVienCoDeTai);
-            const vaiTroKhongDuocPhanCong = @json($vaiTroKhongDuocPhanCong);
-
-            // Reset vai trò về giá trị mặc định
-            vaiTroSelect.value = '';
-
-            // Enable/disable các vai trò dựa trên giảng viên được chọn
-            Array.from(vaiTroSelect.options).forEach(option => {
-                if (option.value === '') return; // Bỏ qua option mặc định
-
-                if (in_array(parseInt(option.value), vaiTroKhongDuocPhanCong) && 
-                    in_array(parseInt(selectedGiangVienId), giangVienCoDeTai)) {
-                    option.disabled = true;
-                } else {
-                    option.disabled = false;
-                }
-            });
-        });
-
         document.getElementById('hoi_dong_id').addEventListener('change', function() {
             var hoiDongId = this.value;
             window.location.href = '?hoi_dong_id=' + hoiDongId;
-        });
-
-        // Helper function để kiểm tra giá trị trong mảng
-        function in_array(needle, haystack) {
-            return haystack.indexOf(needle) !== -1;
-        }
-
-        function updateLoaiGiangVienField() {
-            var vaiTroSelect = document.getElementById('vai_tro_id');
-            var giangVienSelect = document.getElementById('tai_khoan_id');
-            var loaiGiangVienField = document.getElementById('loai_giang_vien_field');
-            var loaiGiangVienText = document.getElementById('loai_giang_vien_text');
-            var giangVienCoDeTai = @json($giangVienCoDeTai);
-
-            // Lấy id vai trò Thành viên (tìm trong $vaiTros)
-            var thanhVienId = @json($vaiTros->where('ten', 'Thành viên')->first()->id ?? null);
-
-            if (vaiTroSelect.value == thanhVienId && giangVienSelect.value) {
-                if (giangVienCoDeTai.includes(parseInt(giangVienSelect.value))) {
-                    loaiGiangVienField.style.display = 'none';
-                    loaiGiangVienText.style.display = 'block';
-                } else {
-                    loaiGiangVienField.style.display = 'block';
-                    loaiGiangVienText.style.display = 'none';
-                }
-            } else {
-                loaiGiangVienField.style.display = 'none';
-                loaiGiangVienText.style.display = 'none';
-            }
-        }
-
-        document.getElementById('vai_tro_id').addEventListener('change', updateLoaiGiangVienField);
-        document.getElementById('tai_khoan_id').addEventListener('change', updateLoaiGiangVienField);
-        window.addEventListener('DOMContentLoaded', updateLoaiGiangVienField);
-
-        // New functions for dynamic vai tro dropdowns
-        function updateVaiTroDropdowns() {
-            // Lấy tất cả các vai trò đặc biệt đã được chọn
-            let selectedSpecialRoles = [];
-            document.querySelectorAll('.vai-tro-select').forEach(function(select) {
-                let val = select.value;
-                if (val && (val == TRUONG_TIEU_BAN_ID || val == THU_KY_ID)) {
-                    selectedSpecialRoles.push(val);
-                }
-            });
-
-            // Cập nhật lại các dropdown
-            document.querySelectorAll('.vai-tro-select').forEach(function(select) {
-                Array.from(select.options).forEach(function(option) {
-                    // Nếu là vai trò đặc biệt và đã được chọn ở dòng khác thì ẩn
-                    if ((option.value == TRUONG_TIEU_BAN_ID || option.value == THU_KY_ID) &&
-                        selectedSpecialRoles.includes(option.value) && select.value != option.value) {
-                        option.style.display = 'none';
-                    } else {
-                        option.style.display = '';
-                    }
-                });
-            });
-        }
-
-        // Gọi hàm mỗi khi thay đổi dropdown vai trò
-        document.querySelectorAll('.vai-tro-select').forEach(function(select) {
-            select.addEventListener('change', updateVaiTroDropdowns);
         });
     </script>
 @endsection 
