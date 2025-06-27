@@ -94,13 +94,12 @@
 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label for="lich_tao" class="form-label">Thời gian <span class="text-danger">*</span></label>
-                        <input type="text" 
-                               class="form-control @error('lich_tao') is-invalid @enderror" 
-                               id="lich_tao" 
-                               name="lich_tao" 
-                               value="{{ old('lich_tao', isset($lichCham) ? \Carbon\Carbon::parse($lichCham->lich_tao)->format('Y-m-d H:i') : '') }}"
-                               placeholder="Chọn thời gian"
+                        <label for="lich_tao" class="form-label">Ngày bảo vệ <span class="text-danger">*</span></label>
+                        <input type="date"
+                               class="form-control @error('lich_tao') is-invalid @enderror"
+                               id="lich_tao"
+                               name="lich_tao"
+                               value="{{ old('lich_tao', isset($lichCham) ? \Carbon\Carbon::parse($lichCham->lich_tao)->format('Y-m-d') : '') }}"
                                required>
                         @error('lich_tao')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -129,32 +128,20 @@
             document.getElementById('ten_de_tai').value = tenDeTai || '';
         });
 
-        // Cấu hình Flatpickr cho thời gian
-        const lichTao = flatpickr("#lich_tao", {
+        // Sử dụng flatpickr chỉ cho chọn ngày (không chọn giờ)
+        flatpickr("#lich_tao", {
             locale: "vi",
-            enableTime: true,
-            dateFormat: "Y-m-d H:i",
-            minDate: "today",
-            time_24hr: true,
-            minuteIncrement: 1
+            enableTime: false,
+            dateFormat: "Y-m-d",
+            minDate: "today"
         });
 
-        // Validate form trước khi submit
+        // Validate form trước khi submit (chỉ kiểm tra ngày)
         document.querySelector('form').addEventListener('submit', function(e) {
             const lichTaoValue = document.getElementById('lich_tao').value;
-
             if (!lichTaoValue) {
                 e.preventDefault();
-                alert('Vui lòng chọn thời gian!');
-                return;
-            }
-
-            const selectedDate = new Date(lichTaoValue);
-            const now = new Date();
-
-            if (selectedDate < now) {
-                e.preventDefault();
-                alert('Thời gian không được nhỏ hơn thời gian hiện tại!');
+                alert('Vui lòng chọn ngày bảo vệ!');
                 return;
             }
         });

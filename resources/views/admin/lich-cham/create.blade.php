@@ -92,13 +92,12 @@
 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label for="lich_tao" class="form-label">Thời gian <span class="text-danger">*</span></label>
-                        <input type="text"
+                        <label for="lich_tao" class="form-label">Ngày bảo vệ <span class="text-danger">*</span></label>
+                        <input type="date"
                                class="form-control @error('lich_tao') is-invalid @enderror"
                                id="lich_tao"
                                name="lich_tao"
-                               value="{{ old('lich_tao', isset($lichCham) ? \Carbon\Carbon::parse($lichCham->lich_tao)->format('Y-m-d H:i') : '') }}"
-                               placeholder="Chọn thời gian"
+                               value="{{ old('lich_tao', isset($lichCham) ? \Carbon\Carbon::parse($lichCham->lich_tao)->format('Y-m-d') : '') }}"
                                required>
                         @error('lich_tao')
                             <div class="invalid-feedback">{{ $message }}</div>

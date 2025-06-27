@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 
 class LichChamController extends Controller
 {
@@ -186,14 +187,19 @@ class LichChamController extends Controller
         try {
             DB::beginTransaction();
 
-            // Kiểm tra xung đột lịch chấm
-            $xungDot = LichCham::where('hoi_dong_id', $request->hoi_dong_id)
-                ->where('lich_tao', $request->lich_tao)
-                ->where('id', '!=', $lichCham->id)
-                ->exists();
+            // Nếu người dùng không đổi hội đồng và thời gian thì cho phép cập nhật
+            if (
+                $lichCham->hoi_dong_id != $request->hoi_dong_id ||
+                $lichCham->lich_tao != $request->lich_tao
+            ) {
+                $xungDot = LichCham::where('hoi_dong_id', $request->hoi_dong_id)
+                    ->where('lich_tao', $request->lich_tao)
+                    ->where('id', '!=', $lichCham->id)
+                    ->exists();
 
-            if ($xungDot) {
-                throw new \Exception('Đã có lịch chấm cho hội đồng này vào thời gian này.');
+                if ($xungDot) {
+                    throw new \Exception('Đã có lịch chấm cho hội đồng này vào thời gian này.');
+                }
             }
 
             // Lấy thông tin đề tài của nhóm
@@ -231,7 +237,7 @@ class LichChamController extends Controller
             $lichCham->phan_cong_cham_id = $phanCongCham->id;
             $lichCham->lich_tao = $request->lich_tao;
             $lichCham->save();
-
+            // Log sau khi save lichCham
             // Cập nhật trạng thái đề tài thành Đang thực hiện (GVPB đồng ý)
             $deTai->trang_thai = DeTai::TRANG_THAI_DANG_THUC_HIEN_GVPB;
             $deTai->save();
@@ -241,6 +247,7 @@ class LichChamController extends Controller
                 ->with('success', 'Cập nhật lịch chấm thành công.');
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Lỗi cập nhật lịch chấm: ' . $e->getMessage());
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['error' => 'Không thể cập nhật lịch chấm: ' . $e->getMessage()]);

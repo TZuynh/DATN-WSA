@@ -49,7 +49,7 @@
                                     <td>{{ $lichCham->dotBaoCao->nam_hoc }} - {{ $lichCham->dotBaoCao->hocKy->ten }}</td>
                                     <td>{{ $lichCham->nhom->ten }}</td>
                                     <td>{{ $lichCham->deTai->ten_de_tai }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($lichCham->lich_tao)->format('d/m/Y H:i') }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($lichCham->lich_tao)->format('d/m/Y') }}</td>
                                     <td>
                                         <div class="btn-group" role="group">
                                             <a href="{{ route('admin.lich-cham.edit', $lichCham) }}" 
