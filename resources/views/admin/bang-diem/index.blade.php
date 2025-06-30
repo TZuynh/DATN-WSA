@@ -30,7 +30,7 @@
                                         @foreach($dotBaoCaos as $dotBaoCao)
                                             <option value="{{ $dotBaoCao->id }}"
                                                     {{ request('dot_bao_cao_id') == $dotBaoCao->id ? 'selected' : '' }}>
-                                                {{ $dotBaoCao->ten_dot_bao_cao }}
+                                                {{ $dotBaoCao->nam_hoc ?? 'N/A' }} - {{ $dotBaoCao->hocKy->ten ?? 'N/A' }}
                                             </option>
                                         @endforeach
                                     </select>

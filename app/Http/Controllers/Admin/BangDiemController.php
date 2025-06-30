@@ -70,7 +70,7 @@ class BangDiemController extends Controller
         });
 
         // Lấy danh sách đợt báo cáo và giảng viên cho filter
-        $dotBaoCaos = DotBaoCao::all();
+        $dotBaoCaos = DotBaoCao::with('hocKy')->get();
         $giangViens = TaiKhoan::where('vai_tro', 'giang_vien')->get();
         $sinhViens = SinhVien::all();
 
@@ -152,7 +152,7 @@ class BangDiemController extends Controller
             }
         }
 
-        $dotBaoCaos = DotBaoCao::all();
+        $dotBaoCaos = DotBaoCao::with('hocKy')->get();
 
         return view('admin.bang-diem.thong-ke', compact('thongKe', 'thongKeTheoGiangVien', 'khoangDiem', 'dotBaoCaos', 'dotBaoCaoId'));
     }

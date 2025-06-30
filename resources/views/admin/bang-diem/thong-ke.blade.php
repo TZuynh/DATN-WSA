@@ -552,14 +552,14 @@ body {
                     @php
                         // Gom nhóm theo năm học và học kỳ, chỉ lấy duy nhất mỗi cặp
                         $dotBaoCaoOptions = collect($dotBaoCaos)->unique(function($item) {
-                            return $item->nam_hoc . '-' . $item->hocKy->ten;
+                            return $item->nam_hoc . '-' . ($item->hocKy->ten ?? 'Không xác định');
                         });
                     @endphp
                     <select class="form-select flex-grow-1" id="dot_bao_cao_id" name="dot_bao_cao_id">
                         <option value="">Tất cả</option>
                         @foreach($dotBaoCaoOptions as $dotBaoCao)
                             <option value="{{ $dotBaoCao->id }}" {{ $dotBaoCaoId == $dotBaoCao->id ? 'selected' : '' }}>
-                                {{ $dotBaoCao->nam_hoc }} - {{ $dotBaoCao->hocKy->ten }}
+                                {{ $dotBaoCao->nam_hoc ?? 'N/A' }} - {{ $dotBaoCao->hocKy->ten ?? 'Không xác định' }}
                             </option>
                         @endforeach
                     </select>
