@@ -22,7 +22,7 @@ class DeTaiController extends Controller
     {
         $user = auth()->user();
         // Kiểm tra theo loai_giang_vien
-        $isPhanBien = \App\Models\PhanCongVaiTro::where('tai_khoan_id', $user->id ?? 0)
+        $isPhanBien = \App\Models\PhanCongVaiTro::where('tai_khoan_id', $user->id)
             ->where('loai_giang_vien', 'Giảng Viên Phản Biện')
             ->exists();
 
@@ -31,22 +31,25 @@ class DeTaiController extends Controller
             $hoiDongIds = \App\Models\PhanCongVaiTro::where('tai_khoan_id', $user->id)
                 ->where('loai_giang_vien', 'Giảng Viên Phản Biện')
                 ->pluck('hoi_dong_id');
-            // Lấy các giảng viên hướng dẫn trong các hội đồng đó
-            $giangVienHuongDanIds = \App\Models\PhanCongVaiTro::whereIn('hoi_dong_id', $hoiDongIds)
-                ->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')
-                ->pluck('tai_khoan_id');
-            // Lấy tất cả đề tài của các giảng viên hướng dẫn này (không lọc trạng thái)
+
+            // Lấy các đề tài thông qua bảng chi_tiet_de_tai_bao_caos
+            $deTaiIds = \App\Models\ChiTietDeTaiBaoCao::whereIn('hoi_dong_id', $hoiDongIds)
+                ->pluck('de_tai_id');
+
+            // Lấy tất cả đề tài mà giảng viên được phân công phản biện
             $deTais = \App\Models\DeTai::with(['nhoms.sinhViens', 'dotBaoCao.hocKy', 'giangVien'])
-                ->whereIn('giang_vien_id', $giangVienHuongDanIds)
+                ->whereIn('id', $deTaiIds)
                 ->orderBy('created_at', 'desc')
                 ->get();
         } else {
+            // Nếu là giảng viên hướng dẫn, lấy các đề tài do họ hướng dẫn
             $giangVienId = $user->id;
             $deTais = \App\Models\DeTai::with(['nhoms.sinhViens', 'dotBaoCao.hocKy'])
                 ->where('giang_vien_id', $giangVienId)
                 ->orderBy('created_at', 'desc')
                 ->get();
         }
+
         return view('giangvien.de-tai.index', compact('deTais', 'isPhanBien'));
     }
 
@@ -373,16 +376,8 @@ class DeTaiController extends Controller
     public function phanBienDuyet(Request $request, DeTai $deTai)
     {
         $user = auth()->user();
-        \Log::info('DEBUG PHAN BIEN DUYET', [
-            'user_id' => $user->id,
-            'user_name' => $user->name ?? null,
-            'de_tai_id' => $deTai->id,
-            'de_tai_ten' => $deTai->ten_de_tai,
-            'action' => $request->action,
-            'phan_cong_vai_tro' => \App\Models\PhanCongVaiTro::where('tai_khoan_id', $user->id)->get()->toArray(),
-            'vai_tro_gvpb' => \App\Models\VaiTro::where('ten', 'Giảng viên phản biện')->first(),
-            'vai_tro_gvhd' => \App\Models\VaiTro::where('ten', 'Giảng viên hướng dẫn')->first(),
-        ]);
+        
+        // Kiểm tra quyền phản biện
         $isPhanBien = \App\Models\PhanCongVaiTro::where('tai_khoan_id', $user->id)
             ->where('loai_giang_vien', 'Giảng Viên Phản Biện')
             ->exists();
@@ -390,6 +385,7 @@ class DeTaiController extends Controller
             abort(403, 'Bạn không có quyền thực hiện thao tác này.');
         }
 
+        // Cập nhật trạng thái đề tài
         if ($request->action === 'approve') {
             $deTai->trang_thai = 2;
             $msg = 'Đề tài đã được giảng viên phản biện duyệt.';
@@ -422,18 +418,6 @@ class DeTaiController extends Controller
                     'hoi_dong_id' => $hoiDongId,
                 ]
             );
-        } else {
-            return redirect()->back()->with('error', 'Không tìm thấy hội đồng phù hợp cho đề tài này.');
-        }
-
-        if ($chiTiet && $chiTiet->hoi_dong_id) {
-            // Lấy vai_tro_id cho từng loại giảng viên
-            $vaiTroGVPB = \App\Models\VaiTro::where('ten', 'Giảng viên phản biện')->first();
-            $vaiTroGVHD = \App\Models\VaiTro::where('ten', 'Giảng viên hướng dẫn')->first();
-
-            if (!$vaiTroGVPB || !$vaiTroGVHD) {
-                return redirect()->back()->with('error', 'Không tìm thấy vai trò phù hợp trong hệ thống.');
-            }
 
             // Đảm bảo có bản ghi Giảng Viên Phản Biện
             \App\Models\PhanCongVaiTro::updateOrCreate(
@@ -443,7 +427,6 @@ class DeTaiController extends Controller
                 ],
                 [
                     'loai_giang_vien' => 'Giảng Viên Phản Biện',
-                    'vai_tro_id' => $vaiTroGVPB->id
                 ]
             );
 
@@ -456,7 +439,6 @@ class DeTaiController extends Controller
                     ],
                     [
                         'loai_giang_vien' => 'Giảng Viên Hướng Dẫn',
-                        'vai_tro_id' => $vaiTroGVHD->id
                     ]
                 );
             }
