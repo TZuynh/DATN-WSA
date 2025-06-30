@@ -29,6 +29,9 @@
                             </thead>
                             <tbody>
                                 @forelse($phanCongChams as $phanCongCham)
+                                    @php
+                                        $hd = $phanCongCham->hoiDong;
+                                    @endphp
                                     <tr>
                                         <td>{{ $phanCongCham->deTai->ma_de_tai }}</td>
                                         <td>{{ $phanCongCham->deTai->ten_de_tai }}</td>
@@ -46,9 +49,26 @@
                                             @endif
                                         </td>
                                         <td>{{ $phanCongCham->hoiDong->ten ?? 'N/A' }}</td>
-                                        <td>{{ $phanCongCham->getGiangVienByLoai('Giảng Viên Hướng Dẫn')->ten ?? 'N/A' }}</td>
-                                        <td>{{ $phanCongCham->getGiangVienByLoai('Giảng Viên Phản Biện')->ten ?? 'N/A' }}</td>
-                                        <td>{{ $phanCongCham->getGiangVienByLoai('Giảng Viên Khác')->ten ?? 'N/A' }}</td>
+                                        <td>
+                                            @php
+                                                $gvhd = $hd ? $hd->phanCongVaiTros->firstWhere('loai_giang_vien', 'Giảng Viên Hướng Dẫn') : null;
+                                            @endphp
+                                            {{ $gvhd && $gvhd->taiKhoan ? $gvhd->taiKhoan->ten : ($phanCongCham->deTai->giangVien->ten ?? 'N/A') }}
+                                        </td>
+                                        <td>
+                                            @php
+                                                $gvpb = $hd ? $hd->phanCongVaiTros->firstWhere('loai_giang_vien', 'Giảng Viên Phản Biện') : null;
+                                            @endphp
+                                            {{ $gvpb && $gvpb->taiKhoan ? $gvpb->taiKhoan->ten : 'N/A' }}
+                                        </td>
+                                        <td>
+                                            @php
+                                                $gvks = $hd ? $hd->phanCongVaiTros->filter(function($item) {
+                                                    return optional($item->vaiTro)->ten == 'Thành viên';
+                                                }) : collect();
+                                            @endphp
+                                            {{ $gvks->pluck('taiKhoan.ten')->join(', ') ?: 'N/A' }}
+                                        </td>
                                         <td>
                                             <span class="badge {{ $phanCongCham->deTai->trang_thai_class }}">
                                                 {{ $phanCongCham->deTai->trang_thai_text }}
@@ -93,6 +113,9 @@
                             
                                 @endforelse
                                 @foreach($deTais as $deTai)
+                                    @php
+                                        $hd = optional($deTai->chiTietBaoCao)->hoiDong;
+                                    @endphp
                                     @if(!$deTai->phanCongCham)
                                         <tr>
                                             <td>{{ $deTai->ma_de_tai }}</td>
@@ -110,13 +133,12 @@
                                                     <span>N/A</span>
                                                 @endif
                                             </td>
-                                            <td>{{ optional(optional($deTai->chiTietBaoCao)->hoiDong)->ten ?? 'N/A' }}</td>
+                                            <td>{{ $hd->ten ?? 'N/A' }}</td>
                                             <td>
                                                 @php
-                                                    $hd = optional($deTai->chiTietBaoCao)->hoiDong;
                                                     $gvhd = $hd ? $hd->phanCongVaiTros->firstWhere('loai_giang_vien', 'Giảng Viên Hướng Dẫn') : null;
                                                 @endphp
-                                                {{ $gvhd && $gvhd->taiKhoan ? $gvhd->taiKhoan->ten : 'N/A' }}
+                                                {{ $gvhd && $gvhd->taiKhoan ? $gvhd->taiKhoan->ten : ($deTai->giangVien->ten ?? 'N/A') }}
                                             </td>
                                             <td>
                                                 @php
@@ -126,9 +148,11 @@
                                             </td>
                                             <td>
                                                 @php
-                                                    $gvk = $hd ? $hd->phanCongVaiTros->firstWhere('loai_giang_vien', 'Giảng Viên Khác') : null;
+                                                    $gvks = $hd ? $hd->phanCongVaiTros->filter(function($item) {
+                                                        return optional($item->vaiTro)->ten == 'Thành viên';
+                                                    }) : collect();
                                                 @endphp
-                                                {{ $gvk && $gvk->taiKhoan ? $gvk->taiKhoan->ten : 'N/A' }}
+                                                {{ $gvks->pluck('taiKhoan.ten')->join(', ') ?: 'N/A' }}
                                             </td>
                                             <td>
                                                 <span class="badge {{ $deTai->trang_thai_class }}">
