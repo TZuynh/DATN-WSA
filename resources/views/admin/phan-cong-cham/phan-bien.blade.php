@@ -3,68 +3,89 @@
 @section('content')
 <div class="container">
     <h2>Phân công giảng viên phản biện cho đề tài</h2>
-    <form method="POST" action="{{ route('admin.phan-cong-cham.phan-bien.store') }}">
-        @csrf
-        <div class="form-group">
-            <label for="de_tai_id">Chọn đề tài:</label>
-            <select id="de_tai_id" name="de_tai_id" class="form-control" required>
-                <option value="">-- Chọn đề tài --</option>
-                @foreach($deTais as $deTai)
-                    <option value="{{ $deTai->id }}">{{ $deTai->ma_de_tai ?? '' }} - {{ $deTai->ten_de_tai }}</option>
-                @endforeach
-            </select>
+
+    @if($deTais->isEmpty())
+        <div class="alert alert-info">
+            Không có đề tài nào cần phân công phản biện. 
+            <br>
+            Lưu ý: Chỉ những đề tài đã được giảng viên hướng dẫn đồng ý mới có thể phân công phản biện.
         </div>
-        <div class="form-group">
-            <label for="giang_vien_id">Chọn giảng viên phản biện:</label>
-            <select id="giang_vien_id" name="giang_vien_id" class="form-control" required>
-                <option value="">-- Chọn giảng viên --</option>
-            </select>
-        </div>
-        <div class="form-group mt-3">
-            <div id="danhSachGiangVien">
+    @else
+        <form method="POST" action="{{ route('admin.phan-cong-cham.phan-bien.store') }}">
+            @csrf
+            <div class="form-group">
+                <label for="de_tai_id">Chọn đề tài:</label>
+                <select id="de_tai_id" name="de_tai_id" class="form-control" required>
+                    <option value="">-- Chọn đề tài --</option>
+                    @foreach($deTais as $deTai)
+                        <option value="{{ $deTai->id }}">
+                            {{ $deTai->ma_de_tai ?? '' }} - {{ $deTai->ten_de_tai }}
+                            (GVHD: {{ optional($deTai->giangVien)->ten }})
+                        </option>
+                    @endforeach
+                </select>
+                <small class="form-text text-muted">
+                    Chỉ hiển thị các đề tài đã được giảng viên hướng dẫn đồng ý và chưa có giảng viên phản biện
+                </small>
             </div>
-        </div>
-        <button type="submit" class="btn btn-primary">Phân công</button>
-    </form>
+
+            <div class="form-group mt-3">
+                <label for="giang_vien_id">Chọn giảng viên phản biện:</label>
+                <select id="giang_vien_id" name="giang_vien_id" class="form-control" required>
+                    <option value="">-- Chọn giảng viên --</option>
+                    @foreach($giangViens as $gv)
+                        <option value="{{ $gv->id }}">{{ $gv->ten }}</option>
+                    @endforeach
+                </select>
+                <small class="form-text text-muted">Lưu ý: Giảng viên hướng dẫn không thể phản biện đề tài của chính mình</small>
+            </div>
+
+            <div class="form-group mt-3">
+                <div id="thongTinDeTai" class="card d-none">
+                    <div class="card-body">
+                        <h5 class="card-title">Thông tin đề tài</h5>
+                        <div id="chiTietDeTai"></div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3">Phân công</button>
+        </form>
+    @endif
 </div>
+
 <script>
-document.getElementById('de_tai_id').addEventListener('change', function() {
+document.getElementById('de_tai_id')?.addEventListener('change', function() {
     var deTaiId = this.value;
     var giangVienSelect = document.getElementById('giang_vien_id');
-    var danhSachDiv = document.getElementById('danhSachGiangVien');
-    giangVienSelect.innerHTML = '<option value="">-- Đang tải --</option>';
-    danhSachDiv.innerHTML = '<em>Đang tải danh sách giảng viên...</em>';
+    var thongTinDeTai = document.getElementById('thongTinDeTai');
+    var chiTietDeTai = document.getElementById('chiTietDeTai');
+
     if (deTaiId) {
+        // Lấy danh sách giảng viên có thể phản biện
         fetch('/admin/phan-cong-cham/giang-vien-hoi-dong/' + deTaiId)
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => { throw new Error(text); });
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                console.log('Dữ liệu giảng viên hội đồng trả về:', data);
-                var members = Array.isArray(data) ? data : (data.members || []);
+                // Cập nhật select giảng viên
                 giangVienSelect.innerHTML = '<option value="">-- Chọn giảng viên --</option>';
-                if (members.length > 0) {
-                    let html = '<ul class="list-group">';
-                    members.forEach(function(gv) {
-                        giangVienSelect.innerHTML += `<option value="${gv.id ?? ''}">${gv.ten} (${gv.vai_tro})</option>`;
-                        html += `<li class="list-group-item">${gv.ten} <span class="badge bg-secondary">${gv.vai_tro}</span></li>`;
-                    });
-                    html += '</ul>';
-                    danhSachDiv.innerHTML = html;
-                } else {
-                    danhSachDiv.innerHTML = '<em>Không có giảng viên trong hội đồng.</em>';
+                data.forEach(gv => {
+                    giangVienSelect.innerHTML += `<option value="${gv.id}">${gv.ten}</option>`;
+                });
+
+                // Hiển thị thông tin đề tài
+                const selectedDeTai = Array.from(this.options).find(option => option.value === deTaiId);
+                if (selectedDeTai) {
+                    thongTinDeTai.classList.remove('d-none');
+                    chiTietDeTai.innerHTML = `<p><strong>Đề tài:</strong> ${selectedDeTai.text}</p>`;
                 }
             })
             .catch(error => {
-                console.error('Lỗi khi gọi API giảng viên hội đồng:', error);
-                danhSachDiv.innerHTML = '<em>Lỗi khi lấy danh sách giảng viên.</em>';
+                console.error('Lỗi:', error);
+                giangVienSelect.innerHTML = '<option value="">-- Lỗi khi tải danh sách giảng viên --</option>';
             });
     } else {
         giangVienSelect.innerHTML = '<option value="">-- Chọn giảng viên --</option>';
-        danhSachDiv.innerHTML = '<em>Vui lòng chọn đề tài để xem danh sách giảng viên.</em>';
+        thongTinDeTai.classList.add('d-none');
     }
 });
 </script>

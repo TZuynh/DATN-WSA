@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\TaiKhoan;
 use App\Models\PhanCongVaiTro;
 use App\Models\HoiDong;
+use App\Models\VaiTro;
 
 class PhanCongChamController extends Controller
 {
@@ -236,39 +237,35 @@ class PhanCongChamController extends Controller
     // Hiển thị form phân công phản biện
     public function phanCongPhanBien()
     {
-        $deTais = \App\Models\DeTai::whereHas('chiTietBaoCao.hoiDong')->get();
-        return view('admin.phan-cong-cham.phan-bien', compact('deTais'));
+        // Lấy các đề tài đã được GVHD đồng ý và chưa có giảng viên phản biện
+        $deTais = DeTai::where('trang_thai', 1)
+            ->whereDoesntHave('chiTietBaoCao.hoiDong.phanCongVaiTros', function($query) {
+                $query->where('loai_giang_vien', 'Giảng Viên Phản Biện');
+            })
+            ->get();
+
+        // Lấy danh sách tất cả giảng viên
+        $giangViens = \App\Models\TaiKhoan::where('vai_tro', 'giang_vien')->get();
+        
+        return view('admin.phan-cong-cham.phan-bien', compact('deTais', 'giangViens'));
     }
 
-    // AJAX: Lấy danh sách giảng viên trong hội đồng của đề tài, cùng hội đồng với giảng viên hướng dẫn
+    // AJAX: Lấy danh sách giảng viên có thể phản biện cho đề tài
     public function getGiangVienHoiDong($de_tai_id)
     {
-        // Lấy đề tài và giảng viên hướng dẫn
-        $deTai = \App\Models\DeTai::with('giangVien')->find($de_tai_id);
-        if (!$deTai || !$deTai->giangVien) {
-            return response()->json([]);
-        }
-        $giangVienHuongDanId = $deTai->giangVien->id;
-
-        // Lấy chi tiết đề tài và hội đồng
-        $chiTiet = \App\Models\ChiTietDeTaiBaoCao::with('hoiDong.phanCongVaiTros.taiKhoan', 'hoiDong.phanCongVaiTros.vaiTro')
-            ->where('de_tai_id', $de_tai_id)
-            ->first();
-        if (!$chiTiet || !$chiTiet->hoiDong) {
-            return response()->json([]);
-        }
-        $hoiDong = $chiTiet->hoiDong;
-
-        // Lọc ra các giảng viên cùng hội đồng với giảng viên hướng dẫn
-        $giangViens = $hoiDong->phanCongVaiTros->filter(function ($pc) use ($giangVienHuongDanId) {
-            return $pc->taiKhoan->id != $giangVienHuongDanId; // Loại trừ giảng viên hướng dẫn nếu cần
-        })->map(function ($pc) {
-            return [
-                'id' => $pc->taiKhoan->id,
-                'ten' => $pc->taiKhoan->ten,
-                'vai_tro' => $pc->vaiTro->ten,
-            ];
-        })->values();
+        $deTai = DeTai::with('giangVien')->findOrFail($de_tai_id);
+        
+        // Lấy tất cả giảng viên trừ giảng viên hướng dẫn của đề tài
+        $giangViens = \App\Models\TaiKhoan::where('vai_tro', 'giang_vien')
+            ->where('id', '!=', $deTai->giang_vien_id)
+            ->get()
+            ->map(function($gv) {
+                return [
+                    'id' => $gv->id,
+                    'ten' => $gv->ten,
+                    'vai_tro' => 'Giảng viên'
+                ];
+            });
 
         return response()->json($giangViens);
     }
@@ -283,27 +280,60 @@ class PhanCongChamController extends Controller
 
         DB::beginTransaction();
         try {
-            // Tìm hội đồng của đề tài
-            $chiTiet = ChiTietDeTaiBaoCao::where('de_tai_id', $request->de_tai_id)->first();
-            if (!$chiTiet || !$chiTiet->hoi_dong_id) {
-                throw new \Exception('Không tìm thấy hội đồng cho đề tài này.');
+            // Tìm hoặc tạo chi tiết đề tài báo cáo
+            $deTai = DeTai::findOrFail($request->de_tai_id);
+            $chiTiet = ChiTietDeTaiBaoCao::firstOrCreate(
+                ['de_tai_id' => $request->de_tai_id],
+                [
+                    'dot_bao_cao_id' => $deTai->dot_bao_cao_id,
+                    'hoi_dong_id' => null
+                ]
+            );
+
+            // Tìm hoặc tạo hội đồng nếu chưa có
+            if (!$chiTiet->hoi_dong_id) {
+                $hoiDong = \App\Models\HoiDong::firstOrCreate(
+                    ['dot_bao_cao_id' => $deTai->dot_bao_cao_id],
+                    ['ten' => 'Hội đồng đợt ' . $deTai->dot_bao_cao_id]
+                );
+                $chiTiet->hoi_dong_id = $hoiDong->id;
+                $chiTiet->save();
             }
 
-            // Gán vai trò phản biện cho giảng viên trong hội đồng
-            $phanCong = PhanCongVaiTro::where('hoi_dong_id', $chiTiet->hoi_dong_id)
-                ->where('tai_khoan_id', $request->giang_vien_id)
-                ->first();
+            // Lấy vai trò mặc định (hoặc tạo mới nếu chưa có)
+            $vaiTro = VaiTro::firstOrCreate(
+                ['ten' => 'Giảng viên'],
+                ['mo_ta' => 'Vai trò giảng viên trong hội đồng']
+            );
 
-            if (!$phanCong) {
-                throw new \Exception('Giảng viên không thuộc hội đồng này.');
+            // Cập nhật hoặc tạo phân công vai trò cho giảng viên phản biện
+            PhanCongVaiTro::updateOrCreate(
+                [
+                    'hoi_dong_id' => $chiTiet->hoi_dong_id,
+                    'tai_khoan_id' => $request->giang_vien_id,
+                ],
+                [
+                    'vai_tro_id' => $vaiTro->id,
+                    'loai_giang_vien' => 'Giảng Viên Phản Biện'
+                ]
+            );
+
+            // Đảm bảo giảng viên hướng dẫn cũng được thêm vào hội đồng
+            if ($deTai->giang_vien_id) {
+                PhanCongVaiTro::updateOrCreate(
+                    [
+                        'hoi_dong_id' => $chiTiet->hoi_dong_id,
+                        'tai_khoan_id' => $deTai->giang_vien_id,
+                    ],
+                    [
+                        'vai_tro_id' => $vaiTro->id,
+                        'loai_giang_vien' => 'Giảng Viên Hướng Dẫn'
+                    ]
+                );
             }
-
-            // Cập nhật loại giảng viên
-            $phanCong->loai_giang_vien = 'Giảng Viên Phản Biện';
-            $phanCong->save();
 
             DB::commit();
-            return redirect()->back()->with('success', 'Phân công giảng viên phản biện thành công! Giảng viên phản biện sẽ tiến hành duyệt đề tài.');
+            return redirect()->back()->with('success', 'Phân công giảng viên phản biện thành công!');
 
         } catch (\Exception $e) {
             DB::rollBack();

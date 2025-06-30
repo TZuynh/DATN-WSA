@@ -27,18 +27,13 @@ class DeTaiController extends Controller
             ->exists();
 
         if ($isPhanBien) {
-            // Lấy các hội đồng mà user là phản biện
-            $hoiDongIds = \App\Models\PhanCongVaiTro::where('tai_khoan_id', $user->id)
-                ->where('loai_giang_vien', 'Giảng Viên Phản Biện')
-                ->pluck('hoi_dong_id');
-
-            // Lấy các đề tài thông qua bảng chi_tiet_de_tai_bao_caos
-            $deTaiIds = \App\Models\ChiTietDeTaiBaoCao::whereIn('hoi_dong_id', $hoiDongIds)
-                ->pluck('de_tai_id');
-
-            // Lấy tất cả đề tài mà giảng viên được phân công phản biện
+            // Lấy các đề tài mà giảng viên được phân công phản biện
             $deTais = \App\Models\DeTai::with(['nhoms.sinhViens', 'dotBaoCao.hocKy', 'giangVien'])
-                ->whereIn('id', $deTaiIds)
+                ->whereHas('chiTietBaoCao.hoiDong.phanCongVaiTros', function($query) use ($user) {
+                    $query->where('tai_khoan_id', $user->id)
+                        ->where('loai_giang_vien', 'Giảng Viên Phản Biện');
+                })
+                ->whereNotIn('trang_thai', [2, 4]) // Chỉ lấy đề tài chưa được duyệt hoặc từ chối
                 ->orderBy('created_at', 'desc')
                 ->get();
         } else {
