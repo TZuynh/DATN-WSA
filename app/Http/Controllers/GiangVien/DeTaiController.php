@@ -154,7 +154,7 @@ class DeTaiController extends Controller
             'y_kien_giang_vien' => 'nullable|string',
             'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
             'nhom_id' => 'nullable|exists:nhoms,id',
-            'trang_thai' => 'required|integer|in:0,1,2,3,4'
+            'trang_thai' => 'nullable|integer|in:0,1,2,3,4'
         ]);
 
         try {
@@ -195,6 +195,11 @@ class DeTaiController extends Controller
         }
 
         try {
+            // Xóa các bản ghi liên quan trước
+            \App\Models\PhanCongCham::where('de_tai_id', $deTai->id)->delete();
+            \App\Models\ChiTietDeTaiBaoCao::where('de_tai_id', $deTai->id)->delete();
+            \App\Models\LichCham::where('de_tai_id', $deTai->id)->delete();
+
             // Gỡ liên kết đề tài khỏi các nhóm trước khi xóa
             $deTai->nhoms()->update(['de_tai_id' => null]);
 

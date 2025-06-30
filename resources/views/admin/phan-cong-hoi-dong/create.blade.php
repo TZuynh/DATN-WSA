@@ -60,13 +60,15 @@
                     <select name="vai_tro_id" id="vai_tro_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn vai trò">
                         <option value="">Chọn vai trò</option>
                         @foreach($vaiTros as $vaiTro)
-                            @php
-                                $disable = false;
-                                if (in_array($vaiTro->id, $vaiTrosDaPhanCong ?? []) && in_array($vaiTro->id, [$truongTieuBanId, $thuKyId])) $disable = true;
-                            @endphp
-                            <option value="{{ $vaiTro->id }}" {{ $disable ? 'disabled' : '' }}>
-                                {{ $vaiTro->ten }}
-                            </option>
+                            @if($vaiTro->ten !== 'Giảng viên')
+                                @php
+                                    $disable = false;
+                                    if (in_array($vaiTro->id, $vaiTrosDaPhanCong ?? []) && in_array($vaiTro->id, [$truongTieuBanId, $thuKyId])) $disable = true;
+                                @endphp
+                                <option value="{{ $vaiTro->id }}" {{ $disable ? 'disabled' : '' }}>
+                                    {{ $vaiTro->ten }}
+                                </option>
+                            @endif
                         @endforeach
                     </select>
                 </div>

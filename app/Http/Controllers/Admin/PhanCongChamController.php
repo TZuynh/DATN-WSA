@@ -300,10 +300,10 @@ class PhanCongChamController extends Controller
                 $chiTiet->save();
             }
 
-            // Lấy vai trò mặc định (hoặc tạo mới nếu chưa có)
+            // Lấy vai trò "Thành viên" (không phải "Giảng viên")
             $vaiTro = VaiTro::firstOrCreate(
-                ['ten' => 'Giảng viên'],
-                ['mo_ta' => 'Vai trò giảng viên trong hội đồng']
+                ['ten' => 'Thành viên'],
+                ['mo_ta' => 'Thành viên hội đồng']
             );
 
             // Cập nhật hoặc tạo phân công vai trò cho giảng viên phản biện
