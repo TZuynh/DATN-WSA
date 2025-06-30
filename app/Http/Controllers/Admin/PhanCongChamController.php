@@ -231,4 +231,72 @@ class PhanCongChamController extends Controller
             'members' => $sortedMembers
         ]);
     }
+
+    // Hiển thị form phân công phản biện
+    public function phanCongPhanBien()
+    {
+        $deTais = \App\Models\DeTai::whereHas('chiTietBaoCao.hoiDong')->get();
+        return view('admin.phan-cong-cham.phan-bien', compact('deTais'));
+    }
+
+    // AJAX: Lấy danh sách giảng viên trong hội đồng của đề tài, cùng hội đồng với giảng viên hướng dẫn
+    public function getGiangVienHoiDong($de_tai_id)
+    {
+        // Lấy đề tài và giảng viên hướng dẫn
+        $deTai = \App\Models\DeTai::with('giangVien')->find($de_tai_id);
+        if (!$deTai || !$deTai->giangVien) {
+            return response()->json([]);
+        }
+        $giangVienHuongDanId = $deTai->giangVien->id;
+
+        // Lấy chi tiết đề tài và hội đồng
+        $chiTiet = \App\Models\ChiTietDeTaiBaoCao::with('hoiDong.phanCongVaiTros.taiKhoan', 'hoiDong.phanCongVaiTros.vaiTro')
+            ->where('de_tai_id', $de_tai_id)
+            ->first();
+        if (!$chiTiet || !$chiTiet->hoiDong) {
+            return response()->json([]);
+        }
+        $hoiDong = $chiTiet->hoiDong;
+
+        // Lọc ra các giảng viên cùng hội đồng với giảng viên hướng dẫn
+        $giangViens = $hoiDong->phanCongVaiTros->filter(function ($pc) use ($giangVienHuongDanId) {
+            return $pc->taiKhoan->id != $giangVienHuongDanId; // Loại trừ giảng viên hướng dẫn nếu cần
+        })->map(function ($pc) {
+            return [
+                'id' => $pc->taiKhoan->id,
+                'ten' => $pc->taiKhoan->ten,
+                'vai_tro' => $pc->vaiTro->ten,
+            ];
+        })->values();
+
+        return response()->json($giangViens);
+    }
+
+    // Lưu phân công phản biện
+    public function storePhanBien(\Illuminate\Http\Request $request)
+    {
+        $request->validate([
+            'de_tai_id' => 'required|exists:de_tais,id',
+            'giang_vien_id' => 'required|exists:tai_khoans,id',
+        ]);
+
+        // Tìm hội đồng của đề tài
+        $chiTiet = \App\Models\ChiTietDeTaiBaoCao::where('de_tai_id', $request->de_tai_id)->first();
+        if (!$chiTiet || !$chiTiet->hoi_dong_id) {
+            return back()->with('error', 'Không tìm thấy hội đồng cho đề tài này.');
+        }
+
+        // Gán vai trò phản biện cho giảng viên trong hội đồng
+        $phanCong = \App\Models\PhanCongVaiTro::where('hoi_dong_id', $chiTiet->hoi_dong_id)
+            ->where('tai_khoan_id', $request->giang_vien_id)
+            ->first();
+
+        if ($phanCong) {
+            $phanCong->loai_giang_vien = 'Giảng Viên Phản Biện';
+            $phanCong->save();
+            return back()->with('success', 'Phân công giảng viên phản biện thành công!');
+        } else {
+            return back()->with('error', 'Giảng viên không thuộc hội đồng này.');
+        }
+    }
 }

@@ -101,6 +101,20 @@ class DeTaiController extends Controller
                     return redirect()->back()->with('error', 'Không tìm thấy hội đồng phù hợp cho đề tài này.');
                 }
             }
+            // Tự động phân công giảng viên hướng dẫn vào hội đồng
+            $vaiTroGVHD = \App\Models\VaiTro::where('ten', 'Giảng viên hướng dẫn')->first();
+            if ($deTai->giang_vien_id && $chiTiet && $chiTiet->hoi_dong_id && $vaiTroGVHD) {
+                \App\Models\PhanCongVaiTro::updateOrCreate(
+                    [
+                        'hoi_dong_id' => $chiTiet->hoi_dong_id,
+                        'tai_khoan_id' => $deTai->giang_vien_id,
+                    ],
+                    [
+                        'loai_giang_vien' => 'Giảng Viên Hướng Dẫn',
+                        'vai_tro_id' => $vaiTroGVHD->id
+                    ]
+                );
+            }
 
             return redirect()->route('giangvien.de-tai.index')->with('success', 'Thêm đề tài thành công');
         } catch (\Exception $e) {

@@ -29,7 +29,10 @@
                 <i class="fas fa-chevron-down arrow"></i>
             </a>
             <ul class="submenu">
-                <li class="menu-item {{ request()->routeIs('admin.phan-cong-cham.*') ? 'active' : '' }}">
+                <li class="menu-item {{ request()->routeIs('admin.phan-cong-cham.phan-bien') ? 'active' : '' }}">
+                    <a href="{{ route('admin.phan-cong-cham.phan-bien') }}"><i class="fas fa-user-check"></i>Phân công giảng viên phản biện</a>
+                </li>
+                <li class="menu-item {{ request()->routeIs('admin.phan-cong-cham.*') && !request()->routeIs('admin.phan-cong-cham.phan-bien') ? 'active' : '' }}">
                     <a href="{{ route('admin.phan-cong-cham.index') }}"><i class="fas fa-tasks"></i>Quản lý phản biện</a>
                 </li>
             </ul>
