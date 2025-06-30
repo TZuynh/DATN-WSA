@@ -175,6 +175,13 @@
                                         </tr>
                                     @endif
                                 @endforeach
+                                @if($phanCongChams->isEmpty() && $deTais->isEmpty())
+                                    <tr>
+                                        <td colspan="10" class="text-center text-muted py-4">
+                                            <i class="fas fa-info-circle me-2"></i>Chưa có dữ liệu
+                                        </td>
+                                    </tr>
+                                @endif
                             </tbody>
                         </table>
                     </div>
