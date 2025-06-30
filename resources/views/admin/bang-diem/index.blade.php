@@ -81,7 +81,7 @@
                     </form>
 
                     <!-- Bảng điểm -->
-                    @if($bangDiems->isEmpty())
+                    @if($bangDiemBySinhVien->isEmpty())
                         <div class="alert alert-info">
                             Không có dữ liệu điểm nào.
                         </div>
@@ -91,108 +91,49 @@
                                 <thead>
                                     <tr>
                                         <th>STT</th>
-                                        <th>Mã sinh viên</th>
+                                        <th>MSSV</th>
                                         <th>Tên sinh viên</th>
                                         <th>Đợt báo cáo</th>
-                                        <th>Giảng viên chấm</th>
-                                        <th>Vai trò chấm</th>
-                                        <th>Điểm báo cáo</th>
-                                        <th>Điểm thuyết trình</th>
-                                        <th>Điểm demo</th>
-                                        <th>Điểm câu hỏi</th>
-                                        <th>Điểm cộng</th>
-                                        <th>Tổng điểm</th>
-                                        <th>Ngày chấm</th>
+                                        <th>Điểm trung bình báo cáo</th>
+                                        <th>Tổng điểm trung bình</th>
+                                        <th>Điểm tổng kết</th>
                                         <th>Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($bangDiems as $bangDiem)
+                                    @php $stt = 1; @endphp
+                                    @foreach($bangDiemBySinhVien as $sinhVienId => $group)
                                         @php
-                                            $tongDiem = $bangDiem->diem_bao_cao + $bangDiem->diem_thuyet_trinh +
-                                                       $bangDiem->diem_demo + $bangDiem->diem_cau_hoi + $bangDiem->diem_cong;
+                                            $bangDiemList = $group['list'];
+                                            $diem_bao_cao_tb = $group['diem_bao_cao_tb'];
+                                            $tong_ket = $group['tong_ket'];
+                                            $diem_tong_ket = $group['diem_tong_ket'];
+                                            $sinhVien = $bangDiemList->first()->sinhVien ?? null;
+                                            $dotBaoCao = $bangDiemList->first()->dotBaoCao ?? null;
                                         @endphp
                                         <tr>
-                                            <td>{{ $loop->iteration }}</td>
-                                            <td>{{ $bangDiem->sinhVien->mssv }}</td>
-                                            <td>{{ $bangDiem->sinhVien->ten }}</td>
-                                            <td>{{ $bangDiem->dotBaoCao->nam_hoc }} - {{ $bangDiem->dotBaoCao->hocKy->ten }}</td>
-                                            <td>{{ $bangDiem->giangVien->ten }}</td>
+                                            <td>{{ $stt++ }}</td>
+                                            <td>{{ $sinhVien->mssv ?? '' }}</td>
+                                            <td>{{ $sinhVien->ten ?? '' }}</td>
+                                            <td>{{ ($dotBaoCao->nam_hoc ?? 'N/A') . ' - ' . ($dotBaoCao->hocKy->ten ?? 'N/A') }}</td>
+                                            <td>{{ $diem_bao_cao_tb !== null ? number_format($diem_bao_cao_tb, 2) : '-' }}</td>
+                                            <td>{{ $tong_ket !== null ? number_format($tong_ket, 2) : '-' }}</td>
+                                            <td>{{ $diem_tong_ket !== null ? number_format(min($diem_tong_ket, 10), 2) : '-' }}</td>
                                             <td>
-                                                @php
-                                                    $phanCongCham = \App\Models\PhanCongCham::where('de_tai_id', $bangDiem->de_tai_id)
-                                                        ->whereHas('hoiDong.phanCongVaiTros')
-                                                        ->first();
-                                                    $vaiTros = [];
-                                                    if ($phanCongCham && $phanCongCham->hoiDong) {
-                                                        $vaiTros = $phanCongCham->hoiDong->phanCongVaiTros;
-                                                    }
-                                                    // Debug log
-                                                    \Log::info('DEBUG VAITRO ADMIN BANGDIEM', [
-                                                        'bang_diem_id' => $bangDiem->id,
-                                                        'de_tai_id' => $bangDiem->de_tai_id,
-                                                        'phan_cong_cham_id' => $phanCongCham ? $phanCongCham->id : null,
-                                                        'vai_tros' => $vaiTros ? $vaiTros->map(function($v){ return [$v->tai_khoan_id, $v->loai_giang_vien]; }) : [],
-                                                    ]);
-                                                @endphp
-                                                @if(!empty($vaiTros) && $vaiTros->count())
-                                                    @foreach($vaiTros as $vaiTro)
-                                                        @php
-                                                            $badgeClass = 'bg-secondary';
-                                                            if($vaiTro->loai_giang_vien == 'Giảng Viên Phản Biện') $badgeClass = 'bg-primary';
-                                                            elseif($vaiTro->loai_giang_vien == 'Giảng Viên Hướng Dẫn') $badgeClass = 'bg-success';
-                                                            elseif($vaiTro->loai_giang_vien == 'Giảng Viên Khác') $badgeClass = 'bg-info';
-                                                        @endphp
-                                                        <span class="badge {{ $badgeClass }} mb-1">
-                                                            {{ $vaiTro->taiKhoan ? $vaiTro->taiKhoan->ten : 'N/A' }} - {{ $vaiTro->loai_giang_vien ?? 'Chưa phân vai' }}
-                                                        </span>
-                                                    @endforeach
-                                                @else
-                                                    <span class="badge bg-secondary">N/A</span>
-                                                @endif
-                                            </td>
-                                            <td>{{ $bangDiem->diem_bao_cao }}</td>
-                                            <td>{{ $bangDiem->diem_thuyet_trinh }}</td>
-                                            <td>{{ $bangDiem->diem_demo }}</td>
-                                            <td>{{ $bangDiem->diem_cau_hoi }}</td>
-                                            <td>{{ $bangDiem->diem_cong }}</td>
-                                            <td><strong>{{ number_format($tongDiem, 2) }}</strong></td>
-                                            <td>{{ $bangDiem->created_at->format('d/m/Y H:i') }}</td>
-                                            <td>
-                                                <a href="{{ route('admin.bang-diem.show', $bangDiem->id) }}"
-                                                   class="btn btn-sm btn-info">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{{ route('admin.bang-diem.edit', $bangDiem->id) }}"
-                                                   class="btn btn-sm btn-warning">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <form action="{{ route('admin.bang-diem.destroy', $bangDiem->id) }}"
-                                                      method="POST" class="d-inline">
+                                                <a href="{{ route('admin.bang-diem.show', $bangDiemList->first()->id) }}" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a>
+                                                <a href="{{ route('admin.bang-diem.edit', $bangDiemList->first()->id) }}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
+                                                <form action="{{ route('admin.bang-diem.destroy', $bangDiemList->first()->id) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-danger"
-                                                            onclick="return confirm('Bạn có chắc muốn xóa điểm này?')">
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa điểm này?')">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
                                             </td>
                                         </tr>
-                                        @if($phanCongCham)
-                                            <tr>
-                                                <td colspan="5"></td>
-                                                <td>Hội đồng: {{ $phanCongCham->hoiDong->id ?? 'null' }}</td>
-                                                <td>Vai trò count: {{ $phanCongCham->hoiDong->phanCongVaiTros->count() }}</td>
-                                            </tr>
-                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>
-                        </div>
-
-                        <!-- Phân trang -->
-                        <div class="d-flex justify-content-center">
-                            {{ $bangDiems->appends(request()->query())->links() }}
                         </div>
                     @endif
                 </div>

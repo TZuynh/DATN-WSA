@@ -5,21 +5,16 @@
 @section('content')
 <div class="container-fluid">
     <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Chi tiết điểm</h3>
-                    <div class="card-tools">
-                        <a href="{{ route('admin.bang-diem.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Quay lại
-                        </a>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h5>Thông tin sinh viên</h5>
-                            <table class="table table-bordered">
+        <!-- Thông tin sinh viên & đợt báo cáo -->
+        <div class="col-12 mb-4">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-header bg-info text-white">
+                            <strong>Thông tin sinh viên</strong>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered mb-0">
                                 <tr>
                                     <th width="30%">Mã sinh viên:</th>
                                     <td>{{ $bangDiem->sinhVien->mssv }}</td>
@@ -34,9 +29,15 @@
                                 </tr>
                             </table>
                         </div>
-                        <div class="col-md-6">
-                            <h5>Thông tin đợt báo cáo</h5>
-                            <table class="table table-bordered">
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-header bg-secondary text-white">
+                            <strong>Thông tin đợt báo cáo</strong>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered mb-0">
                                 <tr>
                                     <th width="30%">Tên hội đồng:</th>
                                     <td>
@@ -50,6 +51,10 @@
                                 <tr>
                                     <th>Năm học:</th>
                                     <td>{{ $bangDiem->dotBaoCao->nam_hoc }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Học kỳ:</th>
+                                    <td>{{ $bangDiem->dotBaoCao->hocKy->ten ?? 'N/A' }}</td>
                                 </tr>
                                 <tr>
                                     <th>Tên nhóm:</th>
@@ -73,127 +78,74 @@
                             </table>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
 
-                    <div class="row mt-4">
-                        <div class="col-md-8">
-                            <h5>Chi tiết điểm</h5>
-                            <table class="table table-bordered">
+        <!-- Bảng tổng hợp các lần chấm -->
+        <div class="col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white text-center">
+                    <h5 class="mb-0">Bảng tổng hợp tất cả các lần chấm của giảng viên</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-striped mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 40px;">STT</th>
+                                <th style="min-width: 120px;">Tên giảng viên</th>
+                                <th style="min-width: 100px;">Vai trò chấm</th>
+                                <th style="width: 80px;">Điểm báo cáo</th>
+                                <th style="width: 80px;">Điểm thuyết trình</th>
+                                <th style="width: 80px;">Điểm demo</th>
+                                <th style="width: 80px;">Điểm câu hỏi</th>
+                                <th style="width: 80px;">Điểm cộng</th>
+                                <th style="width: 100px;">Tổng điểm</th>
+                                <th style="min-width: 120px;">Ngày chấm</th>
+                                <th style="min-width: 120px;">Bình luận</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $allBangDiem = \App\Models\BangDiem::where('sinh_vien_id', $bangDiem->sinh_vien_id)
+                                    ->where('dot_bao_cao_id', $bangDiem->dot_bao_cao_id)
+                                    ->with(['giangVien'])
+                                    ->get();
+                            @endphp
+                            @foreach($allBangDiem as $i => $bd)
                                 <tr>
-                                    <th width="25%">Điểm báo cáo:</th>
-                                    <td>{{ $bangDiem->diem_bao_cao }}</td>
+                                    <td class="text-center">{{ $i + 1 }}</td>
+                                    <td>{{ $bd->giangVien->ten ?? 'N/A' }}</td>
+                                    <td>{{ $bd->vai_tro_cham ?? 'N/A' }}</td>
+                                    <td class="text-center">{{ $bd->diem_bao_cao !== null ? number_format($bd->diem_bao_cao, 2) : '-' }}</td>
+                                    <td class="text-center">{{ $bd->diem_thuyet_trinh !== null ? number_format($bd->diem_thuyet_trinh, 2) : '-' }}</td>
+                                    <td class="text-center">{{ $bd->diem_demo !== null ? number_format($bd->diem_demo, 2) : '-' }}</td>
+                                    <td class="text-center">{{ $bd->diem_cau_hoi !== null ? number_format($bd->diem_cau_hoi, 2) : '-' }}</td>
+                                    <td class="text-center">{{ $bd->diem_cong !== null ? number_format($bd->diem_cong, 2) : '-' }}</td>
+                                    <td class="text-center">{{ number_format(($bd->diem_thuyet_trinh ?? 0) + ($bd->diem_demo ?? 0) + ($bd->diem_cau_hoi ?? 0) + ($bd->diem_cong ?? 0), 2) }}</td>
+                                    <td class="text-center">{{ $bd->created_at ? $bd->created_at->format('d/m/Y H:i') : '-' }}</td>
+                                    <td>{{ $bd->binh_luan ?? '' }}</td>
                                 </tr>
-                                <tr>
-                                    <th>Điểm thuyết trình:</th>
-                                    <td>{{ $bangDiem->diem_thuyet_trinh }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Điểm demo:</th>
-                                    <td>{{ $bangDiem->diem_demo }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Điểm câu hỏi:</th>
-                                    <td>{{ $bangDiem->diem_cau_hoi }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Điểm cộng:</th>
-                                    <td>{{ $bangDiem->diem_cong }}</td>
-                                </tr>
-                                <tr class="table-primary">
-                                    <th><strong>Tổng điểm:</strong></th>
-                                    <td><strong>{{ number_format($bangDiem->diem_bao_cao + $bangDiem->diem_thuyet_trinh + $bangDiem->diem_demo + $bangDiem->diem_cau_hoi + $bangDiem->diem_cong, 2) }}</strong></td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div class="col-md-4">
-                            <h5>Thông tin chấm</h5>
-                            <table class="table table-bordered">
-                                <tr>
-                                    <th width="40%">Giảng viên:</th>
-                                    <td>{{ $bangDiem->giangVien->ten }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Vai trò chấm:</th>
-                                    <td>
-                                        @if($bangDiem->vai_tro_cham == 'Phản biện')
-                                            <span class="badge bg-primary">{{ $bangDiem->vai_tro_cham }}</span>
-                                        @elseif($bangDiem->vai_tro_cham == 'Giảng viên khác')
-                                            <span class="badge bg-info">{{ $bangDiem->vai_tro_cham }}</span>
-                                        @elseif($bangDiem->vai_tro_cham == 'Hướng dẫn')
-                                            <span class="badge bg-success">{{ $bangDiem->vai_tro_cham }}</span>
-                                        @else
-                                            <span class="badge bg-secondary">{{ $bangDiem->vai_tro_cham ?: 'N/A' }}</span>
-                                        @endif
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th colspan="2">Tất cả giảng viên & vai trò trong hội đồng</th>
-                                </tr>
-                                @php
-                                    $phanCongCham = \App\Models\PhanCongCham::where('de_tai_id', $bangDiem->de_tai_id)
-                                        ->whereHas('hoiDong.phanCongVaiTros')
-                                        ->first();
-                                    $vaiTros = [];
-                                    if ($phanCongCham && $phanCongCham->hoiDong) {
-                                        $vaiTros = $phanCongCham->hoiDong->phanCongVaiTros;
-                                    }
-                                @endphp
-                                @if(!empty($vaiTros) && $vaiTros->count())
-                                    @foreach($vaiTros as $vaiTro)
-                                        <tr>
-                                            <td>{{ $vaiTro->taiKhoan ? $vaiTro->taiKhoan->ten : 'N/A' }}</td>
-                                            <td>
-                                                @php
-                                                    $badgeClass = 'bg-secondary';
-                                                    if($vaiTro->loai_giang_vien == 'Giảng Viên Phản Biện') $badgeClass = 'bg-primary';
-                                                    elseif($vaiTro->loai_giang_vien == 'Giảng Viên Hướng Dẫn') $badgeClass = 'bg-success';
-                                                    elseif($vaiTro->loai_giang_vien == 'Giảng Viên Khác') $badgeClass = 'bg-info';
-                                                @endphp
-                                                <span class="badge {{ $badgeClass }}">{{ $vaiTro->loai_giang_vien }}</span>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                @else
-                                    <tr><td colspan="2"><span class="badge bg-secondary">N/A</span></td></tr>
-                                @endif
-                                <tr>
-                                    <th>Ngày chấm:</th>
-                                    <td>{{ $bangDiem->created_at->format('d/m/Y H:i') }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Cập nhật:</th>
-                                    <td>{{ $bangDiem->updated_at->format('d/m/Y H:i') }}</td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-
-                    @if($bangDiem->binh_luan)
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <h5>Bình luận</h5>
-                            <div class="alert alert-info">
-                                {{ $bangDiem->binh_luan }}
-                            </div>
-                        </div>
-                    </div>
-                    @endif
-
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <a href="{{ route('admin.bang-diem.edit', $bangDiem->id) }}" class="btn btn-warning">
-                                <i class="fas fa-edit"></i> Chỉnh sửa
-                            </a>
-                            <form action="{{ route('admin.bang-diem.destroy', $bangDiem->id) }}" 
-                                  method="POST" class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger" 
-                                        onclick="return confirm('Bạn có chắc muốn xóa điểm này?')">
-                                    <i class="fas fa-trash"></i> Xóa
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+                            @endforeach
+                        </tbody>
+                        <tfoot>
+                            @php
+                                // Tính toán điểm trung bình báo cáo, tổng điểm trung bình, điểm tổng kết
+                                $diemBaoCaoTB = $allBangDiem->avg('diem_bao_cao');
+                                $tongDiemTB = $allBangDiem->map(function($bd) {
+                                    return ($bd->diem_thuyet_trinh ?? 0) + ($bd->diem_demo ?? 0) + ($bd->diem_cau_hoi ?? 0) + ($bd->diem_cong ?? 0);
+                                })->avg();
+                                $diemTongKet = $diemBaoCaoTB !== null && $tongDiemTB !== null ? min(round($diemBaoCaoTB * 0.2 + $tongDiemTB * 0.8, 2), 10) : null;
+                            @endphp
+                            <tr class="table-info">
+                                <td colspan="3" class="text-end"><strong>Kết quả tổng hợp</strong></td>
+                                <td colspan="2" class="text-center"><strong>Điểm trung bình báo cáo:<br>{{ $diemBaoCaoTB !== null ? number_format($diemBaoCaoTB, 2) : '-' }}</strong></td>
+                                <td colspan="2" class="text-center"><strong>Tổng điểm trung bình:<br>{{ $tongDiemTB !== null ? number_format($tongDiemTB, 2) : '-' }}</strong></td>
+                                <td colspan="2" class="text-center"><strong>Điểm tổng kết:<br>{{ $diemTongKet !== null ? number_format($diemTongKet, 2) : '-' }}</strong></td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             </div>
         </div>

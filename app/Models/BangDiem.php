@@ -11,6 +11,8 @@ class BangDiem extends Model
         'sinh_vien_id',
         'dot_bao_cao_id',
         'diem_bao_cao',
+        'diem_bao_cao_hd',
+        'diem_bao_cao_pb',
         'diem_thuyet_trinh',
         'diem_demo',
         'diem_cau_hoi',

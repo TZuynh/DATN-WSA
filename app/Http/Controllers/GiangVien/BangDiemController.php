@@ -285,15 +285,21 @@ class BangDiemController extends Controller
         if ($hasDotBaoCao) {
             $rules = array_merge($rules, [
                 'diem_bao_cao' => 'nullable|numeric|min:0|max:10',
-                'diem_thuyet_trinh' => 'nullable|numeric|min:0|max:10',
+                'diem_thuyet_trinh' => 'nullable|numeric|min:0|max:3',
                 'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
-                'diem_demo' => 'required|numeric|min:0|max:10',
-                'diem_cau_hoi' => 'required|numeric|min:0|max:10',
-                'diem_cong' => 'nullable|numeric|min:0|max:2',
+                'diem_demo' => 'required|numeric|min:0|max:4',
+                'diem_cau_hoi' => 'required|numeric|min:0|max:1',
+                'diem_cong' => 'nullable|numeric|min:0|max:1',
             ]);
         }
 
-        $validated = $request->validate($rules);
+        $messages = [
+            'diem_thuyet_trinh.max' => 'Điểm thuyết trình tối đa là 3.',
+            'diem_demo.max' => 'Điểm demo tối đa là 4.',
+            'diem_cau_hoi.max' => 'Điểm câu hỏi tối đa là 1.',
+            'diem_cong.max' => 'Điểm cộng tối đa là 1.',
+        ];
+        $validated = $request->validate($rules, $messages);
 
         try {
             $data = [
@@ -316,6 +322,31 @@ class BangDiemController extends Controller
                 $data['diem_demo'] = $request->diem_demo;
                 $data['diem_cau_hoi'] = $request->diem_cau_hoi;
                 $data['diem_cong'] = $request->diem_cong ?? 0;
+
+                // Xác định vai trò chấm điểm
+                $giangVienId = Auth::id();
+                $vaiTroCham = null;
+                $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $request->sinh_vien_id)->first();
+                if ($chiTietNhom && $chiTietNhom->nhom) {
+                    $nhom = $chiTietNhom->nhom;
+                    $deTai = $nhom->deTai;
+                    if (!$deTai) {
+                        $deTai = \App\Models\DeTai::where('nhom_id', $nhom->id)->first();
+                    }
+                    if ($deTai && $deTai->phanCongCham) {
+                        $phanCongCham = $deTai->phanCongCham;
+                        if ($phanCongCham->hoiDong && $phanCongCham->hoiDong->phanCongVaiTros) {
+                            $phanCongVaiTro = $phanCongCham->hoiDong->phanCongVaiTros->firstWhere('tai_khoan_id', $giangVienId);
+                            $vaiTroCham = $phanCongVaiTro ? $phanCongVaiTro->loai_giang_vien : null;
+                        }
+                    }
+                }
+                // Lưu điểm báo cáo vào đúng cột
+                if ($vaiTroCham === 'Giảng Viên Hướng Dẫn') {
+                    $data['diem_bao_cao_hd'] = $request->diem_bao_cao;
+                } elseif ($vaiTroCham === 'Giảng Viên Phản Biện') {
+                    $data['diem_bao_cao_pb'] = $request->diem_bao_cao;
+                }
             } else {
                 $data['diem_bao_cao'] = $request->diem_bao_cao;
                 $data['diem_thuyet_trinh'] = $request->diem_thuyet_trinh;

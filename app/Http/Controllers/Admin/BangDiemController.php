@@ -40,46 +40,52 @@ class BangDiemController extends Controller
             $query->where('sinh_vien_id', $request->sinh_vien_id);
         }
 
-        $bangDiems = $query->orderBy('created_at', 'desc')->paginate(15);
+        $bangDiems = $query->orderBy('created_at', 'desc')->get();
 
-        // Thêm thông tin vai trò chấm cho bảng điểm
-        $bangDiems->getCollection()->transform(function($bangDiem) {
-            $bangDiem->vai_tro_cham = '';
-            // Lấy phân công chấm tương ứng - sử dụng logic đồng nhất
-            $phanCongCham = PhanCongCham::whereHas('hoiDong.phanCongVaiTros', function($query) use ($bangDiem) {
-                $query->where('tai_khoan_id', $bangDiem->giang_vien_id);
-            })
-            ->whereHas('deTai.nhom.sinhViens', function($query) use ($bangDiem) {
-                $query->where('sinh_viens.id', $bangDiem->sinh_vien_id);
-            })
-            ->first();
-            if ($phanCongCham && $phanCongCham->hoiDong) {
-                $vaiTro = $phanCongCham->hoiDong->phanCongVaiTros->firstWhere('tai_khoan_id', $bangDiem->giang_vien_id);
-                if ($vaiTro) {
-                    switch ($vaiTro->loai_giang_vien) {
-                        case 'Giảng Viên Hướng Dẫn':
-                            $bangDiem->vai_tro_cham = 'Hướng dẫn';
-                            break;
-                        case 'Giảng Viên Phản Biện':
-                            $bangDiem->vai_tro_cham = 'Phản biện';
-                            break;
-                        case 'Giảng Viên Khác':
-                            $bangDiem->vai_tro_cham = 'Giảng viên khác';
-                            break;
-                        default:
-                            $bangDiem->vai_tro_cham = $vaiTro->loai_giang_vien;
-                    }
-                }
+        // Gom nhóm bảng điểm theo sinh viên, tính trung bình tổng điểm
+        $bangDiemBySinhVien = $bangDiems->groupBy('sinh_vien_id')->map(function($items) {
+            $result = [
+                'list' => $items,
+                'diem_bao_cao_tb' => null,
+                'tong_ket' => null,
+                'diem_tong_ket' => null
+            ];
+            // Tính tổng điểm từng giảng viên (không cộng điểm báo cáo)
+            $tongDiemArr = $items->map(function($bd) {
+                return ($bd->diem_thuyet_trinh ?? 0) + ($bd->diem_demo ?? 0) + ($bd->diem_cau_hoi ?? 0) + ($bd->diem_cong ?? 0);
+            });
+            if ($tongDiemArr->count() > 0) {
+                $result['tong_ket'] = round($tongDiemArr->avg(), 2);
             }
-            return $bangDiem;
+            // Trung bình điểm báo cáo
+            $diemBaoCaoArr = $items->pluck('diem_bao_cao')->filter(function($v){ return $v !== null; });
+            if ($diemBaoCaoArr->count() > 0) {
+                $result['diem_bao_cao_tb'] = round($diemBaoCaoArr->avg(), 2);
+            }
+            // Điểm tổng kết = điểm trung bình báo cáo * 0.2 + điểm tổng trung bình * 0.8
+            if ($result['diem_bao_cao_tb'] !== null && $result['tong_ket'] !== null) {
+                $result['diem_tong_ket'] = round($result['diem_bao_cao_tb'] * 0.2 + $result['tong_ket'] * 0.8, 2);
+            }
+            return $result;
         });
+
+        // Log dữ liệu nhóm bảng điểm theo sinh viên để debug
+        \Log::info('DEBUG bangDiemBySinhVien', [
+            'data' => $bangDiemBySinhVien->map(function($group, $sinhVienId) {
+                return [
+                    'sinh_vien_id' => $sinhVienId,
+                    'diem_bao_cao_tb' => $group['diem_bao_cao_tb'],
+                    'tong_ket' => $group['tong_ket'],
+                ];
+            })->values()
+        ]);
 
         // Lấy danh sách đợt báo cáo và giảng viên cho filter
         $dotBaoCaos = DotBaoCao::all();
         $giangViens = TaiKhoan::where('vai_tro', 'giang_vien')->get();
         $sinhViens = SinhVien::all();
 
-        return view('admin.bang-diem.index', compact('bangDiems', 'dotBaoCaos', 'giangViens', 'sinhViens'));
+        return view('admin.bang-diem.index', compact('bangDiems', 'dotBaoCaos', 'giangViens', 'sinhViens', 'bangDiemBySinhVien'));
     }
 
     /**

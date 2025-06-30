@@ -109,6 +109,7 @@
                                            min="0"
                                            max="10"
                                            step="0.1"
+                                           placeholder="Tối đa 10.0"
                                            @if(!$canGradeBaoCaoAndThuyetTrinh) readonly @endif>
                                     @if(!$canGradeBaoCaoAndThuyetTrinh)
                                         <small class="text-muted">Chỉ Giảng viên hướng dẫn và Giảng viên phản biện mới được chấm điểm này</small>
@@ -127,8 +128,9 @@
                                            name="diem_thuyet_trinh"
                                            value="{{ old('diem_thuyet_trinh', $bangDiem->diem_thuyet_trinh) }}"
                                            min="0"
-                                           max="10"
+                                           max="3"
                                            step="0.1"
+                                           placeholder="Tối đa 3.0"
                                            {{ ($shouldDisableBasicScores || !$canGradeBaoCaoAndThuyetTrinh) ? '' : '' }}>
                                     @if($shouldDisableBasicScores)
                                         <small class="text-muted">Điểm thuyết trình được giữ nguyên từ điểm cũ</small>
@@ -152,8 +154,9 @@
                                            name="diem_demo"
                                            value="{{ old('diem_demo') }}"
                                            min="0"
-                                           max="10"
+                                           max="4"
                                            step="0.1"
+                                           placeholder="Tối đa 4.0"
                                            required>
                                     @if($errors->has('diem_demo'))
                                         <div class="invalid-feedback">{{ $errors->first('diem_demo') }}</div>
@@ -169,8 +172,9 @@
                                            name="diem_cau_hoi"
                                            value="{{ old('diem_cau_hoi') }}"
                                            min="0"
-                                           max="10"
+                                           max="1"
                                            step="0.1"
+                                           placeholder="Tối đa 1.0"
                                            required>
                                     @if($errors->has('diem_cau_hoi'))
                                         <div class="invalid-feedback">{{ $errors->first('diem_cau_hoi') }}</div>
@@ -189,9 +193,10 @@
                                            name="diem_cong"
                                            value="{{ old('diem_cong', 0) }}"
                                            min="0"
-                                           max="2"
-                                           step="0.1">
-                                    <small class="form-text text-muted">Điểm cộng tối đa là 2 điểm</small>
+                                           max="1"
+                                           step="0.1"
+                                           placeholder="Tối đa 1.0">
+                                    <small class="form-text text-muted">Điểm cộng tối đa là 1 điểm</small>
                                     @if($errors->has('diem_cong'))
                                         <div class="invalid-feedback">{{ $errors->first('diem_cong') }}</div>
                                     @endif
