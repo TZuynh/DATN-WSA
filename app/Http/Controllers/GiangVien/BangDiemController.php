@@ -343,9 +343,9 @@ class BangDiemController extends Controller
                 }
                 // Lưu điểm báo cáo vào đúng cột
                 if ($vaiTroCham === 'Giảng Viên Hướng Dẫn') {
-                    $data['diem_bao_cao_hd'] = $request->diem_bao_cao;
+                    $data['diem_bao_cao'] = $request->diem_bao_cao;
                 } elseif ($vaiTroCham === 'Giảng Viên Phản Biện') {
-                    $data['diem_bao_cao_pb'] = $request->diem_bao_cao;
+                    $data['diem_bao_cao'] = $request->diem_bao_cao;
                 }
             } else {
                 $data['diem_bao_cao'] = $request->diem_bao_cao;
@@ -546,10 +546,33 @@ class BangDiemController extends Controller
         $validated = $request->validate($rules);
 
         try {
-            // Nếu có đợt báo cáo, giữ nguyên điểm báo cáo và thuyết trình cũ
+            // Nếu có đợt báo cáo, chỉ cho phép GVHD và GV Phản Biện sửa điểm báo cáo/thuyết trình
             if ($hasDotBaoCao) {
-                $data['diem_bao_cao'] = $bangDiem->diem_bao_cao;
-                $data['diem_thuyet_trinh'] = $bangDiem->diem_thuyet_trinh;
+                // Lấy vai trò chấm điểm
+                $giangVienId = Auth::id();
+                $vaiTroCham = null;
+                $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $bangDiem->sinh_vien_id)->first();
+                if ($chiTietNhom && $chiTietNhom->nhom) {
+                    $nhom = $chiTietNhom->nhom;
+                    $deTai = $nhom->deTai;
+                    if (!$deTai) {
+                        $deTai = \App\Models\DeTai::where('nhom_id', $nhom->id)->first();
+                    }
+                    if ($deTai && $deTai->phanCongCham) {
+                        $phanCongCham = $deTai->phanCongCham;
+                        if ($phanCongCham->hoiDong && $phanCongCham->hoiDong->phanCongVaiTros) {
+                            $phanCongVaiTro = $phanCongCham->hoiDong->phanCongVaiTros->firstWhere('tai_khoan_id', $giangVienId);
+                            $vaiTroCham = $phanCongVaiTro ? $phanCongVaiTro->loai_giang_vien : null;
+                        }
+                    }
+                }
+                if (in_array($vaiTroCham, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện'])) {
+                    $data['diem_bao_cao'] = $request->diem_bao_cao;
+                    $data['diem_thuyet_trinh'] = $request->diem_thuyet_trinh;
+                } else {
+                    $data['diem_bao_cao'] = $bangDiem->diem_bao_cao;
+                    $data['diem_thuyet_trinh'] = $bangDiem->diem_thuyet_trinh;
+                }
             } else {
                 $data['diem_bao_cao'] = $request->diem_bao_cao;
                 $data['diem_thuyet_trinh'] = $request->diem_thuyet_trinh;

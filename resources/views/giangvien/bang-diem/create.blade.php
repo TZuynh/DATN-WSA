@@ -230,7 +230,7 @@
                         </div>
 
                         <div class="form-group">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary" id="btn-submit">
                                 <i class="fas fa-save"></i> Lưu điểm
                             </button>
                             <a href="{{ route('giangvien.bang-diem.index') }}" class="btn btn-secondary">
@@ -269,6 +269,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (diemDemo) diemDemo.addEventListener('input', tinhTongDiem);
     if (diemCauHoi) diemCauHoi.addEventListener('input', tinhTongDiem);
     if (diemCong) diemCong.addEventListener('input', tinhTongDiem);
+
+    // Chống double submit
+    const form = document.querySelector('form');
+    const btnSubmit = document.getElementById('btn-submit');
+    if (form && btnSubmit) {
+        form.addEventListener('submit', function() {
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang lưu...';
+        });
+    }
 });
 </script>
 @endsection

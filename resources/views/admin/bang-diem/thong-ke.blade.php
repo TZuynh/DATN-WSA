@@ -330,7 +330,6 @@ body {
     font-weight: 700;
     font-size: 1.125rem;
     margin: 0;
-    display: flex;
     align-items: center;
 }
 
@@ -549,23 +548,26 @@ body {
                 </h4>
             </div>
             <div class="col-md-8">
-                <form method="GET" action="{{ route('admin.bang-diem.thong-ke') }}" class="d-flex gap-2">
+                <form method="GET" action="{{ route('admin.bang-diem.thong-ke') }}" class="d-flex gap-2 align-items-center">
+                    @php
+                        // Gom nhóm theo năm học và học kỳ, chỉ lấy duy nhất mỗi cặp
+                        $dotBaoCaoOptions = collect($dotBaoCaos)->unique(function($item) {
+                            return $item->nam_hoc . '-' . $item->hocKy->ten;
+                        });
+                    @endphp
                     <select class="form-select flex-grow-1" id="dot_bao_cao_id" name="dot_bao_cao_id">
-                        <option value="">Tất cả đợt báo cáo</option>
-                        @foreach($dotBaoCaos as $dotBaoCao)
-                            <option value="{{ $dotBaoCao->id }}" 
-                                    {{ $dotBaoCaoId == $dotBaoCao->id ? 'selected' : '' }}>
-                                {{ $dotBaoCao->ten_dot_bao_cao }} ({{ $dotBaoCao->nam_hoc }})
+                        <option value="">Tất cả</option>
+                        @foreach($dotBaoCaoOptions as $dotBaoCao)
+                            <option value="{{ $dotBaoCao->id }}" {{ $dotBaoCaoId == $dotBaoCao->id ? 'selected' : '' }}>
+                                {{ $dotBaoCao->nam_hoc }} - {{ $dotBaoCao->hocKy->ten }}
                             </option>
                         @endforeach
                     </select>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search mr-1"></i>
-                        Lọc
+                    <button type="submit" class="btn btn-primary px-3">
+                        <i class="fas fa-search"></i>
                     </button>
-                    <a href="{{ route('admin.bang-diem.thong-ke') }}" class="btn btn-outline">
-                        <i class="fas fa-times mr-1"></i>
-                        Xóa
+                    <a href="{{ route('admin.bang-diem.thong-ke') }}" class="btn btn-outline px-3">
+                        <i class="fas fa-times"></i>
                     </a>
                 </form>
             </div>
@@ -664,7 +666,7 @@ body {
                                 <thead>
                                     <tr>
                                         <th>Giảng viên</th>
-                                        <th class="text-center">Số lượng</th>
+                                        <th class="text-center"></th>
                                         <th class="text-center">Điểm TB</th>
                                     </tr>
                                 </thead>
@@ -672,7 +674,7 @@ body {
                                     @foreach($thongKeTheoGiangVien as $item)
                                         <tr>
                                             <td>
-                                                <div class="d-flex align-items-center">
+                                                <div class="align-items-center">
                                                     <div class="user-avatar mr-3">
                                                         {{ substr($item['giang_vien']->ten, 0, 1) }}
                                                     </div>
@@ -709,15 +711,15 @@ body {
                             <thead>
                                 <tr>
                                     <th>Khoảng điểm</th>
-                                    <th class="text-center">Số lượng</th>
                                     <th class="text-center">Tỷ lệ</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @php
+                                    $danhSachKhoang = ['0-5', '5-6', '6-7', '7-8', '8-9', '9-10'];
                                     $tongSo = array_sum($khoangDiem);
                                 @endphp
-                                @foreach($khoangDiem as $khoang => $soLuong)
+                                @foreach($danhSachKhoang as $khoang)
                                     <tr>
                                         <td>
                                             <div class="d-flex align-items-center">
@@ -726,17 +728,14 @@ body {
                                             </div>
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge badge-primary">{{ $soLuong }}</span>
-                                        </td>
-                                        <td class="text-center">
                                             @if($tongSo > 0)
                                                 <div class="progress mb-2">
                                                     <div class="progress-bar" 
-                                                         style="width: {{ ($soLuong / $tongSo) * 100 }}%;">
+                                                         style="width: {{ (($khoangDiem[$khoang] ?? 0) / $tongSo) * 100 }}%;">
                                                     </div>
                                                 </div>
                                                 <small class="text-muted">
-                                                    {{ number_format(($soLuong / $tongSo) * 100, 1) }}%
+                                                    {{ number_format((($khoangDiem[$khoang] ?? 0) / $tongSo) * 100, 1) }}%
                                                 </small>
                                             @else
                                                 <span class="text-muted">0%</span>

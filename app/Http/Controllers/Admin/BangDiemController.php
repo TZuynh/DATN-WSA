@@ -69,17 +69,6 @@ class BangDiemController extends Controller
             return $result;
         });
 
-        // Log dữ liệu nhóm bảng điểm theo sinh viên để debug
-        \Log::info('DEBUG bangDiemBySinhVien', [
-            'data' => $bangDiemBySinhVien->map(function($group, $sinhVienId) {
-                return [
-                    'sinh_vien_id' => $sinhVienId,
-                    'diem_bao_cao_tb' => $group['diem_bao_cao_tb'],
-                    'tong_ket' => $group['tong_ket'],
-                ];
-            })->values()
-        ]);
-
         // Lấy danh sách đợt báo cáo và giảng viên cho filter
         $dotBaoCaos = DotBaoCao::all();
         $giangViens = TaiKhoan::where('vai_tro', 'giang_vien')->get();
@@ -142,7 +131,11 @@ class BangDiemController extends Controller
         ];
 
         foreach ($bangDiems as $bangDiem) {
-            $tongDiem = $bangDiem->diem_bao_cao + $bangDiem->diem_thuyet_trinh + $bangDiem->diem_demo + $bangDiem->diem_cau_hoi + $bangDiem->diem_cong;
+            $tongDiem = ($bangDiem->diem_bao_cao ?? 0)
+                + ($bangDiem->diem_thuyet_trinh ?? 0)
+                + ($bangDiem->diem_demo ?? 0)
+                + ($bangDiem->diem_cau_hoi ?? 0)
+                + ($bangDiem->diem_cong ?? 0);
             
             if ($tongDiem < 5) {
                 $khoangDiem['0-5']++;
@@ -305,7 +298,11 @@ class BangDiemController extends Controller
         ];
 
         foreach ($bangDiems as $bangDiem) {
-            $tongDiem = $bangDiem->diem_bao_cao + $bangDiem->diem_thuyet_trinh + $bangDiem->diem_demo + $bangDiem->diem_cau_hoi + $bangDiem->diem_cong;
+            $tongDiem = ($bangDiem->diem_bao_cao ?? 0)
+                + ($bangDiem->diem_thuyet_trinh ?? 0)
+                + ($bangDiem->diem_demo ?? 0)
+                + ($bangDiem->diem_cau_hoi ?? 0)
+                + ($bangDiem->diem_cong ?? 0);
             
             if ($tongDiem < 5) {
                 $khoangDiem['0-5']++;

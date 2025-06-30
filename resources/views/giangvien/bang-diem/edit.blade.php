@@ -28,6 +28,7 @@
                                 if (!isset($canGradeBaoCaoAndThuyetTrinh)) {
                                     $canGradeBaoCaoAndThuyetTrinh = !$hasDotBaoCao;
                                 }
+                                $canEditBaoCao = in_array($vaiTroCham, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện']);
                             @endphp
                             @if($hasDotBaoCao)
                                 <div class="alert alert-info">
@@ -130,10 +131,10 @@
                                                    name="diem_bao_cao"
                                                    value="{{ old('diem_bao_cao', $bangDiem->diem_bao_cao) }}"
                                                    min="0" max="10" step="0.1"
-                                                   @if(!$canGradeBaoCaoAndThuyetTrinh) readonly @endif
+                                                   {{ $canEditBaoCao ? '' : 'readonly' }}
                                                    {{ $hasDotBaoCao ? '' : 'required' }}>
-                                            @if(!$canGradeBaoCaoAndThuyetTrinh)
-                                                <small class="text-muted">Chỉ Giảng viên hướng dẫn và Giảng viên phản biện mới được chấm điểm này</small>
+                                            @if(!$canEditBaoCao)
+                                                <small class="text-muted">Chỉ Giảng viên hướng dẫn và Giảng viên phản biện mới được sửa điểm này</small>
                                             @endif
                                             @error('diem_bao_cao')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -148,17 +149,15 @@
                                                 <input type="hidden" name="diem_thuyet_trinh" value="{{ $bangDiem->diem_thuyet_trinh }}">
                                             @endif
                                             <input type="number" class="form-control @error('diem_thuyet_trinh') is-invalid @enderror"
-                                                   id="diem_thuyet_trinh" 
-                                                   {{ $canGradeBaoCaoAndThuyetTrinh ? 'name=diem_thuyet_trinh' : '' }}
+                                                   id="diem_thuyet_trinh"
+                                                   name="diem_thuyet_trinh"
                                                    value="{{ old('diem_thuyet_trinh', $bangDiem->diem_thuyet_trinh) }}"
-                                                   min="0" max="3" step="0.1" 
-                                                   {{ $canGradeBaoCaoAndThuyetTrinh ? '' : 'disabled' }}
+                                                   min="0" max="3" step="0.1"
+                                                   {{ $canEditBaoCao ? '' : 'readonly' }}
                                                    {{ $hasDotBaoCao ? '' : 'required' }}
                                                    placeholder="Tối đa 3.0">
-                                            @if(!$canGradeBaoCaoAndThuyetTrinh)
-                                                <small class="text-muted">
-                                                    Điểm thuyết trình không thể thay đổi khi đã có lịch chấm
-                                                </small>
+                                            @if(!$canEditBaoCao)
+                                                <small class="text-muted">Chỉ Giảng viên hướng dẫn và Giảng viên phản biện mới được sửa điểm này</small>
                                             @endif
                                             @error('diem_thuyet_trinh')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -282,9 +281,4 @@
             });
         });
     </script>
-
-    <pre>
-        dot_bao_cao_id: {{ $bangDiem->dot_bao_cao_id }}
-        dotBaoCao: {{ json_encode($bangDiem->dotBaoCao) }}
-    </pre>
 @endsection
