@@ -29,6 +29,11 @@
                                     $canGradeBaoCaoAndThuyetTrinh = !$hasDotBaoCao;
                                 }
                                 $canEditBaoCao = in_array($vaiTroCham, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện']);
+                                $canEditBaoCaoAndThuyetTrinh = in_array($vaiTroCham, [
+                                    'Giảng Viên Hướng Dẫn', 
+                                    'Giảng Viên Phản Biện',
+                                    'Trưởng tiểu ban'
+                                ]);
                             @endphp
                             @if($hasDotBaoCao)
                                 <div class="alert alert-info">
@@ -131,8 +136,8 @@
                                                    name="diem_bao_cao"
                                                    value="{{ old('diem_bao_cao', $bangDiem->diem_bao_cao) }}"
                                                    min="0" max="10" step="0.1"
-                                                   {{ $canEditBaoCao ? '' : 'readonly' }}
-                                                   {{ $hasDotBaoCao ? '' : 'required' }}>
+                                                   @if(!$canEditBaoCaoAndThuyetTrinh) readonly @endif
+                                                   @if($canEditBaoCaoAndThuyetTrinh) required @endif>
                                             @if(!$canEditBaoCao)
                                                 <small class="text-muted">Chỉ Giảng viên hướng dẫn và Giảng viên phản biện mới được sửa điểm này</small>
                                             @endif
@@ -153,8 +158,7 @@
                                                    name="diem_thuyet_trinh"
                                                    value="{{ old('diem_thuyet_trinh', $bangDiem->diem_thuyet_trinh) }}"
                                                    min="0" max="3" step="0.1"
-                                                   {{ $canEditBaoCao ? '' : 'readonly' }}
-                                                   {{ $hasDotBaoCao ? '' : 'required' }}
+                                                   required
                                                    placeholder="Tối đa 3.0">
                                             @if(!$canEditBaoCao)
                                                 <small class="text-muted">Chỉ Giảng viên hướng dẫn và Giảng viên phản biện mới được sửa điểm này</small>

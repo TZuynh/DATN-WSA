@@ -95,13 +95,19 @@
                                                     <small class="d-block text-muted">Được chấm: Điểm báo cáo, Điểm thuyết trình, và các điểm khác</small>
                                                 @elseif($vai_tro_cham == 'Giảng viên khác')
                                                     <span class="badge bg-info">{{ $vai_tro_cham }}</span>
-                                                    <small class="d-block text-muted">Được chấm: Điểm demo, Điểm câu hỏi, Điểm cộng</small>
+                                                    <small class="d-block text-muted">Được chấm: Điểm thuyết trình, Điểm demo, Điểm câu hỏi, Điểm cộng</small>
                                                 @elseif($vai_tro_cham == 'Hướng dẫn')
                                                     <span class="badge bg-success">{{ $vai_tro_cham }}</span>
                                                     <small class="d-block text-muted">Được chấm: Điểm báo cáo, Điểm thuyết trình, và các điểm khác</small>
+                                                @elseif($vai_tro_cham == 'Trưởng tiểu ban')
+                                                    <span class="badge bg-warning text-dark">{{ $vai_tro_cham }}</span>
+                                                    <small class="d-block text-muted">Được chấm: Điểm thuyết trình, Điểm demo, Điểm câu hỏi, Điểm cộng</small>
+                                                @elseif($vai_tro_cham == 'Thư ký')
+                                                    <span class="badge bg-secondary">{{ $vai_tro_cham }}</span>
+                                                    <small class="d-block text-muted">Được chấm: Điểm thuyết trình, Điểm demo, Điểm câu hỏi, Điểm cộng</small>
                                                 @else
                                                     <span class="badge bg-secondary">{{ $vai_tro_cham ?: 'N/A' }}</span>
-                                                    <small class="d-block text-muted">Được chấm: Điểm demo, Điểm câu hỏi, Điểm cộng</small>
+                                                    <small class="d-block text-muted">Được chấm: Điểm thuyết trình, Điểm demo, Điểm câu hỏi, Điểm cộng</small>
                                                 @endif
                                             </td>
                                             @if(in_array($vai_tro_cham, ['Hướng dẫn', 'Phản biện']))

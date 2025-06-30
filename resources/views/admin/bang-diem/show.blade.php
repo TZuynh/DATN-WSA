@@ -113,10 +113,27 @@
                                     ->get();
                             @endphp
                             @foreach($allBangDiem as $i => $bd)
+                                @php
+                                    $phanCongVaiTro = null;
+                                    if ($bd->giang_vien_id && $bd->dot_bao_cao_id) {
+                                        $phanCongVaiTro = \App\Models\PhanCongVaiTro::whereHas('hoiDong.dotBaoCao.lichChams', function($q) use ($bd) {
+                                            $q->where('dot_bao_cao_id', $bd->dot_bao_cao_id);
+                                        })->where('tai_khoan_id', $bd->giang_vien_id)->first();
+                                    }
+                                    if ($phanCongVaiTro) {
+                                        if (($phanCongVaiTro->vaiTro->ten ?? null) === 'Thành viên') {
+                                            $vaiTroText = $phanCongVaiTro->loai_giang_vien ?? 'Thành viên';
+                                        } else {
+                                            $vaiTroText = $phanCongVaiTro->vaiTro->ten ?? $phanCongVaiTro->loai_giang_vien ?? 'N/A';
+                                        }
+                                    } else {
+                                        $vaiTroText = $bd->vai_tro_cham ?? 'N/A';
+                                    }
+                                @endphp
                                 <tr>
                                     <td class="text-center">{{ $i + 1 }}</td>
                                     <td>{{ $bd->giangVien->ten ?? 'N/A' }}</td>
-                                    <td>{{ $bd->vai_tro_cham ?? 'N/A' }}</td>
+                                    <td>{{ $vaiTroText }}</td>
                                     <td class="text-center">{{ $bd->diem_bao_cao !== null ? number_format($bd->diem_bao_cao, 2) : '-' }}</td>
                                     <td class="text-center">{{ $bd->diem_thuyet_trinh !== null ? number_format($bd->diem_thuyet_trinh, 2) : '-' }}</td>
                                     <td class="text-center">{{ $bd->diem_demo !== null ? number_format($bd->diem_demo, 2) : '-' }}</td>

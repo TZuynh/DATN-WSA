@@ -13,7 +13,6 @@ use App\Models\Nhom;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class BangDiemController extends Controller
 {
@@ -49,24 +48,11 @@ class BangDiemController extends Controller
         // Tạo collection phẳng các sinh viên cần chấm điểm
         $dsSinhVien = collect();
         foreach ($phanCongChamsFiltered as $phanCong) {
-            $vai_tro_cham = 'Không xác định';
-            if ($phanCong->hoiDong && $phanCong->hoiDong->phanCongVaiTros) {
-                $vaiTro = $phanCong->hoiDong->phanCongVaiTros->firstWhere('tai_khoan_id', $giangVienId);
-                if ($vaiTro) {
-                    switch ($vaiTro->loai_giang_vien) {
-                        case 'Giảng Viên Hướng Dẫn':
-                            $vai_tro_cham = 'Hướng dẫn';
-                            break;
-                        case 'Giảng Viên Phản Biện':
-                            $vai_tro_cham = 'Phản biện';
-                            break;
-                        case 'Giảng Viên Khác':
-                            $vai_tro_cham = 'Giảng viên khác';
-                            break;
-                        default:
-                            $vai_tro_cham = $vaiTro->loai_giang_vien;
-                    }
-                }
+            $phanCongVaiTro = $phanCong->hoiDong->phanCongVaiTros->firstWhere('tai_khoan_id', $giangVienId);
+            if ($phanCongVaiTro) {
+                $vai_tro_cham = $phanCongVaiTro->vaiTro->ten ?? $phanCongVaiTro->loai_giang_vien;
+            } else {
+                $vai_tro_cham = null;
             }
             if ($phanCong->deTai && $phanCong->deTai->nhom && $phanCong->deTai->nhom->sinhViens) {
                 foreach ($phanCong->deTai->nhom->sinhViens as $sinhVien) {
@@ -228,7 +214,7 @@ class BangDiemController extends Controller
      */
     public function store(Request $request)
     {
-        // DEBUG LOG
+        // Kiểm tra sinh viên có thuộc nhóm có đề tài đã có lịch chấm không
         $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $request->sinh_vien_id)->first();
         $nhom = $chiTietNhom ? $chiTietNhom->nhom : null;
         $deTai = $nhom ? $nhom->deTai : null;
@@ -236,13 +222,6 @@ class BangDiemController extends Controller
             $deTai = \App\Models\DeTai::where('nhom_id', $nhom->id)->first();
         }
         $hasLichCham = $deTai ? \App\Models\LichCham::where('de_tai_id', $deTai->id)->exists() : null;
-        \Log::info('DEBUG CHAM DIEM', [
-            'sinh_vien_id' => $request->sinh_vien_id,
-            'chiTietNhom' => $chiTietNhom,
-            'nhom' => $nhom,
-            'deTai' => $deTai,
-            'hasLichCham' => $hasLichCham,
-        ]);
 
         // Kiểm tra sinh viên có thuộc nhóm có đề tài đã có lịch chấm không
         if (!$chiTietNhom || !$chiTietNhom->nhom) {
@@ -443,9 +422,6 @@ class BangDiemController extends Controller
         // Xác định có đợt báo cáo hay không
         $hasDotBaoCao = $bangDiem->dot_bao_cao_id !== null;
         $vaiTroCham = null;
-        $canEditBaoCaoAndThuyetTrinh = true;
-
-        // Lấy vai trò chấm điểm
         $giangVienId = Auth::id();
         $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $bangDiem->sinh_vien_id)->first();
         if ($chiTietNhom && $chiTietNhom->nhom) {
@@ -462,23 +438,11 @@ class BangDiemController extends Controller
                 }
             }
         }
-
-        // Kiểm tra xem có được phép sửa điểm báo cáo và thuyết trình không
-        $canEditBaoCaoAndThuyetTrinh = !$hasDotBaoCao || 
-            (in_array($vaiTroCham, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện']) && 
-             (!$bangDiem->diem_bao_cao && !$bangDiem->diem_thuyet_trinh));
-
-        Log::info('Edit BangDiem Debug', [
-            'bangDiem_id' => $bangDiem->id,
-            'hasDotBaoCao' => $hasDotBaoCao,
-            'dot_bao_cao_id' => $bangDiem->dot_bao_cao_id,
-            'vaiTroCham' => $vaiTroCham,
-            'canEditBaoCaoAndThuyetTrinh' => $canEditBaoCaoAndThuyetTrinh
-        ]);
+        $canEditBaoCaoAndThuyetTrinh = in_array($vaiTroCham, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện']);
 
         return view('giangvien.bang-diem.edit', compact(
-            'bangDiem', 
-            'hasDotBaoCao', 
+            'bangDiem',
+            'hasDotBaoCao',
             'vaiTroCham',
             'canEditBaoCaoAndThuyetTrinh'
         ));
@@ -568,11 +532,10 @@ class BangDiemController extends Controller
                 }
                 if (in_array($vaiTroCham, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện'])) {
                     $data['diem_bao_cao'] = $request->diem_bao_cao;
-                    $data['diem_thuyet_trinh'] = $request->diem_thuyet_trinh;
                 } else {
                     $data['diem_bao_cao'] = $bangDiem->diem_bao_cao;
-                    $data['diem_thuyet_trinh'] = $bangDiem->diem_thuyet_trinh;
                 }
+                $data['diem_thuyet_trinh'] = $request->diem_thuyet_trinh;
             } else {
                 $data['diem_bao_cao'] = $request->diem_bao_cao;
                 $data['diem_thuyet_trinh'] = $request->diem_thuyet_trinh;
