@@ -62,5 +62,11 @@
                 <span>Chấm điểm</span>
             </a>
         </li>
+        <li class="menu-item {{ request()->routeIs('giangvien.bao-cao-qua-trinh.*') ? 'active' : '' }}">
+            <a href="{{ route('giangvien.bao-cao-qua-trinh.index') }}">
+                <i class="fas fa-file-alt"></i>
+                <span>Báo cáo quá trình</span>
+            </a>
+        </li>
     </ul>
 </div>

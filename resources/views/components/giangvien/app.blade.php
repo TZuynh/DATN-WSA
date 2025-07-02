@@ -79,6 +79,11 @@
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 
+    <!-- Flatpickr JS và CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vi.js"></script>
+
     <script>
         // Toggle sidebar on mobile
         document.querySelector('.sidebar-toggle-btn').addEventListener('click', function() {
@@ -124,5 +129,8 @@
         });
     </script>
     @endif
+    
+    {{-- ĐÂY LÀ NƠI NHẬN @push('scripts') TỪ VIEW CON --}}
+    @stack('scripts')
 </body>
 </html> 
