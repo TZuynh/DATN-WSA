@@ -25,6 +25,9 @@ class DeTaiController extends Controller
         $isPhanBien = \App\Models\PhanCongVaiTro::where('tai_khoan_id', $user->id)
             ->where('loai_giang_vien', 'Giảng Viên Phản Biện')
             ->exists();
+        $isThuKy = \App\Models\PhanCongVaiTro::where('tai_khoan_id', $user->id)
+            ->whereHas('vaiTro', function($q) { $q->where('ten', 'Thư ký'); })
+            ->exists();
 
         if ($isPhanBien) {
             // Lấy các đề tài mà giảng viên được phân công phản biện
@@ -36,6 +39,16 @@ class DeTaiController extends Controller
                 ->whereNotIn('trang_thai', [2, 4]) // Chỉ lấy đề tài chưa được duyệt hoặc từ chối
                 ->orderBy('created_at', 'desc')
                 ->get();
+        } elseif ($isThuKy) {
+            // Lấy tất cả đề tài thuộc hội đồng mà user là Thư ký
+            $hoiDongIds = \App\Models\PhanCongVaiTro::where('tai_khoan_id', $user->id)
+                ->whereHas('vaiTro', function($q) { $q->where('ten', 'Thư ký'); })
+                ->pluck('hoi_dong_id');
+            $deTaiIds = \App\Models\ChiTietDeTaiBaoCao::whereIn('hoi_dong_id', $hoiDongIds)->pluck('de_tai_id');
+            $deTais = \App\Models\DeTai::with(['nhoms.sinhViens', 'dotBaoCao.hocKy', 'giangVien'])
+                ->whereIn('id', $deTaiIds)
+                ->orderBy('created_at', 'desc')
+                ->get();
         } else {
             // Nếu là giảng viên hướng dẫn, lấy các đề tài do họ hướng dẫn
             $giangVienId = $user->id;
@@ -45,7 +58,7 @@ class DeTaiController extends Controller
                 ->get();
         }
 
-        return view('giangvien.de-tai.index', compact('deTais', 'isPhanBien'));
+        return view('giangvien.de-tai.index', compact('deTais', 'isPhanBien', 'isThuKy'));
     }
 
     public function create()

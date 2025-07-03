@@ -63,6 +63,18 @@ Route::domain('giangvien.project.test')->group(function () {
     });
 });
 
+Route::middleware(['auth'])->prefix('giang-vien')->group(function() {
+    Route::get('bien-ban-nhan-xet', [\App\Http\Controllers\GiangVien\BienBanNhanXetController::class, 'selectDeTai'])->name('giangvien.bien-ban-nhan-xet.select-detai');
+    Route::get('bien-ban-nhan-xet/{deTaiId}/create', [\App\Http\Controllers\GiangVien\BienBanNhanXetController::class, 'create'])->name('giangvien.bien-ban-nhan-xet.create');
+    Route::post('bien-ban-nhan-xet/{deTaiId}', [\App\Http\Controllers\GiangVien\BienBanNhanXetController::class, 'store'])->name('giangvien.bien-ban-nhan-xet.store');
+    Route::get('bien-ban-nhan-xet/{deTaiId}', function($deTaiId) {
+        return redirect()->route('giangvien.bien-ban-nhan-xet.create', $deTaiId);
+    });
+    Route::get('bien-ban-nhan-xet/{deTaiId}/show', [\App\Http\Controllers\GiangVien\BienBanNhanXetController::class, 'show'])->name('giangvien.bien-ban-nhan-xet.show');
+    Route::get('bien-ban-nhan-xet/{deTaiId}/edit', [\App\Http\Controllers\GiangVien\BienBanNhanXetController::class, 'edit'])->name('giangvien.bien-ban-nhan-xet.edit');
+    Route::put('bien-ban-nhan-xet/{deTaiId}', [\App\Http\Controllers\GiangVien\BienBanNhanXetController::class, 'update'])->name('giangvien.bien-ban-nhan-xet.update');
+});
+
 Route::get('/', function () {
     return view('welcome');
 });

@@ -3,6 +3,11 @@
     $isPhanBien = PhanCongVaiTro::where('tai_khoan_id', auth()->id() ?? 0)
         ->where('loai_giang_vien', 'Giảng Viên Phản Biện')
         ->exists();
+    // Kiểm tra là thư ký
+    $isThuKy = PhanCongVaiTro::where('tai_khoan_id', auth()->id() ?? 0)
+        ->whereHas('vaiTro', function($q) { $q->where('ten', 'Thư ký'); })
+        ->exists();
+    \Log::info('[Sidebar] isPhanBien: ' . ($isPhanBien ? 'true' : 'false') . ', isThuKy: ' . ($isThuKy ? 'true' : 'false') . ', user_id: ' . (auth()->id() ?? 0));
 @endphp
 
 <div class="admin-sidebar">
@@ -62,5 +67,13 @@
                 <span>Chấm điểm</span>
             </a>
         </li>
+        @if($isThuKy)
+        <li class="menu-item {{ request()->routeIs('giangvien.bien-ban-nhan-xet.*') ? 'active' : '' }}">
+            <a href="{{ route('giangvien.bien-ban-nhan-xet.select-detai') }}">
+                <i class="fas fa-file-alt"></i>
+                <span>Biên bản nhận xét</span>
+            </a>
+        </li>
+        @endif
     </ul>
 </div>

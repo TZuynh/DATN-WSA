@@ -1,6 +1,6 @@
 @extends('components.giangvien.app')
 
-@section('title', $isPhanBien ? 'Danh sách đề tài phản biện' : 'Danh sách đề tài hướng dẫn')
+@section('title', $isPhanBien ? 'Danh sách đề tài phản biện' : ($isThuKy ? 'Danh sách đề tài hội đồng' : 'Danh sách đề tài hướng dẫn'))
 
 @section('content')
 <div class="container-fluid">
@@ -11,12 +11,14 @@
                     <h3 class="card-title">
                         @if($isPhanBien)
                             Danh sách đề tài được phân công phản biện
+                        @elseif($isThuKy)
+                            Danh sách đề tài hội đồng
                         @else
                             Danh sách đề tài hướng dẫn
                         @endif
                     </h3>
                     <div class="card-tools">
-                        @if(!$isPhanBien)
+                        @if(!$isPhanBien && !$isThuKy)
                             <a href="{{ route('giangvien.de-tai.create') }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-plus"></i> Thêm mới
                             </a>
@@ -114,7 +116,7 @@
                                     <td colspan="{{ $isPhanBien ? '9' : '10' }}" class="text-center">
                                         @if($isPhanBien)
                                             Không có đề tài nào được phân công phản biện
-                                        @else
+                                        @elseif($isThuKy)
                                             Không có đề tài nào
                                         @endif
                                     </td>
