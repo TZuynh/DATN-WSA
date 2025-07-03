@@ -6,12 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class BaoCaoQuaTrinh extends Model
 {
-    protected $table = 'bao_cao_qua_trinh';
+    protected $table = 'bao_cao_qua_trinhs';
 
     protected $fillable = [
         'nhom_id',
         'dot_bao_cao_id',
         'noi_dung_bao_cao',
+        'ngay_bao_cao',
     ];
 
     public function nhom()

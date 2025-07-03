@@ -54,6 +54,7 @@ Route::domain('giangvien.project.test')->group(function () {
     require __DIR__ . '/giangvien/de-tai.php';
     require __DIR__ . '/giangvien/lop.php';
     require __DIR__ . '/giangvien/bang-diem.php';
+    require __DIR__ . '/giangvien/bao-cao-qua-trinh.php';
 
     Route::get('/', function () {
         if (Auth::check() && Auth::user()->vai_tro === 'giang_vien') {

@@ -1,6 +1,6 @@
 @extends('components.giangvien.app')
 
-@section('title', 'Chấm điểm')
+@section('title', content: 'Chấm điểm')
 
 @section('content')
 <div class="container-fluid">
