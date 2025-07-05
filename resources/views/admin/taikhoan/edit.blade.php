@@ -35,13 +35,13 @@
             @method('PUT')
             
             <div style="margin-bottom: 20px;">
-                <label for="ten" style="display: block; margin-bottom: 5px; color: #4a5568;">Họ tên</label>
+                <label for="ten" style="display: block; margin-bottom: 5px; color: #4a5568;">Họ tên <span style="color: #e53e3e;">*</span></label>
                 <input type="text" name="ten" id="ten" value="{{ old('ten', $taikhoan->ten) }}" required
                     style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Nhập họ tên">
             </div>
 
             <div style="margin-bottom: 20px;">
-                <label for="email" style="display: block; margin-bottom: 5px; color: #4a5568;">Email</label>
+                <label for="email" style="display: block; margin-bottom: 5px; color: #4a5568;">Email <span style="color: #e53e3e;">*</span></label>
                 <input type="email" name="email" id="email" value="{{ old('email', $taikhoan->email) }}" required
                     style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Nhập email">
             </div>
@@ -58,7 +58,7 @@
             </div>
 
             <div style="margin-bottom: 20px;">
-                <label for="vai_tro" style="display: block; margin-bottom: 5px; color: #4a5568;">Vai trò</label>
+                <label for="vai_tro" style="display: block; margin-bottom: 5px; color: #4a5568;">Vai trò <span style="color: #e53e3e;">*</span></label>
                 @if($taikhoan->id == 1)
                     <select name="vai_tro" id="vai_tro" disabled
                         style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn vai trò">

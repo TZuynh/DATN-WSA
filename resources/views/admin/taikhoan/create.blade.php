@@ -33,19 +33,19 @@
         <form action="{{ route('admin.taikhoan.store') }}" method="POST" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);">
             @csrf
             <div style="margin-bottom: 20px;">
-                <label for="ten" style="display: block; margin-bottom: 5px; color: #4a5568;">Họ tên</label>
+                <label for="ten" style="display: block; margin-bottom: 5px; color: #4a5568;">Họ tên <span style="color: #e53e3e;">*</span></label>
                 <input type="text" name="ten" id="ten" value="{{ old('ten') }}" required
                     style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Nhập họ tên">
             </div>
 
             <div style="margin-bottom: 20px;">
-                <label for="email" style="display: block; margin-bottom: 5px; color: #4a5568;">Email</label>
+                <label for="email" style="display: block; margin-bottom: 5px; color: #4a5568;">Email <span style="color: #e53e3e;">*</span></label>
                 <input type="email" name="email" id="email" value="{{ old('email') }}" required
                     style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Nhập email">
             </div>
 
             <div style="margin-bottom: 20px;">
-                <label for="mat_khau" style="display: block; margin-bottom: 5px; color: #4a5568;">Mật khẩu</label>
+                <label for="mat_khau" style="display: block; margin-bottom: 5px; color: #4a5568;">Mật khẩu <span style="color: #e53e3e;">*</span></label>
                 <div class="password-container">
                     <input type="password" name="mat_khau" id="mat_khau" required
                         style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Nhập mật khẩu">
@@ -56,7 +56,7 @@
             </div>
 
             <div style="margin-bottom: 20px;">
-                <label for="vai_tro" style="display: block; margin-bottom: 5px; color: #4a5568;">Vai trò</label>
+                <label for="vai_tro" style="display: block; margin-bottom: 5px; color: #4a5568;">Vai trò <span style="color: #e53e3e;">*</span></label>
                 <select name="vai_tro" id="vai_tro" required
                     style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Chọn vai trò">
                     <option value="">Chọn vai trò</option>

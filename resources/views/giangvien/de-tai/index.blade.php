@@ -114,6 +114,7 @@
                                 @empty
                                 <tr>
                                     <td colspan="{{ $isPhanBien ? '9' : '10' }}" class="text-center">
+                                        Chưa có dữ liệu
                                         @if($isPhanBien)
                                             Không có đề tài nào được phân công phản biện
                                         @elseif($isThuKy)

@@ -31,24 +31,32 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($lops as $lop)
+                            @forelse($lops as $lop)
                                 <tr>
                                     <td>{{ $lop->id }}</td>
                                     <td>{{ $lop->ten_lop }}</td>
-                                    {{-- <td>
+                                    {{-- nếu cần nút sửa/xóa thì bỏ comment bên dưới --}}
+                                    {{--
+                                    <td>
                                         <a href="{{ route('giangvien.lop.edit', $lop) }}" class="btn btn-sm btn-primary">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <form action="{{ route('giangvien.lop.destroy', $lop) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">
+                                            <button type="submit" class="btn btn-sm btn-danger"
+                                                onclick="return confirm('Bạn có chắc chắn muốn xóa?')">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
-                                    </td> --}}
+                                    </td>
+                                    --}}
                                 </tr>
-                                @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="2" class="text-center">Chưa có lớp nào</td>
+                                </tr>
+                            @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -91,4 +99,4 @@
         </div>
     </div>
 </div> --}}
-@endsection 
+@endsection

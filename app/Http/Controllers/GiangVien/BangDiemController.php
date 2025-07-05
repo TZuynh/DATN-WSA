@@ -50,7 +50,12 @@ class BangDiemController extends Controller
         foreach ($phanCongChamsFiltered as $phanCong) {
             $phanCongVaiTro = $phanCong->hoiDong->phanCongVaiTros->firstWhere('tai_khoan_id', $giangVienId);
             if ($phanCongVaiTro) {
-                $vai_tro_cham = $phanCongVaiTro->vaiTro->ten ?? $phanCongVaiTro->loai_giang_vien;
+                // Ưu tiên loai_giang_vien nếu có, nếu không thì lấy vai_tro
+                if ($phanCongVaiTro->loai_giang_vien) {
+                    $vai_tro_cham = $phanCongVaiTro->loai_giang_vien;
+                } else {
+                    $vai_tro_cham = $phanCongVaiTro->vaiTro->ten ?? null;
+                }
             } else {
                 $vai_tro_cham = null;
             }
@@ -93,18 +98,11 @@ class BangDiemController extends Controller
             if ($phanCongCham && $phanCongCham->hoiDong) {
                 $vaiTro = $phanCongCham->hoiDong->phanCongVaiTros->firstWhere('tai_khoan_id', $giangVienId);
                 if ($vaiTro) {
-                    switch ($vaiTro->loai_giang_vien) {
-                        case 'Giảng Viên Hướng Dẫn':
-                            $bangDiem->vai_tro_cham = 'Hướng dẫn';
-                            break;
-                        case 'Giảng Viên Phản Biện':
-                            $bangDiem->vai_tro_cham = 'Phản biện';
-                            break;
-                        case 'Giảng Viên Khác':
-                            $bangDiem->vai_tro_cham = 'Giảng viên khác';
-                            break;
-                        default:
-                            $bangDiem->vai_tro_cham = $vaiTro->loai_giang_vien;
+                    // Ưu tiên loai_giang_vien nếu có, nếu không thì lấy vai_tro
+                    if ($vaiTro->loai_giang_vien) {
+                        $bangDiem->vai_tro_cham = $vaiTro->loai_giang_vien;
+                    } else {
+                        $bangDiem->vai_tro_cham = $vaiTro->vaiTro->ten ?? 'Không xác định';
                     }
                 }
             }

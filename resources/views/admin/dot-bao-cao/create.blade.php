@@ -39,7 +39,7 @@
                         <small style="color: #718096; font-size: 0.875rem;">Năm học được tự động cập nhật theo năm hiện tại</small>
                     </div>
                     <div style="flex: 1;">
-                        <label for="hoc_ky_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Học kỳ</label>
+                        <label for="hoc_ky_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Học kỳ <span style="color: #e53e3e;">*</span></label>
                         <select name="hoc_ky_id" id="hoc_ky_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background-color: #f7fafc;" required>
                             <option value="">-- Chọn học kỳ --</option>
                             @foreach($hocKys as $hocKy)
@@ -50,14 +50,14 @@
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label for="ngay_bat_dau" style="display: block; margin-bottom: 5px; color: #4a5568;">Ngày bắt đầu</label>
+                    <label for="ngay_bat_dau" style="display: block; margin-bottom: 5px; color: #4a5568;">Ngày bắt đầu <span style="color: #e53e3e;">*</span></label>
                     <input type="text" name="ngay_bat_dau" id="ngay_bat_dau" value="{{ old('ngay_bat_dau') }}"
                         style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
                         placeholder="Chọn ngày bắt đầu" required>
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label for="ngay_ket_thuc" style="display: block; margin-bottom: 5px; color: #4a5568;">Ngày kết thúc</label>
+                    <label for="ngay_ket_thuc" style="display: block; margin-bottom: 5px; color: #4a5568;">Ngày kết thúc <span style="color: #e53e3e;">*</span></label>
                     <input type="text" name="ngay_ket_thuc" id="ngay_ket_thuc" value="{{ old('ngay_ket_thuc') }}"
                         style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
                         placeholder="Chọn ngày kết thúc" required>

@@ -73,13 +73,13 @@
                                             } elseif ($diemChuaLichCham) {
                                                 $tongDiem = $diemChuaLichCham->diem_bao_cao + $diemChuaLichCham->diem_thuyet_trinh;
                                             }
-                                            $daChamDiemCoBan = ($daChamDiem && 
-                                                !is_null($daChamDiem->diem_bao_cao) && 
+                                            $daChamDiemCoBan = ($daChamDiem &&
+                                                !is_null($daChamDiem->diem_bao_cao) &&
                                                 !is_null($daChamDiem->diem_thuyet_trinh)) ||
-                                                ($diemChuaLichCham && 
-                                                !is_null($diemChuaLichCham->diem_bao_cao) && 
+                                                ($diemChuaLichCham &&
+                                                !is_null($diemChuaLichCham->diem_bao_cao) &&
                                                 !is_null($diemChuaLichCham->diem_thuyet_trinh));
-                                            $canGradeBaoCaoAndThuyetTrinh = in_array($vai_tro_cham, ['Hướng dẫn', 'Phản biện']);
+                                            $canGradeBaoCaoAndThuyetTrinh = in_array($item['vai_tro_cham'], ['Hướng dẫn', 'Phản biện']);
                                         @endphp
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
@@ -90,27 +90,27 @@
                                             <td>{{ $deTai->lichCham?->dotBaoCao?->nam_hoc ?? 'N/A' }} - {{ $deTai->lichCham?->dotBaoCao?->hocKy?->ten ?? 'N/A' }}</td>
                                             <td>{{ $deTai->lichCham?->lich_tao ? \Carbon\Carbon::parse($deTai->lichCham->lich_tao)->format('d/m/Y H:i') : 'N/A' }}</td>
                                             <td>
-                                                @if($vai_tro_cham == 'Phản biện')
-                                                    <span class="badge bg-primary">{{ $vai_tro_cham }}</span>
+                                                @if($item['vai_tro_cham'] == 'Phản biện')
+                                                    <span class="badge bg-primary">{{ $item['vai_tro_cham'] }}</span>
                                                     <small class="d-block text-muted">Được chấm: Điểm báo cáo, Điểm thuyết trình, và các điểm khác</small>
-                                                @elseif($vai_tro_cham == 'Giảng viên khác')
-                                                    <span class="badge bg-info">{{ $vai_tro_cham }}</span>
-                                                    <small class="d-block text-muted">Được chấm: Điểm thuyết trình, Điểm demo, Điểm câu hỏi, Điểm cộng</small>
-                                                @elseif($vai_tro_cham == 'Hướng dẫn')
-                                                    <span class="badge bg-success">{{ $vai_tro_cham }}</span>
+                                                @elseif($item['vai_tro_cham'] == 'Hướng dẫn')
+                                                    <span class="badge bg-success">{{ $item['vai_tro_cham'] }}</span>
                                                     <small class="d-block text-muted">Được chấm: Điểm báo cáo, Điểm thuyết trình, và các điểm khác</small>
-                                                @elseif($vai_tro_cham == 'Trưởng tiểu ban')
-                                                    <span class="badge bg-warning text-dark">{{ $vai_tro_cham }}</span>
+                                                @elseif($item['vai_tro_cham'] == 'Trưởng tiểu ban')
+                                                    <span class="badge bg-warning text-dark">{{ $item['vai_tro_cham'] }}</span>
                                                     <small class="d-block text-muted">Được chấm: Điểm thuyết trình, Điểm demo, Điểm câu hỏi, Điểm cộng</small>
-                                                @elseif($vai_tro_cham == 'Thư ký')
-                                                    <span class="badge bg-secondary">{{ $vai_tro_cham }}</span>
+                                                @elseif($item['vai_tro_cham'] == 'Thư ký')
+                                                    <span class="badge bg-secondary">{{ $item['vai_tro_cham'] }}</span>
+                                                    <small class="d-block text-muted">Được chấm: Điểm thuyết trình, Điểm demo, Điểm câu hỏi, Điểm cộng</small>
+                                                @elseif($item['vai_tro_cham'] == 'Thành viên')
+                                                    <span class="badge bg-info">{{ $item['vai_tro_cham'] }}</span>
                                                     <small class="d-block text-muted">Được chấm: Điểm thuyết trình, Điểm demo, Điểm câu hỏi, Điểm cộng</small>
                                                 @else
-                                                    <span class="badge bg-secondary">{{ $vai_tro_cham ?: 'N/A' }}</span>
+                                                    <span class="badge bg-secondary">{{ $item['vai_tro_cham'] ?: 'N/A' }}</span>
                                                     <small class="d-block text-muted">Được chấm: Điểm thuyết trình, Điểm demo, Điểm câu hỏi, Điểm cộng</small>
                                                 @endif
                                             </td>
-                                            @if(in_array($vai_tro_cham, ['Hướng dẫn', 'Phản biện']))
+                                            @if(in_array($item['vai_tro_cham'], ['Hướng dẫn', 'Phản biện']))
                                                 <td>{{ $daChamDiem ? number_format($daChamDiem->diem_bao_cao, 1) : ($diemChuaLichCham ? number_format($diemChuaLichCham->diem_bao_cao, 1) : 'Chưa chấm') }}</td>
                                             @endif
                                             <td>{{ $daChamDiem ? number_format($daChamDiem->diem_thuyet_trinh, 1) : ($diemChuaLichCham ? number_format($diemChuaLichCham->diem_thuyet_trinh, 1) : 'Chưa chấm') }}</td>
@@ -120,9 +120,9 @@
                                             <td><strong>{{ number_format($tongDiem, 1) }}</strong></td>
                                             <td>
                                                 @if($daChamDiem)
-                                                    <a href="{{ route('giangvien.bang-diem.edit', $daChamDiem->id) }}" 
+                                                    <a href="{{ route('giangvien.bang-diem.edit', $daChamDiem->id) }}"
                                                        class="btn btn-sm btn-warning">
-                                                        <i class="fas fa-edit"></i> 
+                                                        <i class="fas fa-edit"></i>
                                                         @if($daChamDiemCoBan && !$canGradeBaoCaoAndThuyetTrinh)
                                                             Nhập điểm còn lại
                                                         @else

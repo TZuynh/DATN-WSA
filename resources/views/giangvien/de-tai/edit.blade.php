@@ -96,9 +96,9 @@
                     $nhomDangGiu = $nhoms->firstWhere('de_tai_id', $deTai->id);
                 @endphp
                 <div style="margin-bottom: 20px;">
-                    <label for="nhom_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Chọn nhóm</label>
+                    <label for="nhom_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Chọn nhóm <span class="text-danger">*</span></label>
                     <select name="nhom_id" id="nhom_id"
-                        class="form-control @error('nhom_id') is-invalid @enderror"
+                        class="form-control @error('nhom_id') is-invalid @enderror" required
                         style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                         <option value="">-- Chọn nhóm --</option>
                         @foreach($nhoms as $nhom)
