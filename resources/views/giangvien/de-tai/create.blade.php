@@ -76,9 +76,9 @@
                             </div>
 
                             <div class="form-group mb-4">
-                                <label for="nhom_id" class="form-label">Chọn nhóm</label>
+                                <label for="nhom_id" class="form-label">Chọn nhóm <span class="text-danger">*</span></label>
                                 <select class="form-control @error('nhom_id') is-invalid @enderror" 
-                                    id="nhom_id" name="nhom_id">
+                                    id="nhom_id" name="nhom_id" required>
                                     <option value="">-- Chọn nhóm --</option>
                                     @forelse($nhoms as $nhom)
                                         <option value="{{ $nhom->id }}" {{ old('nhom_id') == $nhom->id ? 'selected' : '' }}>

@@ -8,7 +8,7 @@
         @csrf
         @method('PUT')
         <div class="mb-3">
-            <label for="nhom_id" class="form-label">Nhóm</label>
+            <label for="nhom_id" class="form-label">Nhóm <span class="text-danger">*</span></label>
             <select name="nhom_id" id="nhom_id" class="form-control" required>
                 <option value="">-- Chọn nhóm --</option>
                 @foreach($nhoms as $nhom)
@@ -17,7 +17,7 @@
             </select>
         </div>
         <div class="mb-3">
-            <label for="dot_bao_cao_id" class="form-label">Đợt báo cáo</label>
+            <label for="dot_bao_cao_id" class="form-label">Đợt báo cáo <span class="text-danger">*</span></label>
             <select name="dot_bao_cao_id" id="dot_bao_cao_id" class="form-control" required>
                 <option value="">-- Chọn đợt báo cáo --</option>
                 @foreach($dotBaoCaos as $dot)
@@ -28,7 +28,7 @@
             </select>
         </div>
         <div class="mb-3">
-            <label for="ngay_bao_cao" class="form-label">Ngày báo cáo</label>
+            <label for="ngay_bao_cao" class="form-label">Ngày báo cáo <span class="text-danger">*</span></label>
             <input
                 type="text"
                 name="ngay_bao_cao"
@@ -43,8 +43,8 @@
             @enderror
         </div>
         <div class="mb-3">
-            <label for="noi_dung_bao_cao" class="form-label">Nội dung báo cáo</label>
-            <textarea name="noi_dung_bao_cao" id="noi_dung_bao_cao" class="form-control">{{ old('noi_dung_bao_cao', $baoCao->noi_dung_bao_cao) }}</textarea>
+            <label for="noi_dung_bao_cao" class="form-label">Nội dung báo cáo <span class="text-danger">*</span></label>
+            <textarea name="noi_dung_bao_cao" id="noi_dung_bao_cao" class="form-control" required>{{ old('noi_dung_bao_cao', $baoCao->noi_dung_bao_cao) }}</textarea>
         </div>
         <button type="submit" class="btn btn-success">Cập nhật</button>
         <a href="{{ route('giangvien.bao-cao-qua-trinh.index') }}" class="btn btn-secondary">Quay lại</a>

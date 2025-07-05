@@ -7,7 +7,11 @@
     $isThuKy = PhanCongVaiTro::where('tai_khoan_id', auth()->id() ?? 0)
         ->whereHas('vaiTro', function($q) { $q->where('ten', 'Thư ký'); })
         ->exists();
-    \Log::info('[Sidebar] isPhanBien: ' . ($isPhanBien ? 'true' : 'false') . ', isThuKy: ' . ($isThuKy ? 'true' : 'false') . ', user_id: ' . (auth()->id() ?? 0));
+    // Kiểm tra là hướng dẫn
+    $isHuongDan = PhanCongVaiTro::where('tai_khoan_id', auth()->id() ?? 0)
+        ->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')
+        ->exists();
+    \Log::info('[Sidebar] isPhanBien: ' . ($isPhanBien ? 'true' : 'false') . ', isThuKy: ' . ($isThuKy ? 'true' : 'false') . ', isHuongDan: ' . ($isHuongDan ? 'true' : 'false') . ', user_id: ' . (auth()->id() ?? 0));
 @endphp
 
 <div class="admin-sidebar">
@@ -75,11 +79,13 @@
             </a>
         </li>
         @endif
+        @if($isHuongDan)
         <li class="menu-item {{ request()->routeIs('giangvien.bao-cao-qua-trinh.*') ? 'active' : '' }}">
             <a href="{{ route('giangvien.bao-cao-qua-trinh.index') }}">
                 <i class="fas fa-file-alt"></i>
                 <span>Báo cáo quá trình</span>
             </a>
         </li>
+        @endif
     </ul>
 </div>

@@ -1,12 +1,12 @@
 @extends('admin.layout')
-
+@section('title', 'Phân công phản biện')
 @section('content')
 <div class="container">
     <h2>Phân công giảng viên phản biện cho đề tài</h2>
 
     @if($deTais->isEmpty())
         <div class="alert alert-info">
-            Không có đề tài nào cần phân công phản biện. 
+            Không có đề tài nào cần phân công phản biện.
             <br>
             Lưu ý: Chỉ những đề tài đã được giảng viên hướng dẫn đồng ý mới có thể phân công phản biện.
         </div>
@@ -89,4 +89,4 @@ document.getElementById('de_tai_id')?.addEventListener('change', function() {
     }
 });
 </script>
-@endsection 
+@endsection
