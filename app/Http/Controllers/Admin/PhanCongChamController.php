@@ -237,11 +237,9 @@ class PhanCongChamController extends Controller
     // Hiển thị form phân công phản biện
     public function phanCongPhanBien()
     {
-        // Lấy các đề tài đã được GVHD đồng ý và chưa có giảng viên phản biện
+        // Lấy các đề tài đã được GVHD đồng ý (trang_thai = 1) và đã có hội đồng
         $deTais = DeTai::where('trang_thai', 1)
-            ->whereDoesntHave('chiTietBaoCao.hoiDong.phanCongVaiTros', function($query) {
-                $query->where('loai_giang_vien', 'Giảng Viên Phản Biện');
-            })
+            ->whereHas('chiTietBaoCao.hoiDong')
             ->get();
 
         // Lấy danh sách tất cả giảng viên
@@ -253,20 +251,38 @@ class PhanCongChamController extends Controller
     // AJAX: Lấy danh sách giảng viên có thể phản biện cho đề tài
     public function getGiangVienHoiDong($de_tai_id)
     {
-        $deTai = DeTai::with('giangVien')->findOrFail($de_tai_id);
-        
-        // Lấy tất cả giảng viên trừ giảng viên hướng dẫn của đề tài
-        $giangViens = \App\Models\TaiKhoan::where('vai_tro', 'giang_vien')
-            ->where('id', '!=', $deTai->giang_vien_id)
-            ->get()
-            ->map(function($gv) {
-                return [
-                    'id' => $gv->id,
-                    'ten' => $gv->ten,
-                    'vai_tro' => 'Giảng viên'
-                ];
+        $deTai = DeTai::with('giangVien', 'chiTietBaoCao.hoiDong.phanCongVaiTros.taiKhoan')->findOrFail($de_tai_id);
+        $giangVienHuongDanId = $deTai->giang_vien_id;
+        $hoiDong = null;
+        // Tìm hội đồng mà giảng viên hướng dẫn là thành viên
+        if ($deTai->chiTietBaoCao && $deTai->chiTietBaoCao->hoiDong) {
+            $hoiDong = $deTai->chiTietBaoCao->hoiDong;
+            $isGVHDInHoiDong = $hoiDong->phanCongVaiTros->contains(function($pc) use ($giangVienHuongDanId) {
+                return $pc->tai_khoan_id == $giangVienHuongDanId;
             });
-
+            if (!$isGVHDInHoiDong) {
+                // Nếu hội đồng hiện tại không có GVHD, tìm hội đồng khác trong cùng đợt mà GVHD là thành viên
+                $hoiDong = \App\Models\HoiDong::where('dot_bao_cao_id', $deTai->dot_bao_cao_id)
+                    ->whereHas('phanCongVaiTros', function($q) use ($giangVienHuongDanId) {
+                        $q->where('tai_khoan_id', $giangVienHuongDanId);
+                    })->with('phanCongVaiTros.taiKhoan', 'phanCongVaiTros.vaiTro')->first();
+            }
+        }
+        $giangViens = collect();
+        if ($hoiDong) {
+            $giangViens = $hoiDong->phanCongVaiTros
+                ->filter(function($pc) use ($giangVienHuongDanId) {
+                    return $pc->tai_khoan_id != $giangVienHuongDanId;
+                })
+                ->map(function($pc) {
+                    return [
+                        'id' => $pc->tai_khoan_id,
+                        'ten' => optional($pc->taiKhoan)->ten,
+                        'vai_tro' => optional($pc->vaiTro)->ten,
+                    ];
+                })
+                ->values();
+        }
         return response()->json($giangViens);
     }
 

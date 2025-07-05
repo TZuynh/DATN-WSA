@@ -62,7 +62,6 @@
                     <option value="">Chọn vai trò</option>
                     <option value="admin" {{ old('vai_tro') == 'admin' ? 'selected' : '' }}>Admin</option>
                     <option value="giang_vien" {{ old('vai_tro') == 'giang_vien' ? 'selected' : '' }}>Giảng viên</option>
-                    <option value="sinh_vien" {{ old('vai_tro') == 'sinh_vien' ? 'selected' : '' }}>Sinh viên</option>
                 </select>
             </div>
 

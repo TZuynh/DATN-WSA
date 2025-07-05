@@ -13,4 +13,5 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/de-tai/{deTai}/preview-pdf', [DeTaiController::class, 'previewPdfDetail'])->name('admin.de-tai.preview-pdf');
     Route::get('/admin/de-tai/{deTai}/export-pdf', [DeTaiController::class, 'exportPdfDetail'])->name('admin.de-tai.export-pdf');
     Route::get('/admin/de-tai/{deTai}/export-word', [DeTaiController::class, 'exportWordDetail'])->name('admin.de-tai.export-word');
+    Route::post('/admin/de-tai/{id}/approve', [App\Http\Controllers\Admin\DeTaiController::class, 'approve'])->name('admin.de-tai.approve');
 });

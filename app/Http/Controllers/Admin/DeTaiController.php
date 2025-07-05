@@ -237,4 +237,12 @@ class DeTaiController extends Controller
             'Content-Length' => strlen($html)
         ]);
     }
+
+    public function approve($id)
+    {
+        $deTai = DeTai::findOrFail($id);
+        $deTai->trang_thai = \App\Models\DeTai::TRANG_THAI_DANG_THUC_HIEN_GVHD; // = 1
+        $deTai->save();
+        return redirect()->route('admin.de-tai.index')->with('success', 'Đề tài đã được duyệt!');
+    }
 }

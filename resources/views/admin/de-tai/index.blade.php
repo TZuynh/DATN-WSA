@@ -79,6 +79,14 @@
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
+                                            @if($deTai->trang_thai != \App\Models\DeTai::TRANG_THAI_DANG_THUC_HIEN_GVHD)
+                                            <form action="{{ route('admin.de-tai.approve', $deTai->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Duyệt đề tài này?')">
+                                                    <i class="fas fa-check"></i> Duyệt
+                                                </button>
+                                            </form>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
