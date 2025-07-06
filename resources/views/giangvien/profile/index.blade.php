@@ -49,5 +49,157 @@
             </div>
         </div>
     </div>
+
+    <!-- Form đổi mật khẩu -->
+    <div class="profile-card" style="margin-top: 32px; background: #fff; border-radius: 16px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); overflow: hidden;">
+        <div style="padding: 32px;">
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 32px;">
+                <div style="padding: 16px; background: linear-gradient(to bottom right, #fef3c7, #fde68a); border-radius: 16px;">
+                    <svg width="32" height="32" fill="none" stroke="#d97706" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 style="font-size: 1.5rem; font-weight: 600; color: #22223b; margin: 0;">Đổi mật khẩu</h2>
+                    <p style="color: #6b7280; margin: 0.25rem 0 0 0;">Cập nhật mật khẩu tài khoản của bạn</p>
+                </div>
+            </div>
+
+            <form action="{{ route('giangvien.profile.change-password') }}" method="POST" style="display: grid; gap: 24px;">
+                @csrf
+                @method('PUT')
+                
+                <div style="display: grid; gap: 8px;">
+                    <label for="current_password" style="font-weight: 600; color: #374151; font-size: 0.95rem;">Mật khẩu hiện tại</label>
+                    <div style="position: relative;">
+                        <input type="password" 
+                               id="current_password" 
+                               name="current_password" 
+                               required
+                               style="padding: 12px 16px; padding-right: 48px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s ease; outline: none; width: 100%; box-sizing: border-box;"
+                               placeholder="Nhập mật khẩu hiện tại">
+                        <button type="button" 
+                                class="password-toggle" 
+                                data-target="current_password"
+                                style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; color: #6b7280; transition: color 0.3s ease;">
+                            <i class="fas fa-eye-slash" style="font-size: 16px;"></i>
+                        </button>
+                    </div>
+                    @error('current_password')
+                        <span style="color: #ef4444; font-size: 0.875rem;">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div style="display: grid; gap: 8px;">
+                    <label for="new_password" style="font-weight: 600; color: #374151; font-size: 0.95rem;">Mật khẩu mới</label>
+                    <div style="position: relative;">
+                        <input type="password" 
+                               id="new_password" 
+                               name="new_password" 
+                               required
+                               style="padding: 12px 16px; padding-right: 48px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s ease; outline: none; width: 100%; box-sizing: border-box;"
+                               placeholder="Nhập mật khẩu mới (tối thiểu 8 ký tự)">
+                        <button type="button" 
+                                class="password-toggle" 
+                                data-target="new_password"
+                                style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; color: #6b7280; transition: color 0.3s ease;">
+                            <i class="fas fa-eye-slash" style="font-size: 16px;"></i>
+                        </button>
+                    </div>
+                    @error('new_password')
+                        <span style="color: #ef4444; font-size: 0.875rem;">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div style="display: grid; gap: 8px;">
+                    <label for="new_password_confirmation" style="font-weight: 600; color: #374151; font-size: 0.95rem;">Xác nhận mật khẩu mới</label>
+                    <div style="position: relative;">
+                        <input type="password" 
+                               id="new_password_confirmation" 
+                               name="new_password_confirmation" 
+                               required
+                               style="padding: 12px 16px; padding-right: 48px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s ease; outline: none; width: 100%; box-sizing: border-box;"
+                               placeholder="Nhập lại mật khẩu mới">
+                        <button type="button" 
+                                class="password-toggle" 
+                                data-target="new_password_confirmation"
+                                style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; color: #6b7280; transition: color 0.3s ease;">
+                            <i class="fas fa-eye-slash" style="font-size: 16px;"></i>
+                        </button>
+                    </div>
+                    @error('new_password_confirmation')
+                        <span style="color: #ef4444; font-size: 0.875rem;">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <button type="submit" 
+                        style="padding: 12px 24px; background: linear-gradient(to right, #4f46e5, #3b82f6); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; justify-content: center; max-width: 200px;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Cập nhật mật khẩu
+                </button>
+            </form>
+        </div>
+    </div>
 </div>
+
+<style>
+input:focus {
+    border-color: #4f46e5 !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+.password-toggle:hover {
+    color: #4f46e5 !important;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.alert {
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Xử lý toggle password visibility
+    const passwordToggles = document.querySelectorAll('.password-toggle');
+    
+    passwordToggles.forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const passwordInput = document.getElementById(targetId);
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+                this.style.color = '#4f46e5';
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+                this.style.color = '#6b7280';
+            }
+        });
+    });
+});
+</script>
 @endsection 
