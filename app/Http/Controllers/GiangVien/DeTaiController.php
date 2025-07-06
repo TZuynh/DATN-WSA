@@ -113,18 +113,27 @@ class DeTaiController extends Controller
                 }
             }
             // Tự động phân công giảng viên hướng dẫn vào hội đồng
-            $vaiTroGVHD = \App\Models\VaiTro::where('ten', 'Giảng viên hướng dẫn')->first();
-            if ($deTai->giang_vien_id && $chiTiet && $chiTiet->hoi_dong_id && $vaiTroGVHD) {
-                \App\Models\PhanCongVaiTro::updateOrCreate(
-                    [
+            if ($deTai->giang_vien_id && $chiTiet && $chiTiet->hoi_dong_id) {
+                $phanCongGVHD = \App\Models\PhanCongVaiTro::where('hoi_dong_id', $chiTiet->hoi_dong_id)
+                    ->where('tai_khoan_id', $deTai->giang_vien_id)
+                    ->first();
+
+                if ($phanCongGVHD) {
+                    // Nếu đã có phân công, chỉ cập nhật loai_giang_vien
+                    $phanCongGVHD->update(['loai_giang_vien' => 'Giảng Viên Hướng Dẫn']);
+                } else {
+                    // Nếu chưa có phân công, tạo mới với vai trò "Thành viên"
+                    $vaiTro = \App\Models\VaiTro::firstOrCreate(
+                        ['ten' => 'Thành viên'],
+                        ['mo_ta' => 'Thành viên hội đồng']
+                    );
+                    \App\Models\PhanCongVaiTro::create([
                         'hoi_dong_id' => $chiTiet->hoi_dong_id,
                         'tai_khoan_id' => $deTai->giang_vien_id,
-                    ],
-                    [
-                        'loai_giang_vien' => 'Giảng Viên Hướng Dẫn',
-                        'vai_tro_id' => $vaiTroGVHD->id
-                    ]
-                );
+                        'vai_tro_id' => $vaiTro->id,
+                        'loai_giang_vien' => 'Giảng Viên Hướng Dẫn'
+                    ]);
+                }
             }
 
             return redirect()->route('giangvien.de-tai.index')->with('success', 'Thêm đề tài thành công');
@@ -433,27 +442,50 @@ class DeTaiController extends Controller
             );
 
             // Đảm bảo có bản ghi Giảng Viên Phản Biện
-            \App\Models\PhanCongVaiTro::updateOrCreate(
-                [
+            // Chỉ cập nhật loai_giang_vien, không thay đổi vai_tro_id
+            $phanCongPhanBien = \App\Models\PhanCongVaiTro::where('hoi_dong_id', $chiTiet->hoi_dong_id)
+                ->where('tai_khoan_id', $user->id)
+                ->first();
+
+            if ($phanCongPhanBien) {
+                // Nếu đã có phân công, chỉ cập nhật loai_giang_vien
+                $phanCongPhanBien->update(['loai_giang_vien' => 'Giảng Viên Phản Biện']);
+            } else {
+                // Nếu chưa có phân công, tạo mới với vai trò "Thành viên"
+                $vaiTro = \App\Models\VaiTro::firstOrCreate(
+                    ['ten' => 'Thành viên'],
+                    ['mo_ta' => 'Thành viên hội đồng']
+                );
+                \App\Models\PhanCongVaiTro::create([
                     'hoi_dong_id' => $chiTiet->hoi_dong_id,
                     'tai_khoan_id' => $user->id,
-                ],
-                [
-                    'loai_giang_vien' => 'Giảng Viên Phản Biện',
-                ]
-            );
+                    'vai_tro_id' => $vaiTro->id,
+                    'loai_giang_vien' => 'Giảng Viên Phản Biện'
+                ]);
+            }
 
             // Đảm bảo có bản ghi Giảng Viên Hướng Dẫn
             if ($deTai->giang_vien_id) {
-                \App\Models\PhanCongVaiTro::updateOrCreate(
-                    [
+                $phanCongGVHD = \App\Models\PhanCongVaiTro::where('hoi_dong_id', $chiTiet->hoi_dong_id)
+                    ->where('tai_khoan_id', $deTai->giang_vien_id)
+                    ->first();
+
+                if ($phanCongGVHD) {
+                    // Nếu đã có phân công, chỉ cập nhật loai_giang_vien
+                    $phanCongGVHD->update(['loai_giang_vien' => 'Giảng Viên Hướng Dẫn']);
+                } else {
+                    // Nếu chưa có phân công, tạo mới với vai trò "Thành viên"
+                    $vaiTro = \App\Models\VaiTro::firstOrCreate(
+                        ['ten' => 'Thành viên'],
+                        ['mo_ta' => 'Thành viên hội đồng']
+                    );
+                    \App\Models\PhanCongVaiTro::create([
                         'hoi_dong_id' => $chiTiet->hoi_dong_id,
                         'tai_khoan_id' => $deTai->giang_vien_id,
-                    ],
-                    [
-                        'loai_giang_vien' => 'Giảng Viên Hướng Dẫn',
-                    ]
-                );
+                        'vai_tro_id' => $vaiTro->id,
+                        'loai_giang_vien' => 'Giảng Viên Hướng Dẫn'
+                    ]);
+                }
             }
 
             // Tạo bản ghi phân công chấm nếu chưa có

@@ -6,7 +6,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h1 style="color: #2d3748; font-weight: 700;">Quản lý phân công hội đồng</h1>
+        <div>
+            <h1 style="color: #2d3748; font-weight: 700;">Quản lý phân công hội đồng</h1>
+            <p style="color: #718096; margin: 0; font-size: 0.9rem;">
+                <i class="fas fa-info-circle me-1"></i>
+                Mỗi giảng viên chỉ được phân công vào 1 hội đồng duy nhất
+            </p>
+        </div>
         <a href="{{ route('admin.phan-cong-hoi-dong.create') }}" style="padding: 10px 20px; background-color: #4299e1; color: white; border: none; border-radius: 4px; text-decoration: none;">
             <i class="fas fa-plus"></i> Thêm phân công mới
         </a>
@@ -40,28 +46,18 @@
                             <td style="padding: 10px 15px;">{{ $phanCong->taiKhoan->ten ?? 'N/A' }}</td>
                             <td style="padding: 10px 15px;">
                                 @php
-                                    $tenVaiTro = $phanCong->vaiTro->ten;
-                                    if ($tenVaiTro === 'Thành viên' && $phanCong->loai_giang_vien) {
-                                        $loai = $phanCong->loai_giang_vien;
-                                    } else {
-                                        $loai = $tenVaiTro;
-                                    }
-                                    $color = '#3182ce';
-                                    if (str_contains($loai, 'Trưởng tiểu ban')) {
-                                        $color = '#e53e3e'; // Đỏ
-                                    } elseif (str_contains($loai, 'Thư ký')) {
-                                        $color = '#1a365d'; // Xanh dương đậm
-                                    } elseif (str_contains($loai, 'Hướng Dẫn')) {
-                                        $color = '#38a169';
-                                    } elseif (str_contains($loai, 'Phản Biện')) {
-                                        $color = '#ed8936';
-                                    } elseif (str_contains($loai, 'Khác')) {
-                                        $color = '#805ad5';
-                                    }
+                                    $tenVaiTro = $phanCong->vaiTro->ten ?? '';
+                                    $class = '';
+                                    if ($tenVaiTro == 'Trưởng tiểu ban') $class = 'badge bg-danger';
+                                    elseif ($tenVaiTro == 'Thư ký') $class = 'badge bg-dark';
+                                    elseif ($tenVaiTro == 'Thành viên') $class = 'badge bg-primary';
+                                    else $class = 'd-none'; // Ẩn các vai trò khác
                                 @endphp
-                                <span style="background-color: {{ $color }}; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem;">
-                                    {{ $loai }}
-                                </span>
+                                @if(in_array($tenVaiTro, ['Trưởng tiểu ban', 'Thư ký', 'Thành viên']))
+                                    <span class="{{ $class }}">
+                                        {{ $tenVaiTro }}
+                                    </span>
+                                @endif
                             </td>
                             <td style="padding: 10px 15px;">{{ $phanCong->created_at->format('d-m-Y') }}</td>
                             <td style="padding: 10px 15px;">

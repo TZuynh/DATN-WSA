@@ -53,7 +53,7 @@
                                             @php
                                                 $gvhd = $hd ? $hd->phanCongVaiTros->firstWhere('loai_giang_vien', 'Giảng Viên Hướng Dẫn') : null;
                                             @endphp
-                                            {{ $gvhd && $gvhd->taiKhoan ? $gvhd->taiKhoan->ten : ($phanCongCham->deTai->giangVien->ten ?? 'N/A') }}
+                                            {{ $gvhd && $gvhd->taiKhoan ? $gvhd->taiKhoan->ten : 'N/A' }}
                                         </td>
                                         <td>
                                             @php
@@ -138,7 +138,7 @@
                                                 @php
                                                     $gvhd = $hd ? $hd->phanCongVaiTros->firstWhere('loai_giang_vien', 'Giảng Viên Hướng Dẫn') : null;
                                                 @endphp
-                                                {{ $gvhd && $gvhd->taiKhoan ? $gvhd->taiKhoan->ten : ($deTai->giangVien->ten ?? 'N/A') }}
+                                                {{ $gvhd && $gvhd->taiKhoan ? $gvhd->taiKhoan->ten : 'N/A' }}
                                             </td>
                                             <td>
                                                 @php

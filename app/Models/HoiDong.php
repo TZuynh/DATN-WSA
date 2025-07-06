@@ -95,5 +95,66 @@ class HoiDong extends Model
             ]);
         }
     }
+
+    /**
+     * Thêm đề tài trực tiếp vào hội đồng
+     * @param array $deTaiData Dữ liệu đề tài
+     * @return DeTai
+     */
+    public function themDeTaiTrucTiep($deTaiData)
+    {
+        // Tạo đề tài mới
+        $deTai = DeTai::create([
+            'ten_de_tai' => $deTaiData['ten_de_tai'],
+            'mo_ta' => $deTaiData['mo_ta'] ?? null,
+            'giang_vien_id' => $deTaiData['giang_vien_id'],
+            'dot_bao_cao_id' => $this->dot_bao_cao_id,
+            'nhom_id' => $deTaiData['nhom_id'] ?? null,
+            'y_kien_giang_vien' => $deTaiData['y_kien_giang_vien'] ?? null,
+            'trang_thai' => DeTai::TRANG_THAI_CHO_DUYET
+        ]);
+
+        // Tạo chi tiết đề tài báo cáo
+        ChiTietDeTaiBaoCao::create([
+            'hoi_dong_id' => $this->id,
+            'de_tai_id' => $deTai->id,
+            'dot_bao_cao_id' => $this->dot_bao_cao_id,
+            'trang_thai' => 0 // Trạng thái mặc định là chờ duyệt
+        ]);
+
+        // Cập nhật nhóm nếu có
+        if (!empty($deTaiData['nhom_id'])) {
+            $nhom = Nhom::find($deTaiData['nhom_id']);
+            if ($nhom) {
+                $nhom->update(['de_tai_id' => $deTai->id]);
+            }
+        }
+
+        return $deTai;
+    }
+
+    /**
+     * Lấy danh sách đề tài của hội đồng
+     */
+    public function getDeTais()
+    {
+        return $this->chiTietBaoCaos()
+            ->with('deTai.nhom', 'deTai.giangVien')
+            ->get()
+            ->pluck('deTai')
+            ->filter();
+    }
+
+    /**
+     * Lấy danh sách giảng viên trong hội đồng
+     */
+    public function getGiangViens()
+    {
+        return $this->phanCongVaiTros()
+            ->with('taiKhoan', 'vaiTro')
+            ->get()
+            ->pluck('taiKhoan')
+            ->filter();
+    }
 }
 

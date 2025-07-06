@@ -11,4 +11,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/hoi-dong/{hoiDong}/edit', [HoiDongController::class, 'edit'])->name('admin.hoi-dong.edit');
     Route::put('/admin/hoi-dong/{hoiDong}', [HoiDongController::class, 'update'])->name('admin.hoi-dong.update');
     Route::delete('/admin/hoi-dong/{hoiDong}', [HoiDongController::class, 'destroy'])->name('admin.hoi-dong.destroy');
+    
+    // Xóa đề tài khỏi hội đồng
+    Route::delete('/admin/hoi-dong/{hoiDong}/de-tai/{deTai}', [HoiDongController::class, 'xoaDeTai'])->name('admin.hoi-dong.xoa-de-tai');
+    
+    // Chuyển đề tài sang hội đồng khác
+    Route::post('/admin/hoi-dong/chuyen-de-tai', [HoiDongController::class, 'chuyenDeTaiSangHoiDong'])->name('admin.hoi-dong.chuyen-de-tai');
 });

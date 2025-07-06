@@ -79,11 +79,76 @@
                     @enderror
                 </div>
 
+                @if($hoiDong)
+                    <div style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+                        <h5 style="margin: 0 0 10px 0; color: #007bff;">
+                            <i class="fas fa-users me-2"></i>Thông tin hội đồng: {{ $hoiDong->ten }}
+                        </h5>
+                        <p style="margin: 0; color: #6c757d; font-size: 0.9rem;">
+                            Đề tài này thuộc hội đồng <strong>{{ $hoiDong->ten }}</strong> ({{ $hoiDong->ma_hoi_dong }})
+                        </p>
+                    </div>
+                @endif
+
                 <div style="margin-bottom: 20px;">
-                    <label for="nhom_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Chọn nhóm</label>
+                    <label for="giang_vien_id" style="display: block; margin-bottom: 5px; color: #4a5568;">
+                        Phân công giảng viên hướng dẫn
+                        @if($deTai->giang_vien_id)
+                            <span style="color: #28a745; font-size: 0.8rem;">(Đã có: {{ $deTai->giangVien->ten ?? 'N/A' }})</span>
+                        @else
+                            <span style="color: #dc3545; font-size: 0.8rem;">(Chưa có)</span>
+                        @endif
+                    </label>
+                    <select name="giang_vien_id" id="giang_vien_id" 
+                        class="form-control @error('giang_vien_id') is-invalid @enderror"
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="">-- Chọn giảng viên hướng dẫn --</option>
+                        
+                        @if($giangVienHoiDong->count() > 0)
+                            <optgroup label="Giảng viên trong hội đồng">
+                                @foreach($giangVienHoiDong as $giangVien)
+                                    <option value="{{ $giangVien->id }}" {{ old('giang_vien_id', $deTai->giang_vien_id) == $giangVien->id ? 'selected' : '' }}>
+                                        {{ $giangVien->ten }} (Hội đồng)
+                                    </option>
+                                @endforeach
+                            </optgroup>
+                        @endif
+                        
+                        @if($giangVienPhanBien->count() > 0)
+                            <optgroup label="Giảng viên phản biện">
+                                @foreach($giangVienPhanBien as $giangVien)
+                                    <option value="{{ $giangVien->id }}" {{ old('giang_vien_id', $deTai->giang_vien_id) == $giangVien->id ? 'selected' : '' }}>
+                                        {{ $giangVien->ten }} (Phản biện)
+                                    </option>
+                                @endforeach
+                            </optgroup>
+                        @endif
+                        
+                        <optgroup label="Tất cả giảng viên">
+                            @foreach($giangViens as $giangVien)
+                                <option value="{{ $giangVien->id }}" {{ old('giang_vien_id', $deTai->giang_vien_id) == $giangVien->id ? 'selected' : '' }}>
+                                    {{ $giangVien->ten }}
+                                </option>
+                            @endforeach
+                        </optgroup>
+                    </select>
+                    @error('giang_vien_id')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="nhom_id" style="display: block; margin-bottom: 5px; color: #4a5568;">
+                        Chọn nhóm
+                        @if($deTai->nhom_id)
+                            <span style="color: #28a745; font-size: 0.8rem;">(Đã có: {{ $deTai->nhom->ten ?? 'N/A' }})</span>
+                        @else
+                            <span style="color: #dc3545; font-size: 0.8rem;">(Chưa có)</span>
+                        @endif
+                    </label>
                     <select name="nhom_id" id="nhom_id" 
                         class="form-control @error('nhom_id') is-invalid @enderror"
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" disabled>
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                         <option value="">-- Chọn nhóm --</option>
                         @foreach($nhoms as $nhom)
                         <option value="{{ $nhom->id }}" {{ old('nhom_id', $deTai->nhom_id) == $nhom->id ? 'selected' : '' }}>
@@ -97,18 +162,37 @@
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label for="giang_vien_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Chọn giảng viên <span style="color: red;">*</span></label>
-                    <select name="giang_vien_id" id="giang_vien_id" 
-                        class="form-control @error('giang_vien_id') is-invalid @enderror" required
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" disabled>
-                        <option value="">-- Chọn giảng viên --</option>
-                        @foreach($giangViens as $giangVien)
-                        <option value="{{ $giangVien->id }}" {{ old('giang_vien_id', $deTai->giang_vien_id) == $giangVien->id ? 'selected' : '' }}>
-                            {{ $giangVien->ten }}
-                        </option>
-                        @endforeach
-                    </select>
-                    @error('giang_vien_id')
+                    <label style="display: block; margin-bottom: 5px; color: #4a5568;">
+                        Phân công sinh viên
+                        @if($deTai->nhom && $deTai->nhom->sinhViens->count() > 0)
+                            <span style="color: #28a745; font-size: 0.8rem;">(Đã có {{ $deTai->nhom->sinhViens->count() }} sinh viên)</span>
+                        @else
+                            <span style="color: #dc3545; font-size: 0.8rem;">(Chưa có)</span>
+                        @endif
+                    </label>
+                    <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 10px;">
+                        @if($sinhVienChuaCoDeTai->count() > 0)
+                            @foreach($sinhVienChuaCoDeTai as $sinhVien)
+                                <div style="margin-bottom: 8px;">
+                                    <label style="display: flex; align-items: center; cursor: pointer;">
+                                        <input type="checkbox" name="sinh_vien_ids[]" value="{{ $sinhVien->id }}" 
+                                               style="margin-right: 8px;"
+                                               {{ $deTai->nhom && $deTai->nhom->sinhViens->contains($sinhVien->id) ? 'checked' : '' }}>
+                                        <span>
+                                            <strong>{{ $sinhVien->ten }}</strong> 
+                                            <span style="color: #6c757d;">({{ $sinhVien->mssv }})</span>
+                                            @if($sinhVien->lop)
+                                                <span style="color: #6c757d;">- {{ $sinhVien->lop->ten_lop }}</span>
+                                            @endif
+                                        </span>
+                                    </label>
+                                </div>
+                            @endforeach
+                        @else
+                            <p style="color: #6c757d; margin: 0;">Không có sinh viên nào chưa được phân công</p>
+                        @endif
+                    </div>
+                    @error('sinh_vien_ids')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
@@ -140,7 +224,45 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // No date validation needed
+            // Xử lý khi chọn sinh viên
+            const sinhVienCheckboxes = document.querySelectorAll('input[name="sinh_vien_ids[]"]');
+            const nhomSelect = document.getElementById('nhom_id');
+            
+            sinhVienCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const checkedSinhVien = document.querySelectorAll('input[name="sinh_vien_ids[]"]:checked');
+                    
+                    if (checkedSinhVien.length > 0) {
+                        // Nếu chưa có nhóm được chọn, tạo nhóm mới
+                        if (!nhomSelect.value) {
+                            const nhomMoiOption = document.createElement('option');
+                            nhomMoiOption.value = 'new';
+                            nhomMoiOption.textContent = 'Tạo nhóm mới';
+                            nhomMoiOption.selected = true;
+                            nhomSelect.appendChild(nhomMoiOption);
+                        }
+                    } else {
+                        // Nếu không có sinh viên nào được chọn, xóa option "Tạo nhóm mới"
+                        const newNhomOption = nhomSelect.querySelector('option[value="new"]');
+                        if (newNhomOption) {
+                            newNhomOption.remove();
+                        }
+                    }
+                });
+            });
+
+            // Xử lý khi thay đổi nhóm
+            nhomSelect.addEventListener('change', function() {
+                if (this.value === 'new') {
+                    // Nếu chọn tạo nhóm mới, đảm bảo có sinh viên được chọn
+                    const checkedSinhVien = document.querySelectorAll('input[name="sinh_vien_ids[]"]:checked');
+                    if (checkedSinhVien.length === 0) {
+                        alert('Vui lòng chọn ít nhất một sinh viên trước khi tạo nhóm mới!');
+                        this.value = '';
+                        return;
+                    }
+                }
+            });
         });
     </script>
 @endsection 

@@ -316,36 +316,51 @@ class PhanCongChamController extends Controller
                 $chiTiet->save();
             }
 
-            // Lấy vai trò "Thành viên" (không phải "Giảng viên")
-            $vaiTro = VaiTro::firstOrCreate(
-                ['ten' => 'Thành viên'],
-                ['mo_ta' => 'Thành viên hội đồng']
-            );
-
             // Cập nhật hoặc tạo phân công vai trò cho giảng viên phản biện
-            PhanCongVaiTro::updateOrCreate(
-                [
+            // Chỉ cập nhật loai_giang_vien, không thay đổi vai_tro_id
+            $phanCongPhanBien = PhanCongVaiTro::where('hoi_dong_id', $chiTiet->hoi_dong_id)
+                ->where('tai_khoan_id', $request->giang_vien_id)
+                ->first();
+
+            if ($phanCongPhanBien) {
+                // Nếu đã có phân công, chỉ cập nhật loai_giang_vien
+                $phanCongPhanBien->update(['loai_giang_vien' => 'Giảng Viên Phản Biện']);
+            } else {
+                // Nếu chưa có phân công, tạo mới với vai trò "Thành viên"
+                $vaiTro = VaiTro::firstOrCreate(
+                    ['ten' => 'Thành viên'],
+                    ['mo_ta' => 'Thành viên hội đồng']
+                );
+                PhanCongVaiTro::create([
                     'hoi_dong_id' => $chiTiet->hoi_dong_id,
                     'tai_khoan_id' => $request->giang_vien_id,
-                ],
-                [
                     'vai_tro_id' => $vaiTro->id,
                     'loai_giang_vien' => 'Giảng Viên Phản Biện'
-                ]
-            );
+                ]);
+            }
 
             // Đảm bảo giảng viên hướng dẫn cũng được thêm vào hội đồng
             if ($deTai->giang_vien_id) {
-                PhanCongVaiTro::updateOrCreate(
-                    [
+                $phanCongGVHD = PhanCongVaiTro::where('hoi_dong_id', $chiTiet->hoi_dong_id)
+                    ->where('tai_khoan_id', $deTai->giang_vien_id)
+                    ->first();
+
+                if ($phanCongGVHD) {
+                    // Nếu đã có phân công, chỉ cập nhật loai_giang_vien
+                    $phanCongGVHD->update(['loai_giang_vien' => 'Giảng Viên Hướng Dẫn']);
+                } else {
+                    // Nếu chưa có phân công, tạo mới với vai trò "Thành viên"
+                    $vaiTro = VaiTro::firstOrCreate(
+                        ['ten' => 'Thành viên'],
+                        ['mo_ta' => 'Thành viên hội đồng']
+                    );
+                    PhanCongVaiTro::create([
                         'hoi_dong_id' => $chiTiet->hoi_dong_id,
                         'tai_khoan_id' => $deTai->giang_vien_id,
-                    ],
-                    [
                         'vai_tro_id' => $vaiTro->id,
                         'loai_giang_vien' => 'Giảng Viên Hướng Dẫn'
-                    ]
-                );
+                    ]);
+                }
             }
 
             DB::commit();

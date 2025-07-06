@@ -33,7 +33,13 @@ class PhanCongHoiDongController extends Controller
     public function create(Request $request)
     {
         $hoiDongs = HoiDong::all();
-        $taiKhoans = TaiKhoan::where('vai_tro', 'giang_vien')->get();
+        
+        // Lấy danh sách giảng viên chưa được phân công vào bất kỳ hội đồng nào
+        $giangVienDaPhanCongIds = PhanCongVaiTro::pluck('tai_khoan_id')->unique()->toArray();
+        $taiKhoans = TaiKhoan::where('vai_tro', 'giang_vien')
+            ->whereNotIn('id', $giangVienDaPhanCongIds)
+            ->get();
+            
         $vaiTros = VaiTro::all();
 
         $selectedHoiDong = $request->get('hoi_dong_id');
@@ -98,6 +104,14 @@ class PhanCongHoiDongController extends Controller
                 }
             }
 
+            // Kiểm tra giảng viên đã được phân công vào hội đồng khác chưa
+            $existsGVInOtherHoiDong = PhanCongVaiTro::where('tai_khoan_id', $request->tai_khoan_id)
+                ->where('hoi_dong_id', '!=', $request->hoi_dong_id)
+                ->exists();
+            if ($existsGVInOtherHoiDong) {
+                throw new \Exception('Giảng viên này đã được phân công vào hội đồng khác! Mỗi giảng viên chỉ được phân công vào 1 hội đồng duy nhất.');
+            }
+
             // Không cho trùng giảng viên trong cùng hội đồng
             $existsGV = PhanCongVaiTro::where('hoi_dong_id', $request->hoi_dong_id)
                 ->where('tai_khoan_id', $request->tai_khoan_id)
@@ -121,7 +135,17 @@ class PhanCongHoiDongController extends Controller
     public function edit(PhanCongVaiTro $phanCongVaiTro)
     {
         $hoiDongs = HoiDong::all();
-        $taiKhoans = TaiKhoan::where('vai_tro', 'giang_vien')->get();
+        
+        // Lấy danh sách giảng viên chưa được phân công vào bất kỳ hội đồng nào (trừ giảng viên đang sửa)
+        $giangVienDaPhanCongIds = PhanCongVaiTro::where('id', '!=', $phanCongVaiTro->id)
+            ->pluck('tai_khoan_id')
+            ->unique()
+            ->toArray();
+        $taiKhoans = TaiKhoan::where('vai_tro', 'giang_vien')
+            ->whereNotIn('id', $giangVienDaPhanCongIds)
+            ->orWhere('id', $phanCongVaiTro->tai_khoan_id) // Bao gồm giảng viên đang sửa
+            ->get();
+            
         $truongTieuBanId = VaiTro::where('ten', 'Trưởng tiểu ban')->value('id');
         $thuKyId = VaiTro::where('ten', 'Thư ký')->value('id');
 
@@ -184,6 +208,15 @@ class PhanCongHoiDongController extends Controller
                 }
             }
 
+            // Kiểm tra giảng viên đã được phân công vào hội đồng khác chưa (trừ chính bản ghi đang sửa)
+            $existsGVInOtherHoiDong = PhanCongVaiTro::where('tai_khoan_id', $request->tai_khoan_id)
+                ->where('hoi_dong_id', '!=', $request->hoi_dong_id)
+                ->where('id', '!=', $phanCongVaiTro->id)
+                ->exists();
+            if ($existsGVInOtherHoiDong) {
+                throw new \Exception('Giảng viên này đã được phân công vào hội đồng khác! Mỗi giảng viên chỉ được phân công vào 1 hội đồng duy nhất.');
+            }
+
             // Không cho trùng giảng viên trong cùng hội đồng (trừ chính bản ghi đang sửa)
             $existsGV = PhanCongVaiTro::where('hoi_dong_id', $request->hoi_dong_id)
                 ->where('tai_khoan_id', $request->tai_khoan_id)
@@ -219,6 +252,15 @@ class PhanCongHoiDongController extends Controller
             'tai_khoan_id' => 'required|exists:tai_khoans,id'
         ]);
         $phanCong = PhanCongVaiTro::findOrFail($id);
+        
+        // Kiểm tra giảng viên mới đã được phân công vào hội đồng khác chưa
+        $existsInOtherHoiDong = PhanCongVaiTro::where('tai_khoan_id', $request->tai_khoan_id)
+            ->where('hoi_dong_id', '!=', $phanCong->hoi_dong_id)
+            ->exists();
+        if ($existsInOtherHoiDong) {
+            return back()->withErrors(['error' => 'Giảng viên này đã được phân công vào hội đồng khác! Mỗi giảng viên chỉ được phân công vào 1 hội đồng duy nhất.']);
+        }
+        
         // Kiểm tra giảng viên mới chưa được phân công vào hội đồng này
         $exists = PhanCongVaiTro::where('hoi_dong_id', $phanCong->hoi_dong_id)
             ->where('tai_khoan_id', $request->tai_khoan_id)
@@ -227,6 +269,7 @@ class PhanCongHoiDongController extends Controller
         if ($exists) {
             return back()->withErrors(['error' => 'Giảng viên này đã được phân công vào hội đồng này!']);
         }
+        
         $phanCong->tai_khoan_id = $request->tai_khoan_id;
         $phanCong->save();
         return back()->with('success', 'Chuyển giảng viên thành công!');

@@ -10,6 +10,9 @@ use App\Models\ChiTietDeTaiBaoCao;
 use App\Models\LichCham;
 use App\Models\BienBanNhanXet;
 use App\Models\Phong;
+use App\Models\DeTai;
+use App\Models\TaiKhoan;
+use App\Models\Nhom;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,8 +28,12 @@ class HoiDongController extends Controller
         $hoiDongs = HoiDong::with(['dotBaoCao', 'phong'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
+        
+        // Lấy dữ liệu cho modal thêm đề tài
+        $dotBaoCaos = DotBaoCao::with('hocKy')->get();
+        $nhoms = Nhom::all();
             
-        return view('admin.hoi-dong.index', compact('hoiDongs'));
+        return view('admin.hoi-dong.index', compact('hoiDongs', 'dotBaoCaos', 'nhoms'));
     }
 
     /**
@@ -36,7 +43,8 @@ class HoiDongController extends Controller
     {
         $phongs = Phong::all();
         $dotBaoCaos = DotBaoCao::with('hocKy')->get();
-        return view('admin.hoi-dong.create', compact('phongs', 'dotBaoCaos'));
+        $nhoms = Nhom::all();
+        return view('admin.hoi-dong.create', compact('phongs', 'dotBaoCaos', 'nhoms'));
     }
 
     /**
@@ -62,7 +70,10 @@ class HoiDongController extends Controller
                     }
                 },
             ],
-            'thoi_gian_bat_dau' => 'required|date'
+            'thoi_gian_bat_dau' => 'required|date',
+            'ten_de_tai' => 'nullable|string|max:255',
+            'dot_bao_cao_de_tai' => 'nullable|exists:dot_bao_caos,id',
+            'nhom_id' => 'nullable|exists:nhoms,id'
         ]);
 
         try {
@@ -72,13 +83,39 @@ class HoiDongController extends Controller
             $maHoiDong = HoiDong::taoMaHoiDong($request->dot_bao_cao_id);
             
             // Tạo hội đồng mới với mã tự động
-            HoiDong::create([
+            $hoiDong = HoiDong::create([
                 'ma_hoi_dong' => $maHoiDong,
                 'ten' => $request->ten,
                 'dot_bao_cao_id' => $request->dot_bao_cao_id,
                 'phong_id' => $request->phong_id,
                 'thoi_gian_bat_dau' => $request->thoi_gian_bat_dau
             ]);
+
+            // Tạo đề tài nếu có thông tin
+            if ($request->filled('ten_de_tai') && $request->filled('dot_bao_cao_de_tai')) {
+                $deTai = DeTai::create([
+                    'ten_de_tai' => $request->ten_de_tai,
+                    'dot_bao_cao_id' => $request->dot_bao_cao_de_tai,
+                    'nhom_id' => $request->nhom_id,
+                    'trang_thai' => DeTai::TRANG_THAI_CHO_DUYET
+                ]);
+
+                // Tạo chi tiết đề tài báo cáo
+                ChiTietDeTaiBaoCao::create([
+                    'hoi_dong_id' => $hoiDong->id,
+                    'de_tai_id' => $deTai->id,
+                    'dot_bao_cao_id' => $request->dot_bao_cao_de_tai,
+                    'trang_thai' => 0 // Trạng thái mặc định là chờ duyệt
+                ]);
+
+                // Cập nhật nhóm nếu có
+                if ($request->filled('nhom_id')) {
+                    $nhom = Nhom::find($request->nhom_id);
+                    if ($nhom) {
+                        $nhom->update(['de_tai_id' => $deTai->id]);
+                    }
+                }
+            }
 
             DB::commit();
             return redirect()->route('admin.hoi-dong.index')
@@ -284,6 +321,146 @@ class HoiDongController extends Controller
             DB::rollBack();
             return redirect()->route('admin.hoi-dong.show', $hoiDong->id)
                 ->with('error', 'Không thể xóa lịch chấm: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Xóa đề tài khỏi hội đồng
+     */
+    public function xoaDeTai(HoiDong $hoiDong, DeTai $deTai)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Kiểm tra xem đề tài có thuộc hội đồng này không
+            $chiTiet = ChiTietDeTaiBaoCao::where('hoi_dong_id', $hoiDong->id)
+                ->where('de_tai_id', $deTai->id)
+                ->first();
+
+            if (!$chiTiet) {
+                throw new \Exception('Đề tài không thuộc hội đồng này.');
+            }
+
+            // Xóa chi tiết đề tài báo cáo
+            $chiTiet->delete();
+
+            // Xóa đề tài
+            $deTai->delete();
+
+            DB::commit();
+            return redirect()->route('admin.hoi-dong.show', $hoiDong->id)
+                ->with('success', 'Xóa đề tài khỏi hội đồng thành công.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('admin.hoi-dong.show', $hoiDong->id)
+                ->with('error', 'Không thể xóa đề tài: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Chuyển đề tài sang hội đồng khác
+     */
+    public function chuyenDeTaiSangHoiDong(Request $request)
+    {
+        $request->validate([
+            'de_tai_id' => 'required|exists:de_tais,id',
+            'hoi_dong_id' => 'required|exists:hoi_dongs,id',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $deTai = \App\Models\DeTai::findOrFail($request->de_tai_id);
+            $hoiDongCu = \App\Models\HoiDong::find($request->hoi_dong_id);
+            $hoiDongMoi = \App\Models\HoiDong::findOrFail($request->hoi_dong_id);
+
+            // Cập nhật chi tiết đề tài báo cáo
+            $chiTiet = \App\Models\ChiTietDeTaiBaoCao::where('de_tai_id', $request->de_tai_id)->first();
+            if (!$chiTiet) {
+                throw new \Exception('Không tìm thấy chi tiết đề tài!');
+            }
+
+            $hoiDongCuId = $chiTiet->hoi_dong_id;
+            $chiTiet->hoi_dong_id = $request->hoi_dong_id;
+            $chiTiet->save();
+
+            // Lấy danh sách giảng viên phản biện và hướng dẫn từ hội đồng cũ
+            $giangVienPhanBienIds = \App\Models\PhanCongVaiTro::where('hoi_dong_id', $hoiDongCuId)
+                ->where('loai_giang_vien', 'Giảng Viên Phản Biện')
+                ->pluck('tai_khoan_id')
+                ->toArray();
+
+            $giangVienHuongDanIds = \App\Models\PhanCongVaiTro::where('hoi_dong_id', $hoiDongCuId)
+                ->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')
+                ->pluck('tai_khoan_id')
+                ->toArray();
+
+            // Thêm giảng viên phản biện vào hội đồng mới (nếu chưa có)
+            foreach ($giangVienPhanBienIds as $giangVienId) {
+                $phanCong = \App\Models\PhanCongVaiTro::where('hoi_dong_id', $request->hoi_dong_id)
+                    ->where('tai_khoan_id', $giangVienId)
+                    ->first();
+
+                if (!$phanCong) {
+                    // Tạo phân công mới cho giảng viên phản biện
+                    $vaiTro = \App\Models\VaiTro::firstOrCreate(
+                        ['ten' => 'Thành viên'],
+                        ['mo_ta' => 'Thành viên hội đồng']
+                    );
+                    \App\Models\PhanCongVaiTro::create([
+                        'hoi_dong_id' => $request->hoi_dong_id,
+                        'tai_khoan_id' => $giangVienId,
+                        'vai_tro_id' => $vaiTro->id,
+                        'loai_giang_vien' => 'Giảng Viên Phản Biện'
+                    ]);
+                } else {
+                    // Cập nhật loại giảng viên nếu đã có phân công
+                    $phanCong->update(['loai_giang_vien' => 'Giảng Viên Phản Biện']);
+                }
+            }
+
+            // Thêm giảng viên hướng dẫn vào hội đồng mới (nếu chưa có)
+            foreach ($giangVienHuongDanIds as $giangVienId) {
+                $phanCong = \App\Models\PhanCongVaiTro::where('hoi_dong_id', $request->hoi_dong_id)
+                    ->where('tai_khoan_id', $giangVienId)
+                    ->first();
+
+                if (!$phanCong) {
+                    // Tạo phân công mới cho giảng viên hướng dẫn
+                    $vaiTro = \App\Models\VaiTro::firstOrCreate(
+                        ['ten' => 'Thành viên'],
+                        ['mo_ta' => 'Thành viên hội đồng']
+                    );
+                    \App\Models\PhanCongVaiTro::create([
+                        'hoi_dong_id' => $request->hoi_dong_id,
+                        'tai_khoan_id' => $giangVienId,
+                        'vai_tro_id' => $vaiTro->id,
+                        'loai_giang_vien' => 'Giảng Viên Hướng Dẫn'
+                    ]);
+                } else {
+                    // Cập nhật loại giảng viên nếu đã có phân công
+                    $phanCong->update(['loai_giang_vien' => 'Giảng Viên Hướng Dẫn']);
+                }
+            }
+
+            // Cập nhật phân công chấm nếu có
+            $phanCongCham = \App\Models\PhanCongCham::where('de_tai_id', $request->de_tai_id)->first();
+            if ($phanCongCham) {
+                $phanCongCham->update(['hoi_dong_id' => $request->hoi_dong_id]);
+            }
+
+            // Cập nhật lịch chấm nếu có
+            $lichCham = \App\Models\LichCham::where('de_tai_id', $request->de_tai_id)->first();
+            if ($lichCham) {
+                $lichCham->update(['hoi_dong_id' => $request->hoi_dong_id]);
+            }
+
+            DB::commit();
+            return response()->json(['success' => true, 'message' => 'Chuyển hội đồng thành công! Giảng viên phản biện và hướng dẫn đã được giữ nguyên.']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
         }
     }
 } 
