@@ -40,12 +40,67 @@ php artisan key:generate
 - Tạo database mới trong MySQL
 - Cập nhật thông tin database trong file `.env`:
   ```
-  DB_CONNECTION=mysql
-  DB_HOST=127.0.0.1
-  DB_PORT=3306
-  DB_DATABASE=ten_database
-  DB_USERNAME=root
-  DB_PASSWORD=
+APP_NAME=Laravel
+APP_ENV=local
+APP_KEY=base64:CtCG5YwBE/KZY11piXjWCRYG+mVVgnk9CxZ6BNuRBZg=
+APP_DEBUG=true
+APP_URL=http://project.test
+SESSION_DOMAIN=.project.test
+
+LOG_CHANNEL=stack
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=debug
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=root
+DB_PASSWORD=
+
+BROADCAST_DRIVER=log
+CACHE_DRIVER=file
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=sync
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+
+MEMCACHED_HOST=127.0.0.1
+
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+MAIL_MAILER=smtp
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=
+AWS_USE_PATH_STYLE_ENDPOINT=false
+
+PUSHER_APP_ID=
+PUSHER_APP_KEY=
+PUSHER_APP_SECRET=
+PUSHER_HOST=
+PUSHER_PORT=443
+PUSHER_SCHEME=https
+PUSHER_APP_CLUSTER=mt1
+
+VITE_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
+VITE_PUSHER_HOST="${PUSHER_HOST}"
+VITE_PUSHER_PORT="${PUSHER_PORT}"
+VITE_PUSHER_SCHEME="${PUSHER_SCHEME}"
+VITE_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
+
+VITE_PORT=5173
   ```
 
 ### 5. Chạy migrations và seeders
@@ -70,79 +125,17 @@ php artisan serve
 - Frontend: http://localhost:3000
 - Backend: http://localhost:8000
 
+## Hoặc có thể sử dụng ứng dụng Laragon
+- Mở vào file laragon/www/ bỏ file dự án vào đây
+- Mở thư mục C:\Windows\System32\drivers\etc mở file hosts và edit dưới dạng quyền administator
+- Sau đó thêm dòng:
+127.0.0.1      project.test     #laragon magic!   
+127.0.0.1      admin.project.test     #laragon magic!   
+127.0.0.1      giangvien.project.test     #laragon magic!
+ở cuối file
+- Sau đó ấn nút chạy để khởi động Apache và mySql của app Laragon
+- Lên trình duyệt gõ project.test sẽ chạy dưới dạng local mà không cần phải chạy lệnh php artisan serve
+
 ## Tài khoản mặc định
 - Email: admin@caothang.edu.vn
 - Password: Admin@123
-
-# Hệ thống Quản lý Đồ án Tốt nghiệp
-
-## Tính năng mới: Thêm đề tài từ trang danh sách hội đồng
-
-### Mô tả
-Tính năng này cho phép admin thêm đề tài trực tiếp từ trang danh sách hội đồng thông qua modal popup. Đề tài có thể được tạo độc lập hoặc gán vào hội đồng cụ thể.
-
-### Cách sử dụng
-
-#### 1. Thêm đề tài từ trang danh sách hội đồng
-1. Truy cập vào trang "Danh sách hội đồng"
-2. Nhấn nút "Thêm đề tài" ở góc trên bên phải
-3. Điền thông tin trong modal:
-   - Tên đề tài (bắt buộc)
-   - Đợt báo cáo (bắt buộc)
-   - Nhóm (tùy chọn)
-   - Hội đồng (tùy chọn) - nếu không chọn, đề tài sẽ được tạo độc lập
-   - Mô tả (tùy chọn)
-4. Nhấn "Lưu đề tài" để hoàn tất
-
-#### 2. Quản lý đề tài
-- Xem danh sách đề tài trong trang quản lý đề tài
-- Sửa đề tài bằng nút "Sửa"
-- Xem chi tiết đề tài bằng nút "Xem"
-- Xóa đề tài bằng nút "Xóa"
-
-### Tính năng kỹ thuật
-
-#### Backend
-- **Controller**: `DeTaiController@store` - Xử lý tạo đề tài với JSON response
-- **Controller**: `HoiDongController@index` - Truyền dữ liệu cho modal
-- **Validation**: Kiểm tra dữ liệu đầu vào cho đề tài
-- **Database Transaction**: Đảm bảo tính toàn vẹn dữ liệu
-- **JSON Response**: Trả về response phù hợp cho AJAX request
-
-#### Frontend
-- **Modal**: Giao diện popup thân thiện với Bootstrap
-- **JavaScript**: Xử lý AJAX request và response
-- **Form Validation**: Kiểm tra dữ liệu trước khi gửi
-- **Responsive**: Tương thích với các thiết bị khác nhau
-
-#### Database
-- Tự động tạo mã đề tài
-- Liên kết đề tài với hội đồng qua bảng `chi_tiet_de_tai_bao_caos` (nếu có)
-- Cập nhật trạng thái đề tài mặc định
-- Cập nhật nhóm nếu có
-
-### Lưu ý
-- Đề tài có thể được tạo độc lập hoặc gán vào hội đồng
-- Đề tài sẽ được tạo với mã tự động
-- Trạng thái mặc định của đề tài là "Chờ duyệt"
-- Giáo viên sẽ được phân công sau khi tạo đề tài
-- Dữ liệu được lưu trong transaction để đảm bảo tính nhất quán
-- Modal tự động reset form sau khi đóng
-
-### Routes
-- `POST /admin/de-tai` - Tạo đề tài (hỗ trợ cả redirect và JSON response)
-- `GET /admin/hoi-dong` - Trang danh sách hội đồng với modal thêm đề tài
-
-### API Response
-```json
-{
-    "success": true,
-    "message": "Thêm đề tài thành công",
-    "data": {
-        "id": 1,
-        "ten_de_tai": "Tên đề tài",
-        "ma_de_tai": "MDT-12345",
-        "trang_thai": 0
-    }
-}
-```
