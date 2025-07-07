@@ -121,24 +121,33 @@
 
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
-                                    <label for="nhom_id" class="form-label">Nhóm (tùy chọn)</label>
-                                    <select class="form-control" 
-                                            id="nhom_id" 
-                                            name="nhom_id">
-                                        <option value="">Chọn nhóm</option>
-                                        @foreach($nhoms as $nhom)
-                                            <option value="{{ $nhom->id }}">
-                                                {{ $nhom->ten }} ({{ $nhom->ma_nhom }})
+                                    <label for="giang_vien_id" class="form-label">Giảng viên hướng dẫn (tùy chọn)</label>
+                                    <select class="form-control" id="giang_vien_id" name="giang_vien_id">
+                                        <option value="">-- Chọn giảng viên --</option>
+                                        @foreach($giangViens as $gv)
+                                            <option value="{{ $gv->id }}"
+                                                data-nhoms-json='@json($gv->nhomsHuongDan->map(function($n){return["id"=>$n->id,"ten"=>$n->ten,"ma_nhom"=>$n->ma_nhom];}))'>
+                                                {{ $gv->ten }}
                                             </option>
                                         @endforeach
                                     </select>
                                 </div>
 
                                 <div class="form-group mb-3">
-                                    <label for="hoi_dong_id" class="form-label">Hội đồng (tùy chọn)</label>
+                                    <label for="nhom_id" class="form-label">Nhóm (tùy chọn)</label>
+                                    <select class="form-control" id="nhom_id" name="nhom_id" disabled>
+                                        <option value="">Chọn nhóm</option>
+                                        {{-- JS sẽ render các option nhóm ở đây --}}
+                                    </select>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label for="hoi_dong_id" class="form-label">
+                                        Hội đồng <span class="text-danger">*</span>
+                                    </label>
                                     <select class="form-control" 
                                             id="hoi_dong_id" 
-                                            name="hoi_dong_id">
+                                            name="hoi_dong_id" required>
                                         <option value="">Chọn hội đồng</option>
                                         @foreach($hoiDongs as $hoiDong)
                                             <option value="{{ $hoiDong->id }}">
@@ -214,8 +223,9 @@
             // Kiểm tra dữ liệu bắt buộc
             const tenDeTai = formData.get('ten_de_tai');
             const dotBaoCao = formData.get('dot_bao_cao_id');
+            const hoiDong = formData.get('hoi_dong_id'); // Lấy giá trị hội đồng
 
-            if (!tenDeTai || !dotBaoCao) {
+            if (!tenDeTai || !dotBaoCao || !hoiDong) {
                 alert('Vui lòng điền đầy đủ thông tin bắt buộc!');
                 return;
             }
@@ -255,6 +265,21 @@
         // Reset form khi đóng modal
         document.getElementById('addDeTaiModal').addEventListener('hidden.bs.modal', function () {
             document.getElementById('addDeTaiForm').reset();
+        });
+
+        $('#giang_vien_id').on('change', function() {
+            var nhoms = $(this).find('option:selected').data('nhoms-json');
+            var $nhomSelect = $('#nhom_id');
+            $nhomSelect.empty();
+            $nhomSelect.append('<option value="">Chọn nhóm</option>');
+            if (nhoms && nhoms.length > 0) {
+                nhoms.forEach(function(nhom) {
+                    $nhomSelect.append('<option value="' + nhom.id + '">' + nhom.ten + ' (' + nhom.ma_nhom + ')</option>');
+                });
+                $nhomSelect.prop('disabled', false);
+            } else {
+                $nhomSelect.prop('disabled', true);
+            }
         });
     </script>
     @endpush

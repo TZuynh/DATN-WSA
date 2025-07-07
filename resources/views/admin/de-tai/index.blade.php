@@ -58,32 +58,32 @@
                                             {{ $deTai->trang_thai_text }}
                                         </span>
                                     </td>
-                                    <td class="text-center">
-                                        <div class="d-flex justify-content-center gap-1">
-                                            <a href="{{ route('admin.de-tai.edit', $deTai) }}" class="btn btn-warning btn-sm">
+                                    <td class="text-center align-middle" style="vertical-align: middle !important;">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{{ route('admin.de-tai.edit', $deTai) }}" class="btn btn-warning btn-sm" title="Sửa">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <a href="{{ route('admin.de-tai.preview-pdf', $deTai) }}" class="btn btn-info btn-sm" target="_blank">
+                                            <a href="{{ route('admin.de-tai.preview-pdf', $deTai) }}" class="btn btn-info btn-sm" target="_blank" title="Xem">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <a href="{{ route('admin.de-tai.export-pdf', $deTai) }}" class="btn btn-primary btn-sm">
+                                            <a href="{{ route('admin.de-tai.export-pdf', $deTai) }}" class="btn btn-primary btn-sm" title="PDF">
                                                 <i class="fas fa-file-pdf"></i>
                                             </a>
-                                            <a href="{{ route('admin.de-tai.export-word', $deTai) }}" class="btn btn-success btn-sm">
+                                            <a href="{{ route('admin.de-tai.export-word', $deTai) }}" class="btn btn-success btn-sm" title="Word">
                                                 <i class="fas fa-file-word"></i>
                                             </a>
                                             <form action="{{ route('admin.de-tai.destroy', $deTai) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">
+                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa?')" title="Xóa">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
                                             @if($deTai->trang_thai != \App\Models\DeTai::TRANG_THAI_DANG_THUC_HIEN_GVHD)
                                             <form action="{{ route('admin.de-tai.approve', $deTai->id) }}" method="POST" class="d-inline">
                                                 @csrf
-                                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Duyệt đề tài này?')">
-                                                    <i class="fas fa-check"></i> Duyệt
+                                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Duyệt đề tài này?')" title="Duyệt">
+                                                    <i class="fas fa-check"></i>
                                                 </button>
                                             </form>
                                             @endif
@@ -105,3 +105,24 @@
     </div>
 </div>
 @endsection
+
+<style>
+    .btn-group-sm > .btn, .btn-sm {
+        padding: 5px 12px !important;
+        font-size: 1rem !important;
+        line-height: 1.4 !important;
+    }
+    .btn-group[role="group"] {
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+    }
+    td .btn-group, td .btn-group-sm {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        gap: 4px;
+    }
+    td .btn, td form {
+        margin-bottom: 0 !important;
+    }
+</style>

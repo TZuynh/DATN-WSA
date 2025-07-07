@@ -161,41 +161,23 @@
                     @enderror
                 </div>
 
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 5px; color: #4a5568;">
-                        Phân công sinh viên
-                        @if($deTai->nhom && $deTai->nhom->sinhViens->count() > 0)
-                            <span style="color: #28a745; font-size: 0.8rem;">(Đã có {{ $deTai->nhom->sinhViens->count() }} sinh viên)</span>
-                        @else
-                            <span style="color: #dc3545; font-size: 0.8rem;">(Chưa có)</span>
-                        @endif
-                    </label>
-                    <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 10px;">
-                        @if($sinhVienChuaCoDeTai->count() > 0)
-                            @foreach($sinhVienChuaCoDeTai as $sinhVien)
+                @if($deTai->nhom && $deTai->nhom->sinhViens->count() > 0)
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 5px; color: #4a5568;">
+                            Danh sách sinh viên trong nhóm
+                        </label>
+                        <div style="border: 1px solid #ddd; border-radius: 4px; padding: 10px; background: #f8f9fa;">
+                            @foreach($deTai->nhom->sinhViens as $sv)
                                 <div style="margin-bottom: 8px;">
-                                    <label style="display: flex; align-items: center; cursor: pointer;">
-                                        <input type="checkbox" name="sinh_vien_ids[]" value="{{ $sinhVien->id }}" 
-                                               style="margin-right: 8px;"
-                                               {{ $deTai->nhom && $deTai->nhom->sinhViens->contains($sinhVien->id) ? 'checked' : '' }}>
-                                        <span>
-                                            <strong>{{ $sinhVien->ten }}</strong> 
-                                            <span style="color: #6c757d;">({{ $sinhVien->mssv }})</span>
-                                            @if($sinhVien->lop)
-                                                <span style="color: #6c757d;">- {{ $sinhVien->lop->ten_lop }}</span>
-                                            @endif
-                                        </span>
-                                    </label>
+                                    <input type="text" class="form-control" 
+                                        value="{{ $sv->ten }} ({{ $sv->mssv }}){{ $sv->lop ? ' - '.$sv->lop->ten_lop : '' }}" 
+                                        disabled
+                                        style="margin-bottom: 4px;">
                                 </div>
                             @endforeach
-                        @else
-                            <p style="color: #6c757d; margin: 0;">Không có sinh viên nào chưa được phân công</p>
-                        @endif
+                        </div>
                     </div>
-                    @error('sinh_vien_ids')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+                @endif
 
                 <div style="margin-bottom: 20px;">
                     <label for="trang_thai" style="display: block; margin-bottom: 5px; color: #4a5568;">Trạng thái <span style="color: red;">*</span></label>

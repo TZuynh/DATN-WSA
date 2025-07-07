@@ -45,7 +45,7 @@ class TaiKhoan extends Authenticatable
 
     public function nhoms()
     {
-        return $this->hasMany(Nhom::class, 'giang_vien_id');
+        return $this->belongsToMany(Nhom::class, 'chi_tiet_nhoms', 'sinh_vien_id', 'nhom_id');
     }
 
     public function bangDiems()
@@ -56,6 +56,11 @@ class TaiKhoan extends Authenticatable
     public function deTais()
     {
         return $this->hasMany(DeTai::class, 'giang_vien_id');
+    }
+
+    public function nhomsHuongDan()
+    {
+        return $this->hasMany(Nhom::class, 'giang_vien_id');
     }
 }
 

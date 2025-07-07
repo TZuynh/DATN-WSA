@@ -32,8 +32,9 @@ class HoiDongController extends Controller
         // Lấy dữ liệu cho modal thêm đề tài
         $dotBaoCaos = DotBaoCao::with('hocKy')->get();
         $nhoms = Nhom::all();
+        $giangViens = \App\Models\TaiKhoan::with('nhoms')->where('vai_tro', 'giang_vien')->get();
             
-        return view('admin.hoi-dong.index', compact('hoiDongs', 'dotBaoCaos', 'nhoms'));
+        return view('admin.hoi-dong.index', compact('hoiDongs', 'dotBaoCaos', 'nhoms', 'giangViens'));
     }
 
     /**
@@ -73,7 +74,8 @@ class HoiDongController extends Controller
             'thoi_gian_bat_dau' => 'required|date',
             'ten_de_tai' => 'nullable|string|max:255',
             'dot_bao_cao_de_tai' => 'nullable|exists:dot_bao_caos,id',
-            'nhom_id' => 'nullable|exists:nhoms,id'
+            'nhom_id' => 'nullable|exists:nhoms,id',
+            'giang_vien_id' => 'nullable|exists:tai_khoans,id'
         ]);
 
         try {
@@ -96,7 +98,8 @@ class HoiDongController extends Controller
                 $deTai = DeTai::create([
                     'ten_de_tai' => $request->ten_de_tai,
                     'dot_bao_cao_id' => $request->dot_bao_cao_de_tai,
-                    'nhom_id' => $request->nhom_id,
+                    'nhom_id' => $request->nhom_id ?: null,
+                    'giang_vien_id' => $request->giang_vien_id ?: null,
                     'trang_thai' => DeTai::TRANG_THAI_CHO_DUYET
                 ]);
 
@@ -238,8 +241,9 @@ class HoiDongController extends Controller
                 $query->with(['taiKhoan', 'vaiTro']);
             }
         ]);
+        $giangViens = \App\Models\TaiKhoan::with('nhoms')->where('vai_tro', 'giang_vien')->get();
 
-        return view('admin.hoi-dong.chi-tiet', compact('hoiDong'));
+        return view('admin.hoi-dong.chi-tiet', compact('hoiDong', 'giangViens'));
     }
 
     /**

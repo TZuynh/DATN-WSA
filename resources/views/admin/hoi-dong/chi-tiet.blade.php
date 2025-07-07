@@ -154,6 +154,7 @@
                                         <th>Mã đề tài</th>
                                         <th>Tên đề tài</th>
                                         <th>Giảng viên</th>
+                                        <th>Nhóm</th>
                                         <th>Trạng thái</th>
                                         <th>Thao tác</th>
                                     </tr>
@@ -176,6 +177,13 @@
                                                         <span class="badge bg-info">{{ $chiTiet->deTai->giangVien->ten }}</span>
                                                     @else
                                                         <span class="text-muted">Chưa có</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($chiTiet->deTai->nhom)
+                                                        <span class="badge bg-success">{{ $chiTiet->deTai->nhom->ten }} ({{ $chiTiet->deTai->nhom->ma_nhom }})</span>
+                                                    @else
+                                                        <span class="text-muted">Chưa có nhóm</span>
                                                     @endif
                                                 </td>
                                                 <td>
@@ -243,9 +251,9 @@
                         <div class="text-center py-4">
                             <i class="fas fa-book-open text-muted" style="font-size: 3rem;"></i>
                             <p class="text-muted mt-3">Chưa có đề tài nào trong hội đồng này</p>
-                            <a href="{{ route('admin.hoi-dong.edit', $hoiDong->id) }}" class="btn btn-primary">
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDeTaiModal">
                                 <i class="fas fa-plus me-2"></i>Thêm đề tài
-                            </a>
+                            </button>
                         </div>
                     @endif
                 </div>
@@ -339,7 +347,7 @@
             </div>
             <div class="modal-body">
                 <div class="alert alert-info mb-3">
-                    <i class="fas fa-info-circle me-2"></i>
+                    <i class="fas fa-info-circle"></i>
                     <strong>Lưu ý:</strong> Khi chuyển đề tài sang hội đồng khác:
                     <ul class="mb-0 mt-2">
                         <li>Giảng viên phản biện và hướng dẫn sẽ được giữ nguyên</li>
@@ -363,6 +371,84 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                 <button type="button" class="btn btn-warning" id="btnSubmitChuyenHoiDong">
                     <i class="fas fa-random"></i> Chuyển hội đồng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm đề tài -->
+<div class="modal fade" id="addDeTaiModal" tabindex="-1" aria-labelledby="addDeTaiModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addDeTaiModalLabel">
+                    <i class="fas fa-plus-circle text-success me-2"></i>
+                    Thêm đề tài mới
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    Thêm đề tài cơ bản. Giáo viên sẽ được phân công sau.
+                </div>
+                <form id="addDeTaiForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="ten_de_tai" class="form-label">Tên đề tài <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="ten_de_tai" name="ten_de_tai" placeholder="Nhập tên đề tài" required>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="dot_bao_cao_id" class="form-label">Đợt báo cáo <span class="text-danger">*</span></label>
+                                <select class="form-control" id="dot_bao_cao_id" name="dot_bao_cao_id" required>
+                                    <option value="{{ $hoiDong->dot_bao_cao_id }}">{{ $hoiDong->dotBaoCao->nam_hoc }} - {{ optional($hoiDong->dotBaoCao->hocKy)->ten }}</option>
+                                </select>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="giang_vien_id" class="form-label">Giảng viên hướng dẫn (tùy chọn)</label>
+                                <select class="form-control" id="giang_vien_id" name="giang_vien_id">
+                                    <option value="">-- Chọn giảng viên --</option>
+                                    @foreach($giangViens as $gv)
+                                        <option value="{{ $gv->id }}"
+                                            data-nhoms-json='@json($gv->nhomsHuongDan->map(function($n){return["id"=>$n->id,"ten"=>$n->ten,"ma_nhom"=>$n->ma_nhom];}))'>
+                                            {{ $gv->ten }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div id="nhomGiangVien" class="mt-2 text-success" style="display:none;"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="nhom_id" class="form-label">Nhóm (tùy chọn)</label>
+                                <select class="form-control" id="nhom_id" name="nhom_id" disabled>
+                                    <option value="">Chọn nhóm</option>
+                                    {{-- JS sẽ render các option nhóm ở đây --}}
+                                </select>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="hoi_dong_id" class="form-label">
+                                    Hội đồng <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" value="{{ $hoiDong->ten }} ({{ $hoiDong->ma_hoi_dong }})" readonly>
+                                <input type="hidden" name="hoi_dong_id" id="hoi_dong_id" value="{{ $hoiDong->id }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="mo_ta" class="form-label">Mô tả (tùy chọn)</label>
+                        <textarea class="form-control" id="mo_ta" name="mo_ta" rows="3" placeholder="Nhập mô tả đề tài"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Hủy
+                </button>
+                <button type="button" class="btn btn-success" onclick="saveDeTai()">
+                    <i class="fas fa-save"></i> Lưu đề tài
                 </button>
             </div>
         </div>
@@ -521,6 +607,122 @@
                 }
             });
         });
+
+        // Xử lý submit thêm đề tài
+        $('#addDeTaiForm').submit(function(e) {
+            e.preventDefault();
+            const form = $(this);
+            const url = form.attr('action');
+            const method = form.attr('method');
+            const data = form.serialize();
+
+            Swal.fire({
+                title: 'Xác nhận thêm đề tài?',
+                text: "Bạn có chắc chắn muốn thêm đề tài này vào hội đồng?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#dc3545',
+                confirmButtonText: 'Thêm',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: url,
+                        method: method,
+                        data: data,
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            Swal.fire({
+                                title: 'Thành công!',
+                                text: response.message || 'Đã thêm đề tài vào hội đồng',
+                                icon: 'success',
+                                confirmButtonColor: '#3085d6'
+                            }).then(() => {
+                                $('#addDeTaiModal').modal('hide');
+                                location.reload();
+                            });
+                        },
+                        error: function(xhr) {
+                            let errorMessage = 'Có lỗi xảy ra khi thêm đề tài!';
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            }
+                            Swal.fire({
+                                title: 'Lỗi!',
+                                text: errorMessage,
+                                icon: 'error',
+                                confirmButtonColor: '#3085d6'
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        // Hiển thị nhóm của giảng viên hướng dẫn khi chọn
+        $('#giang_vien_id').on('change', function() {
+            var nhoms = $(this).find('option:selected').data('nhoms-json');
+            var $nhomSelect = $('#nhom_id');
+            $nhomSelect.empty();
+            $nhomSelect.append('<option value="">Chọn nhóm</option>');
+            if (nhoms && nhoms.length > 0) {
+                nhoms.forEach(function(nhom) {
+                    $nhomSelect.append('<option value="' + nhom.id + '">' + nhom.ten + ' (' + nhom.ma_nhom + ')</option>');
+                });
+                $nhomSelect.prop('disabled', false);
+            } else {
+                $nhomSelect.prop('disabled', true);
+            }
+        });
+    });
+</script>
+<script>
+    function saveDeTai() {
+        const form = document.getElementById('addDeTaiForm');
+        const formData = new FormData(form);
+        // Kiểm tra dữ liệu bắt buộc
+        const tenDeTai = formData.get('ten_de_tai');
+        const dotBaoCao = formData.get('dot_bao_cao_id');
+        if (!tenDeTai || !dotBaoCao) {
+            alert('Vui lòng điền đầy đủ thông tin bắt buộc!');
+            return;
+        }
+        // Thêm CSRF token
+        formData.append('_token', '{{ csrf_token() }}');
+        // Gửi request
+        fetch('{{ route("admin.de-tai.store") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Thêm đề tài thành công!');
+                // Đóng modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addDeTaiModal'));
+                modal.hide();
+                // Reset form
+                form.reset();
+                // Reload trang để cập nhật dữ liệu
+                location.reload();
+            } else {
+                alert('Có lỗi xảy ra: ' + (data.message || 'Không thể thêm đề tài'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Có lỗi xảy ra khi thêm đề tài');
+        });
+    }
+    // Reset form khi đóng modal
+    document.getElementById('addDeTaiModal').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('addDeTaiForm').reset();
     });
 </script>
 @endpush
