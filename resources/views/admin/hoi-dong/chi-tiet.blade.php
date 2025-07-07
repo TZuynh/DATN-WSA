@@ -219,6 +219,12 @@
                                                                 title="Chuyển sang hội đồng khác">
                                                             <i class="fas fa-random"></i>
                                                         </button>
+                                                        <a href="{{ route('admin.phan-cong-cham.phan-bien', ['hoi_dong_id' => $hoiDong->id, 'de_tai_id' => $chiTiet->deTai->id]) }}" class="btn btn-outline-secondary btn-xs" title="Phân công phản biện">
+                                                            <i class="fas fa-user-check"></i>
+                                                        </a>
+                                                        <a href="{{ route('admin.phan-cong-cham.index',  ['hoi_dong_id' => $hoiDong->id, 'de_tai_id' => $chiTiet->deTai->id])  }}" class="btn btn-outline-secondary btn-xs" title="Quản lý phản biện">
+                                                            <i class="fas fa-tasks"></i>
+                                                        </a>
                                                         <button type="button" 
                                                                 class="btn btn-outline-danger btn-xoa-de-tai" 
                                                                 data-href="{{ route('admin.hoi-dong.xoa-de-tai', ['hoiDong' => $hoiDong->id, 'deTai' => $chiTiet->deTai->id]) }}"

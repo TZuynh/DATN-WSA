@@ -16,8 +16,13 @@ use App\Models\VaiTro;
 
 class PhanCongChamController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $hoiDongId = $request->get('hoi_dong_id');
+        $hoiDong = null;
+        if ($hoiDongId) {
+            $hoiDong = \App\Models\HoiDong::find($hoiDongId);
+        }
         // Lấy tất cả đề tài đã được giảng viên phản biện duyệt (trang_thai = 2)
         $deTais = \App\Models\DeTai::with(['phanCongCham', 'dotBaoCao', 'giangVien', 'chiTietBaoCao.hoiDong.phanCongVaiTros.taiKhoan'])
             ->where('trang_thai', 2)
@@ -40,7 +45,7 @@ class PhanCongChamController extends Controller
         ->latest()
         ->paginate(10);
 
-        return view('admin.phan-cong-cham.index', compact('phanCongChams', 'deTais'));
+        return view('admin.phan-cong-cham.index', compact('phanCongChams', 'deTais', 'hoiDong'));
     }
 
     public function create()
@@ -235,8 +240,13 @@ class PhanCongChamController extends Controller
     }
 
     // Hiển thị form phân công phản biện
-    public function phanCongPhanBien()
+    public function phanCongPhanBien(Request $request)
     {
+        $hoiDongId = $request->get('hoi_dong_id');
+        $hoiDong = null;
+        if ($hoiDongId) {
+            $hoiDong = \App\Models\HoiDong::find($hoiDongId);
+        }
         // Lấy các đề tài đã được GVHD đồng ý (trang_thai = 1) và đã có hội đồng
         $deTais = DeTai::where('trang_thai', 1)
             ->whereHas('chiTietBaoCao.hoiDong')
@@ -245,7 +255,7 @@ class PhanCongChamController extends Controller
         // Lấy danh sách tất cả giảng viên
         $giangViens = \App\Models\TaiKhoan::where('vai_tro', 'giang_vien')->get();
         
-        return view('admin.phan-cong-cham.phan-bien', compact('deTais', 'giangViens'));
+        return view('admin.phan-cong-cham.phan-bien', compact('deTais', 'giangViens', 'hoiDong'));
     }
 
     // AJAX: Lấy danh sách giảng viên có thể phản biện cho đề tài

@@ -4,6 +4,10 @@
 
 @section('content')
 <div class="container-fluid">
+    <a href="{{ route('admin.hoi-dong.show', $hoiDong->id) }}" class="btn btn-outline-secondary mb-3">
+        <i class="fas fa-arrow-left"></i> Quay lại chi tiết hội đồng
+    </a>
+    
     <div class="row">
         <div class="col-12">
             <div class="card">

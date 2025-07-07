@@ -2,6 +2,10 @@
 @section('title', 'Phân công phản biện')
 @section('content')
 <div class="container">
+    <a href="{{ route('admin.hoi-dong.show', $hoiDong->id) }}" class="btn btn-outline-secondary mb-3">
+        <i class="fas fa-arrow-left"></i> Quay lại chi tiết hội đồng
+    </a>
+    
     <h2>Phân công giảng viên phản biện cho đề tài</h2>
 
     @if($deTais->isEmpty())
