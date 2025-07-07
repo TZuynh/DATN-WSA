@@ -23,31 +23,49 @@ class BangDiemExport implements FromCollection, WithHeadings, WithMapping, Shoul
 
     public function collection()
     {
-        $query = \App\Models\BangDiem::with(['sinhVien', 'dotBaoCao.hocKy']);
+        $query = BangDiem::with(['sinhVien','dotBaoCao.hocKy']);
         if ($this->dotBaoCaoId) {
             $query->where('dot_bao_cao_id', $this->dotBaoCaoId);
         }
-        $bangDiems = $query->orderBy('created_at', 'desc')->get();
-        // Gom nhóm theo sinh viên
-        $grouped = $bangDiems->groupBy('sinh_vien_id')->map(function($items) {
-            $sinhVien = $items->first()->sinhVien;
-            $dotBaoCao = $items->first()->dotBaoCao;
-            $diem_bao_cao_tb = $items->pluck('diem_bao_cao')->filter(function($v){ return $v !== null; })->avg();
-            $tong_ket = $items->map(function($bd) {
-                return ($bd->diem_thuyet_trinh ?? 0) + ($bd->diem_demo ?? 0) + ($bd->diem_cau_hoi ?? 0) + ($bd->diem_cong ?? 0);
-            })->avg();
-            $diem_tong_ket = $diem_bao_cao_tb !== null && $tong_ket !== null ? round($diem_bao_cao_tb * 0.2 + $tong_ket * 0.8, 2) : null;
-            return [
-                'mssv' => $sinhVien->mssv ?? 'N/A',
-                'ten' => $sinhVien->ten ?? 'N/A',
-                'dot_bao_cao' => ($dotBaoCao->nam_hoc ?? 'N/A') . ' - ' . ($dotBaoCao->hocKy->ten ?? 'N/A'),
-                'diem_bao_cao_tb' => $diem_bao_cao_tb !== null ? round($diem_bao_cao_tb, 2) : '-',
-                'tong_ket' => $tong_ket !== null ? round($tong_ket, 2) : '-',
-                'diem_tong_ket' => $diem_tong_ket !== null ? number_format(min($diem_tong_ket, 10), 2) : '-',
-            ];
-        })->values();
-        return $grouped;
-    }
+        $all = $query->orderBy('created_at','desc')->get();
+    
+        // Gom nhóm theo sinh viên, nhưng với $valid lọc tổng > 0
+        return $all->groupBy('sinh_vien_id')
+            ->map(function($items) {
+                // Lọc bỏ lượt chấm tổng = 0
+                $valid = $items->filter(function($bd){
+                    return (
+                        ($bd->diem_thuyet_trinh ?? 0)
+                      + ($bd->diem_demo          ?? 0)
+                      + ($bd->diem_cau_hoi       ?? 0)
+                      + ($bd->diem_cong          ?? 0)
+                    ) > 0;
+                });
+    
+                $sv     = $items->first()->sinhVien;
+                $dot    = $items->first()->dotBaoCao;
+                $bcTB   = $valid->avg('diem_bao_cao');
+                $tkTB   = $valid->map(fn($bd)=>
+                        ($bd->diem_thuyet_trinh ?? 0)
+                      + ($bd->diem_demo          ?? 0)
+                      + ($bd->diem_cau_hoi       ?? 0)
+                      + ($bd->diem_cong          ?? 0)
+                    )->avg();
+                $dtk    = null;
+                if (!is_null($bcTB) && !is_null($tkTB)) {
+                    $dtk = min(round($bcTB*0.2 + $tkTB*0.8,2),10);
+                }
+    
+                return [
+                    'mssv'            => $sv->mssv,
+                    'ten'             => $sv->ten,
+                    'dot_bao_cao'     => ($dot->nam_hoc ?? '').' - '.($dot->hocKy->ten ?? ''),
+                    'diem_bao_cao_tb' => round($bcTB,2),
+                    'tong_ket'        => round($tkTB,2),
+                    'diem_tong_ket'   => $dtk,
+                ];
+            })->values();
+    }    
 
     public function headings(): array
     {

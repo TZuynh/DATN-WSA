@@ -530,10 +530,10 @@ body {
                     <i class="fas fa-arrow-left mr-2"></i>
                     Quay lại
                 </a>
-                <a href="{{ route('admin.bang-diem.debug') }}" class="header-btn header-btn-primary" target="_blank">
+                {{-- <a href="{{ route('admin.bang-diem.debug') }}" class="header-btn header-btn-primary" target="_blank">
                     <i class="fas fa-bug mr-2"></i>
                     Debug
-                </a>
+                </a> --}}
             </div>
         </div>
     </div>

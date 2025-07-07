@@ -130,6 +130,32 @@
                                         $vaiTroText = $bd->vai_tro_cham ?? 'N/A';
                                     }
                                 @endphp
+                                @php
+                                // Lọc bỏ những lần chấm có tổng điểm = 0
+                                $validBangDiem = $allBangDiem->filter(function($bd) {
+                                    $tong = 
+                                        ($bd->diem_thuyet_trinh   ?? 0)
+                                      + ($bd->diem_demo            ?? 0)
+                                      + ($bd->diem_cau_hoi         ?? 0)
+                                      + ($bd->diem_cong            ?? 0);
+                                    return $tong > 0;
+                                });
+                            
+                                // Tính toán trên bộ đã lọc
+                                $diemBaoCaoTB = $validBangDiem->avg('diem_bao_cao');
+                                $tongDiemTB = $validBangDiem
+                                    ->map(function($bd) {
+                                        return 
+                                            ($bd->diem_thuyet_trinh ?? 0)
+                                          + ($bd->diem_demo          ?? 0)
+                                          + ($bd->diem_cau_hoi       ?? 0)
+                                          + ($bd->diem_cong          ?? 0);
+                                    })
+                                    ->avg();
+                                $diemTongKet = $diemBaoCaoTB !== null && $tongDiemTB !== null
+                                    ? min(round($diemBaoCaoTB * 0.2 + $tongDiemTB * 0.8, 2), 10)
+                                    : null;
+                            @endphp
                                 <tr>
                                     <td class="text-center">{{ $i + 1 }}</td>
                                     <td>{{ $bd->giangVien->ten ?? 'N/A' }}</td>
@@ -146,19 +172,20 @@
                             @endforeach
                         </tbody>
                         <tfoot>
-                            @php
-                                // Tính toán điểm trung bình báo cáo, tổng điểm trung bình, điểm tổng kết
-                                $diemBaoCaoTB = $allBangDiem->avg('diem_bao_cao');
-                                $tongDiemTB = $allBangDiem->map(function($bd) {
-                                    return ($bd->diem_thuyet_trinh ?? 0) + ($bd->diem_demo ?? 0) + ($bd->diem_cau_hoi ?? 0) + ($bd->diem_cong ?? 0);
-                                })->avg();
-                                $diemTongKet = $diemBaoCaoTB !== null && $tongDiemTB !== null ? min(round($diemBaoCaoTB * 0.2 + $tongDiemTB * 0.8, 2), 10) : null;
-                            @endphp
                             <tr class="table-info">
                                 <td colspan="3" class="text-end"><strong>Kết quả tổng hợp</strong></td>
-                                <td colspan="2" class="text-center"><strong>Điểm trung bình báo cáo:<br>{{ $diemBaoCaoTB !== null ? number_format($diemBaoCaoTB, 2) : '-' }}</strong></td>
-                                <td colspan="2" class="text-center"><strong>Tổng điểm trung bình:<br>{{ $tongDiemTB !== null ? number_format($tongDiemTB, 2) : '-' }}</strong></td>
-                                <td colspan="2" class="text-center"><strong>Điểm tổng kết:<br>{{ $diemTongKet !== null ? number_format($diemTongKet, 2) : '-' }}</strong></td>
+                                <td colspan="2" class="text-center">
+                                    <strong>Điểm trung bình báo cáo:<br>
+                                    {{ $diemBaoCaoTB !== null ? number_format($diemBaoCaoTB, 2) : '-' }}</strong>
+                                </td>
+                                <td colspan="2" class="text-center">
+                                    <strong>Tổng điểm trung bình:<br>
+                                    {{ $tongDiemTB   !== null ? number_format($tongDiemTB, 2)   : '-' }}</strong>
+                                </td>
+                                <td colspan="2" class="text-center">
+                                    <strong>Điểm tổng kết:<br>
+                                    {{ $diemTongKet  !== null ? number_format($diemTongKet,  2)   : '-' }}</strong>
+                                </td>
                                 <td colspan="2"></td>
                             </tr>
                         </tfoot>

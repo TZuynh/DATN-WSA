@@ -4,22 +4,7 @@
 
 @section('content')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<div class="container-fluid px-4">
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle me-2"></i>
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-circle me-2"></i>
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
+<div class="container-fluid px-0">
 
     <!-- Page Header -->
     <div class="page-header d-flex justify-content-between align-items-center mb-4">
@@ -37,8 +22,8 @@
 
     <div class="row g-4">
         <!-- Thông tin cơ bản -->
-        <div class="col-xl-6">
-            <div class="card h-100 shadow-sm">
+        <div class="col-12 mb-3">
+            <div class="card h-100 shadow-sm w-100">
                 <div class="card-header bg-white py-3">
                     <h2 class="card-title mb-0">
                         <i class="fas fa-info-circle text-primary me-2"></i>
@@ -46,8 +31,8 @@
                     </h2>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-borderless">
+                    <div class="table-responsive w-100">
+                        <table class="table table-borderless w-100">
                             <tr>
                                 <th style="width: 200px; text-align: left;" class="text-muted text-start">Mã hội đồng:</th>
                                 <td class="text-start">
@@ -152,8 +137,8 @@
         </div>
 
         <!-- Danh sách đề tài trong hội đồng -->
-        <div class="col-xl-6">
-            <div class="card h-100 shadow-sm">
+        <div class="col-12 mb-3">
+            <div class="card h-100 shadow-sm w-100">
                 <div class="card-header bg-white py-3">
                     <h2 class="card-title mb-0">
                         <i class="fas fa-book text-success me-2"></i>
@@ -162,8 +147,8 @@
                 </div>
                 <div class="card-body">
                     @if($hoiDong->chiTietBaoCaos && $hoiDong->chiTietBaoCaos->count() > 0)
-                        <div class="table-responsive">
-                            <table class="table table-hover">
+                        <div class="table-responsive w-100">
+                            <table class="table table-hover w-100">
                                 <thead>
                                     <tr>
                                         <th>Mã đề tài</th>
@@ -267,7 +252,7 @@
 @foreach($hoiDong->phanCongVaiTros as $phanCong)
     @if($phanCong->taiKhoan && $phanCong->taiKhoan->deTais && $phanCong->taiKhoan->deTais->count() > 0)
         <div class="modal fade" id="modalDeTai{{ $phanCong->taiKhoan->id }}" tabindex="-1" aria-labelledby="modalDeTaiLabel{{ $phanCong->taiKhoan->id }}" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
+            <div class="modal-dialog modal-lg modal-fullscreen-sm-down">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="modalDeTaiLabel{{ $phanCong->taiKhoan->id }}">
@@ -277,8 +262,8 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
+                        <div class="table-responsive w-100">
+                            <table class="table table-hover w-100">
                                 <thead>
                                     <tr>
                                         <th>Mã đề tài</th>

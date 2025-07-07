@@ -42,40 +42,56 @@ class BangDiemController extends Controller
 
         $bangDiems = $query->orderBy('created_at', 'desc')->get();
 
-        // Gom nhóm bảng điểm theo sinh viên, tính trung bình tổng điểm
-        $bangDiemBySinhVien = $bangDiems->groupBy('sinh_vien_id')->map(function($items) {
-            $result = [
-                'list' => $items,
-                'diem_bao_cao_tb' => null,
-                'tong_ket' => null,
-                'diem_tong_ket' => null
-            ];
-            // Tính tổng điểm từng giảng viên (không cộng điểm báo cáo)
-            $tongDiemArr = $items->map(function($bd) {
-                return ($bd->diem_thuyet_trinh ?? 0) + ($bd->diem_demo ?? 0) + ($bd->diem_cau_hoi ?? 0) + ($bd->diem_cong ?? 0);
-            });
-            if ($tongDiemArr->count() > 0) {
-                $result['tong_ket'] = round($tongDiemArr->avg(), 2);
-            }
-            // Trung bình điểm báo cáo
-            $diemBaoCaoArr = $items->pluck('diem_bao_cao')->filter(function($v){ return $v !== null; });
-            if ($diemBaoCaoArr->count() > 0) {
-                $result['diem_bao_cao_tb'] = round($diemBaoCaoArr->avg(), 2);
-            }
-            // Điểm tổng kết = điểm trung bình báo cáo * 0.2 + điểm tổng trung bình * 0.8
-            if ($result['diem_bao_cao_tb'] !== null && $result['tong_ket'] !== null) {
-                $result['diem_tong_ket'] = round($result['diem_bao_cao_tb'] * 0.2 + $result['tong_ket'] * 0.8, 2);
-            }
-            return $result;
-        });
+        $bangDiemBySinhVien = $bangDiems
+            ->groupBy('sinh_vien_id')
+            ->map(function($items) {
+                // 1. Lọc bỏ các lần chấm tổng = 0
+                $valid = $items->filter(function($bd) {
+                    $tong =
+                        ($bd->diem_thuyet_trinh ?? 0)
+                    + ($bd->diem_demo          ?? 0)
+                    + ($bd->diem_cau_hoi       ?? 0)
+                    + ($bd->diem_cong          ?? 0);
+                    return $tong > 0;
+                });
 
-        // Lấy danh sách đợt báo cáo và giảng viên cho filter
+                // 2. Trung bình điểm báo cáo
+                $bcTB = $valid->avg('diem_bao_cao');
+
+                // 3. Trung bình tổng 4 phần
+                $tkTB = $valid->map(function($bd) {
+                    return
+                        ($bd->diem_thuyet_trinh ?? 0)
+                    + ($bd->diem_demo          ?? 0)
+                    + ($bd->diem_cau_hoi       ?? 0)
+                    + ($bd->diem_cong          ?? 0);
+                })->avg();
+
+                // 4. Điểm tổng kết, áp trần 10
+                $dtk = null;
+                if (!is_null($bcTB) && !is_null($tkTB)) {
+                    $dtk = min(round($bcTB * 0.2 + $tkTB * 0.8, 2), 10);
+                }
+
+                return [
+                    'list'             => $items,
+                    'diem_bao_cao_tb'  => is_null($bcTB) ? null : round($bcTB, 2),
+                    'tong_ket'         => is_null($tkTB) ? null : round($tkTB, 2),
+                    'diem_tong_ket'    => $dtk,
+                ];
+            })
+            ->values();
+
+        // dữ liệu filter dropdown như cũ
         $dotBaoCaos = DotBaoCao::with('hocKy')->get();
-        $giangViens = TaiKhoan::where('vai_tro', 'giang_vien')->get();
-        $sinhViens = SinhVien::all();
+        $giangViens = TaiKhoan::where('vai_tro','giang_vien')->get();
+        $sinhViens  = SinhVien::all();
 
-        return view('admin.bang-diem.index', compact('bangDiems', 'dotBaoCaos', 'giangViens', 'sinhViens', 'bangDiemBySinhVien'));
+        return view('admin.bang-diem.index', compact(
+            'bangDiems','dotBaoCaos','giangViens','sinhViens','bangDiemBySinhVien'
+        ));
     }
+
 
     /**
      * Hiển thị thống kê điểm
@@ -83,7 +99,7 @@ class BangDiemController extends Controller
     public function thongKe(Request $request)
     {
         $dotBaoCaoId = $request->get('dot_bao_cao_id');
-        
+
         $query = BangDiem::with(['sinhVien', 'dotBaoCao', 'giangVien']);
 
         if ($dotBaoCaoId) {
@@ -92,51 +108,85 @@ class BangDiemController extends Controller
 
         $bangDiems = $query->get();
 
+        $valid = $bangDiems->filter(function($bd) {
+            $total =
+                ($bd->diem_thuyet_trinh ?? 0)
+              + ($bd->diem_demo          ?? 0)
+              + ($bd->diem_cau_hoi       ?? 0)
+              + ($bd->diem_cong          ?? 0);
+            return $total > 0;
+        });
+
         // Thống kê tổng quan
         $thongKe = [
-            'tong_so_diem' => $bangDiems->count(),
-            'diem_trung_binh_bao_cao' => $bangDiems->avg('diem_bao_cao'),
-            'diem_trung_binh_thuyet_trinh' => $bangDiems->avg('diem_thuyet_trinh'),
-            'diem_trung_binh_demo' => $bangDiems->avg('diem_demo'),
-            'diem_trung_binh_cau_hoi' => $bangDiems->avg('diem_cau_hoi'),
-            'diem_trung_binh_cong' => $bangDiems->avg('diem_cong'),
-            'diem_cao_nhat' => $bangDiems->max(function($item) {
-                return $item->diem_bao_cao + $item->diem_thuyet_trinh + $item->diem_demo + $item->diem_cau_hoi + $item->diem_cong;
+            'tong_so_diem'                => $bangDiems->count(),
+            'diem_trung_binh_bao_cao'     => $valid->avg('diem_bao_cao'),
+            'diem_trung_binh_thuyet_trinh'=> $valid->avg('diem_thuyet_trinh'),
+            'diem_trung_binh_demo'        => $valid->avg('diem_demo'),
+            'diem_trung_binh_cau_hoi'     => $valid->avg('diem_cau_hoi'),
+            'diem_trung_binh_cong'        => $valid->avg('diem_cong'),
+            'diem_cao_nhat' => $valid->max(function($i){
+                return ($i->diem_bao_cao   ??0)
+                      + ($i->diem_thuyet_trinh??0)
+                      + ($i->diem_demo       ??0)
+                      + ($i->diem_cau_hoi    ??0)
+                      + ($i->diem_cong       ??0);
             }),
-            'diem_thap_nhat' => $bangDiems->min(function($item) {
-                return $item->diem_bao_cao + $item->diem_thuyet_trinh + $item->diem_demo + $item->diem_cau_hoi + $item->diem_cong;
-            })
+            'diem_thap_nhat' => $valid->min(function($i){
+                return ($i->diem_bao_cao   ??0)
+                      + ($i->diem_thuyet_trinh??0)
+                      + ($i->diem_demo       ??0)
+                      + ($i->diem_cau_hoi    ??0)
+                      + ($i->diem_cong       ??0);
+            }),
         ];
 
-        // Thống kê theo giảng viên
+        // --- CHỖ CHỈNH SỬA: thêm filter loại bỏ giảng viên tổng = 0 ---
         $thongKeTheoGiangVien = $bangDiems->groupBy('giang_vien_id')
             ->map(function($group) {
+                $total = $group->sum(function($item) {
+                    return ($item->diem_bao_cao ?? 0)
+                        + ($item->diem_thuyet_trinh ?? 0)
+                        + ($item->diem_demo ?? 0)
+                        + ($item->diem_cau_hoi ?? 0)
+                        + ($item->diem_cong ?? 0);
+                });
+                // nếu tổng = 0 thì avg cũng = 0, nhưng ta sẽ lọc bên dưới
                 return [
-                    'giang_vien' => $group->first()->giangVien,
-                    'so_luong' => $group->count(),
-                    'diem_trung_binh' => $group->avg(function($item) {
-                        return $item->diem_bao_cao + $item->diem_thuyet_trinh + $item->diem_demo + $item->diem_cau_hoi + $item->diem_cong;
-                    })
+                    'giang_vien'     => $group->first()->giangVien,
+                    'so_luong'       => $group->count(),
+                    'diem_trung_binh'=> $total > 0
+                        ? round($total / $group->count(), 2)
+                        : 0,
                 ];
-            });
+            })
+            ->filter(function($item) {
+                // Chỉ giữ những giảng viên có diem_trung_binh > 0
+                return $item['diem_trung_binh'] > 0;
+            })
+            ->values();
+        // --------------------------------------------------------------
+
+        // Nếu bạn cần tính trung bình chung qua các giảng viên (chỉ trên những người >0):
+        $diemTrungBinhChung = $thongKeTheoGiangVien->avg('diem_trung_binh');
 
         // Thống kê theo khoảng điểm
         $khoangDiem = [
-            '0-5' => 0,
-            '5-6' => 0,
-            '6-7' => 0,
-            '7-8' => 0,
-            '8-9' => 0,
+            '0-5'  => 0,
+            '5-6'  => 0,
+            '6-7'  => 0,
+            '7-8'  => 0,
+            '8-9'  => 0,
             '9-10' => 0
         ];
 
         foreach ($bangDiems as $bangDiem) {
             $tongDiem = ($bangDiem->diem_bao_cao ?? 0)
-                + ($bangDiem->diem_thuyet_trinh ?? 0)
-                + ($bangDiem->diem_demo ?? 0)
-                + ($bangDiem->diem_cau_hoi ?? 0)
-                + ($bangDiem->diem_cong ?? 0);
-            
+                    + ($bangDiem->diem_thuyet_trinh ?? 0)
+                    + ($bangDiem->diem_demo ?? 0)
+                    + ($bangDiem->diem_cau_hoi ?? 0)
+                    + ($bangDiem->diem_cong ?? 0);
+
             if ($tongDiem < 5) {
                 $khoangDiem['0-5']++;
             } elseif ($tongDiem < 6) {
@@ -154,7 +204,14 @@ class BangDiemController extends Controller
 
         $dotBaoCaos = DotBaoCao::with('hocKy')->get();
 
-        return view('admin.bang-diem.thong-ke', compact('thongKe', 'thongKeTheoGiangVien', 'khoangDiem', 'dotBaoCaos', 'dotBaoCaoId'));
+        return view('admin.bang-diem.thong-ke', compact(
+            'thongKe',
+            'thongKeTheoGiangVien',
+            'diemTrungBinhChung', // nếu bạn muốn hiển thị
+            'khoangDiem',
+            'dotBaoCaos',
+            'dotBaoCaoId'
+        ));
     }
 
     /**
@@ -163,7 +220,7 @@ class BangDiemController extends Controller
     public function show($id)
     {
         $bangDiem = BangDiem::with([
-            'sinhVien.lop', 
+            'sinhVien.lop',
             'sinhVien.chiTietNhom.nhom.deTai',
             'dotBaoCao.lichChams.hoiDong',
             'giangVien'
@@ -206,7 +263,7 @@ class BangDiemController extends Controller
     public function edit($id)
     {
         $bangDiem = BangDiem::with([
-            'sinhVien.lop', 
+            'sinhVien.lop',
             'sinhVien.chiTietNhom.nhom.deTai',
             'dotBaoCao.lichChams.hoiDong'
         ])->findOrFail($id);
@@ -276,7 +333,7 @@ class BangDiemController extends Controller
     {
         $dotBaoCaoId = $request->get('dot_bao_cao_id');
         $filename = 'bang-diem-' . date('Y-m-d-H-i-s') . '.xlsx';
-        
+
         return Excel::download(new BangDiemExport($dotBaoCaoId), $filename);
     }
 
@@ -286,7 +343,7 @@ class BangDiemController extends Controller
     public function debug()
     {
         $bangDiems = BangDiem::with(['sinhVien', 'dotBaoCao', 'giangVien'])->get();
-        
+
         // Thống kê theo khoảng điểm
         $khoangDiem = [
             '0-5' => 0,
@@ -303,7 +360,7 @@ class BangDiemController extends Controller
                 + ($bangDiem->diem_demo ?? 0)
                 + ($bangDiem->diem_cau_hoi ?? 0)
                 + ($bangDiem->diem_cong ?? 0);
-            
+
             if ($tongDiem < 5) {
                 $khoangDiem['0-5']++;
             } elseif ($tongDiem < 6) {
