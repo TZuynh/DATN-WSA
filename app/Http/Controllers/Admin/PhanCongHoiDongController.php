@@ -337,6 +337,7 @@ class PhanCongHoiDongController extends Controller
 
         $vaiTroThanhVien = VaiTro::where('ten','Thành viên')->firstOrFail();
 
+        // Kiểm tra đã phân công chấm đề tài này cho giảng viên này chưa
         $exists = PhanCongVaiTro::where([
             ['hoi_dong_id',  $request->hoi_dong_id],
             ['de_tai_id',    $request->de_tai_id],
@@ -348,7 +349,7 @@ class PhanCongHoiDongController extends Controller
             return back()->withErrors(['error'=>'Giảng viên đã được phân công chấm đề tài!']);
         }
 
-        // Create grading assignment (with de_tai_id not null)
+        // Tạo bản ghi phân công chấm mới
         PhanCongVaiTro::create([
             'hoi_dong_id'    => $request->hoi_dong_id,
             'de_tai_id'      => $request->de_tai_id,
@@ -357,7 +358,6 @@ class PhanCongHoiDongController extends Controller
             'loai_giang_vien'=> null,
         ]);
 
-        // Flash to reopen modal
         return redirect()
             ->route('admin.phan-cong-hoi-dong.index')
             ->with('success','Phân công chấm thành công!')

@@ -176,7 +176,7 @@
                                 <label class="form-label">Giảng viên</label>
                                 <select name="tai_khoan_id" class="form-select" required>
                                     <option value="">-- Chọn giảng viên --</option>
-                                    @foreach($hoiDongObj->phanCongVaiTros->where('vaiTro.ten','Thành viên') as $pc)
+                                    @foreach($hoiDongObj->phanCongVaiTros->where('de_tai_id', null)->where('vaiTro.ten','Thành viên')->unique('tai_khoan_id') as $pc)
                                         <option value="{{ $pc->tai_khoan_id }}">{{ $pc->taiKhoan->ten }}</option>
                                     @endforeach
                                 </select>

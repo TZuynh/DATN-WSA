@@ -79,9 +79,9 @@
                             <tr>
                                 <th class="text-muted text-start" style="width: 200px; text-align: left;">Thành viên hội đồng:</th>
                                 <td class="fw-semibold text-start">
-                                    @if($hoiDong->phanCongVaiTros && $hoiDong->phanCongVaiTros->count() > 0)
+                                    @if($hoiDong->phanCongVaiTros && $hoiDong->phanCongVaiTros->where('de_tai_id', null)->count() > 0)
                                         <div class="d-flex flex-column gap-2">
-                                            @foreach($hoiDong->phanCongVaiTros as $phanCong)
+                                            @foreach($hoiDong->phanCongVaiTros->where('de_tai_id', null) as $phanCong)
                                                 <div class="d-inline-flex align-items-center">
                                                     <i class="fas fa-user-tie text-primary me-2"></i>
                                                     {{ $phanCong->taiKhoan->ten ?? 'N/A' }} 
@@ -266,7 +266,7 @@
 </div>
 
 <!-- Modal hiển thị danh sách đề tài của giảng viên -->
-@foreach($hoiDong->phanCongVaiTros as $phanCong)
+@foreach($hoiDong->phanCongVaiTros->where('de_tai_id', null) as $phanCong)
     @if($phanCong->taiKhoan && $phanCong->taiKhoan->deTais && $phanCong->taiKhoan->deTais->count() > 0)
         <div class="modal fade" id="modalDeTai{{ $phanCong->taiKhoan->id }}" tabindex="-1" aria-labelledby="modalDeTaiLabel{{ $phanCong->taiKhoan->id }}" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-fullscreen-sm-down">
@@ -291,7 +291,6 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @php $coDeTai = false; @endphp
                                     @foreach($phanCong->taiKhoan->deTais as $deTai)
                                         @php
                                             // Kiểm tra đề tài đã thuộc hội đồng này chưa
@@ -333,14 +332,8 @@
                                                 <input type="checkbox" name="chon_de_tai[]" value="{{ $deTai->id }}" data-giang-vien="{{ $phanCong->taiKhoan->id }}">
                                             </td>
                                         </tr>
-                                        @php $coDeTai = true; @endphp
                                         @endif
                                     @endforeach
-                                    @if(!$coDeTai)
-                                        <tr>
-                                            <td colspan="5" class="text-center text-muted">Trống</td>
-                                        </tr>
-                                    @endif
                                 </tbody>
                             </table>
                         </div>
