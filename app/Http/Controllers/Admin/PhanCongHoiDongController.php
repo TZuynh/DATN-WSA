@@ -15,19 +15,17 @@ class PhanCongHoiDongController extends Controller
 {
     public function index()
     {
-        $phanCongVaiTros = PhanCongVaiTro::with(['hoiDong', 'taiKhoan', 'vaiTro'])
-            ->orderBy('created_at', 'desc')
+        // Only show council assignments (no topic grading entries)
+        $phanCongVaiTros = PhanCongVaiTro::with(['hoiDong','taiKhoan','vaiTro'])
+            ->whereNull('de_tai_id')
+            ->orderBy('created_at','desc')
             ->paginate(10);
 
-        // Lấy id các giảng viên đã được phân công vào bất kỳ hội đồng nào
         $giangVienDaPhanCongIds = PhanCongVaiTro::pluck('tai_khoan_id')->unique()->toArray();
-
-        // Lấy danh sách giảng viên chưa có phân công
-        $taiKhoansChuaPhanCong = TaiKhoan::where('vai_tro', 'giang_vien')
-            ->whereNotIn('id', $giangVienDaPhanCongIds)
+        $taiKhoansChuaPhanCong   = TaiKhoan::where('vai_tro','giang_vien')
+            ->whereNotIn('id',$giangVienDaPhanCongIds)
             ->get();
 
-        // Lấy tất cả hội đồng, kèm đề tài và phân công vai trò
         $hoiDongs = HoiDong::with([
             'chiTietBaoCaos.deTai',
             'chiTietBaoCaos.deTai.giangVien',
@@ -35,7 +33,9 @@ class PhanCongHoiDongController extends Controller
             'phanCongVaiTros.vaiTro',
         ])->get();
 
-        return view('admin.phan-cong-hoi-dong.index', compact('phanCongVaiTros', 'taiKhoansChuaPhanCong', 'hoiDongs'));
+        return view('admin.phan-cong-hoi-dong.index', compact(
+            'phanCongVaiTros','taiKhoansChuaPhanCong','hoiDongs'
+        ));
     }
 
     public function create(Request $request)
@@ -330,26 +330,37 @@ class PhanCongHoiDongController extends Controller
     public function addCham(Request $request)
     {
         $request->validate([
-            'hoi_dong_id' => 'required|exists:hoi_dongs,id',
-            'de_tai_id' => 'required|exists:de_tais,id',
+            'hoi_dong_id'  => 'required|exists:hoi_dongs,id',
+            'de_tai_id'    => 'required|exists:de_tais,id',
             'tai_khoan_id' => 'required|exists:tai_khoans,id',
         ]);
-        // Kiểm tra đã tồn tại phân công này chưa
-        $exists = \App\Models\PhanCongVaiTro::where('hoi_dong_id', $request->hoi_dong_id)
-            ->where('tai_khoan_id', $request->tai_khoan_id)
-            ->where('de_tai_id', $request->de_tai_id)
-            ->exists();
+
+        $vaiTroThanhVien = VaiTro::where('ten','Thành viên')->firstOrFail();
+
+        $exists = PhanCongVaiTro::where([
+            ['hoi_dong_id',  $request->hoi_dong_id],
+            ['de_tai_id',    $request->de_tai_id],
+            ['tai_khoan_id', $request->tai_khoan_id],
+            ['vai_tro_id',   $vaiTroThanhVien->id],
+        ])->exists();
+
         if ($exists) {
-            return back()->withErrors(['error' => 'Giảng viên này đã được phân công chấm đề tài này!']);
+            return back()->withErrors(['error'=>'Giảng viên đã được phân công chấm đề tài!']);
         }
-        // Tạo mới phân công chấm
-        \App\Models\PhanCongVaiTro::create([
-            'hoi_dong_id' => $request->hoi_dong_id,
-            'tai_khoan_id' => $request->tai_khoan_id,
-            'de_tai_id' => $request->de_tai_id,
-            'loai_giang_vien' => 'Giảng Viên Khác',
-            'vai_tro_id' => null,
+
+        // Create grading assignment (with de_tai_id not null)
+        PhanCongVaiTro::create([
+            'hoi_dong_id'    => $request->hoi_dong_id,
+            'de_tai_id'      => $request->de_tai_id,
+            'tai_khoan_id'   => $request->tai_khoan_id,
+            'vai_tro_id'     => $vaiTroThanhVien->id,
+            'loai_giang_vien'=> null,
         ]);
-        return back()->with('success', 'Thêm giảng viên chấm thành công!');
+
+        // Flash to reopen modal
+        return redirect()
+            ->route('admin.phan-cong-hoi-dong.index')
+            ->with('success','Phân công chấm thành công!')
+            ->with('openModal',$request->hoi_dong_id);
     }
 }

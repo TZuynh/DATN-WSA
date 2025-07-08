@@ -16,6 +16,7 @@ class PhanCongVaiTro extends Model
         'tai_khoan_id',
         'vai_tro_id',
         'loai_giang_vien',
+        'de_tai_id'
     ];
 
     public function hoiDong()
