@@ -207,15 +207,22 @@
                         </div>
                         <div class="modal-body">
                             <label>Chọn giảng viên ở hội đồng khác để hoán đổi:</label>
-                            <select name="phan_cong_id_2" class="form-select" required>
-                                @foreach($phanCongVaiTros->where('vai_tro_id', $phanCong->vai_tro_id)->where('id', '!=', $phanCong->id) as $otherPC)
-                                    @if($otherPC->hoi_dong_id != $phanCong->hoi_dong_id)
+                            @php
+                                $otherPCs = $phanCongVaiTros->where('vai_tro_id', $phanCong->vai_tro_id)->where('id', '!=', $phanCong->id)->filter(function($otherPC) use ($phanCong) {
+                                    return $otherPC->hoi_dong_id != $phanCong->hoi_dong_id;
+                                });
+                            @endphp
+                            @if($otherPCs->count() > 0)
+                                <select name="phan_cong_id_2" class="form-select" required>
+                                    @foreach($otherPCs as $otherPC)
                                         <option value="{{ $otherPC->id }}">
                                             {{ $otherPC->taiKhoan->ten ?? 'N/A' }} ({{ $otherPC->hoiDong->ten ?? 'N/A' }})
                                         </option>
-                                    @endif
-                                @endforeach
-                            </select>
+                                    @endforeach
+                                </select>
+                            @else
+                                <div class="text-muted">Chưa có giảng viên hội đồng khác</div>
+                            @endif
                         </div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Hoán đổi</button>

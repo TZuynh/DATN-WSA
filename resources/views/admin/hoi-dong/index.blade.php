@@ -38,7 +38,9 @@
                     <td style="padding: 12px 15px;">{{ $hoiDong->id }}</td>
                     <td style="padding: 12px 15px;">{{ $hoiDong->ma_hoi_dong }}</td>
                     <td style="padding: 12px 15px; color: #2d3748; font-weight: 600;">{{ $hoiDong->ten }}</td>
-                    <td style="padding: 12px 15px;">{{ $hoiDong->dotBaoCao->nam_hoc ?? 'N/A' }}</td>
+                    <td style="padding: 12px 15px;">
+                        {{ $hoiDong->dotBaoCao->ten_dot_bao_cao ?? 'N/A' }}
+                    </td>
                     <td style="padding: 12px 15px;">{{ $hoiDong->phong->ten_phong ?? 'Chưa có phòng' }}</td>
                     <td style="padding: 12px 15px;">{{ $hoiDong->thoi_gian_bat_dau ? \Carbon\Carbon::parse($hoiDong->thoi_gian_bat_dau)->format('d/m/Y H:i') : 'Chưa có' }}</td>
                     <td style="padding: 12px 15px;">{{ $hoiDong->created_at->format('d-m-Y') }}</td>
