@@ -41,12 +41,40 @@
             </div>
         </div>
 
+        <!-- Form tìm kiếm -->
+        <form method="GET" action="" style="margin-bottom: 20px; display: flex; gap: 16px; align-items: flex-end;">
+            <div>
+                <label for="nam_hoc" style="font-size: 14px; color: #4a5568;">Năm học</label><br>
+                <select name="nam_hoc" id="nam_hoc" style="padding: 6px 12px; border-radius: 4px; border: 1px solid #cbd5e0; min-width: 120px;">
+                    <option value="">Tất cả</option>
+                    @foreach ($namHocs as $nam)
+                        <option value="{{ $nam }}" {{ (request('nam_hoc', $filter_nam_hoc) == $nam) ? 'selected' : '' }}>{{ $nam }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label for="hoc_ky_id" style="font-size: 14px; color: #4a5568;">Học kỳ</label><br>
+                <select name="hoc_ky_id" id="hoc_ky_id" style="padding: 6px 12px; border-radius: 4px; border: 1px solid #cbd5e0; min-width: 120px;">
+                    <option value="">Tất cả</option>
+                    @foreach ($hocKys as $hk)
+                        <option value="{{ $hk->id }}" {{ (request('hoc_ky_id', $filter_hoc_ky_id) == $hk->id) ? 'selected' : '' }}>{{ $hk->ten }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <button type="submit" style="padding: 8px 20px; background: #4299e1; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    <i class="fas fa-search"></i> Tìm kiếm
+                </button>
+            </div>
+        </form>
+
         <!-- Bảng danh sách -->
         <div style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow-x: auto;">
             <table style="width: 100%; border-collapse: collapse; min-width: 800px;">
                 <thead>
                     <tr style="background-color: #2d3748; color: white;">
                         <th style="padding: 12px 15px; text-align: left;">ID</th>
+                        <th style="padding: 12px 15px; text-align: left;">Tên đợt báo cáo</th>
                         <th style="padding: 12px 15px; text-align: left;">Năm học</th>
                         <th style="padding: 12px 15px; text-align: left;">Học kỳ</th>
                         <th style="padding: 12px 15px; text-align: left;">Thời gian</th>
@@ -59,6 +87,7 @@
                     @forelse ($dotBaoCaos as $dotBaoCao)
                         <tr style="border-bottom: 1px solid #e2e8f0;">
                             <td style="padding: 12px 15px;">{{ $dotBaoCao->id }}</td>
+                            <td style="padding: 12px 15px;">{{ $dotBaoCao->ten_dot_bao_cao }}</td>
                             <td style="padding: 12px 15px; font-weight: 600;">{{ $dotBaoCao->nam_hoc }}</td>
                             <td style="padding: 12px 15px;">{{ optional($dotBaoCao->hocKy)->ten ?? 'N/A' }}</td>
                             <td style="padding: 12px 15px;">

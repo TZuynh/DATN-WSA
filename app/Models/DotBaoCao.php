@@ -95,6 +95,12 @@ class DotBaoCao extends Model
         };
     }
 
+    public function getTenDotBaoCaoAttribute()
+    {
+        $tenHocKy = $this->hocKy ? $this->hocKy->ten : '';
+        return $this->nam_hoc . ' - ' . $tenHocKy;
+    }
+
     public function updateTrangThai()
     {
         if ($this->trang_thai === self::TRANG_THAI_DA_HUY) {

@@ -33,10 +33,10 @@
                 <div style="display: flex; gap: 20px; margin-bottom: 20px;">
                     <div style="flex: 1;">
                         <label for="nam_hoc" style="display: block; margin-bottom: 5px; color: #4a5568;">Năm học</label>
-                        <input type="number" name="nam_hoc" id="nam_hoc" value="{{ date('Y') }}"
+                        <input type="number" name="nam_hoc" id="nam_hoc" value="{{ old('nam_hoc', date('Y')) }}"
                             style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background-color: #f7fafc;"
-                            readonly>
-                        <small style="color: #718096; font-size: 0.875rem;">Năm học được tự động cập nhật theo năm hiện tại</small>
+                            min="{{ date('Y') }}" max="2200" required>
+                        <small style="color: #718096; font-size: 0.875rem;">Chỉ được nhập năm học từ {{ date('Y') }} trở về sau</small>
                     </div>
                     <div style="flex: 1;">
                         <label for="hoc_ky_id" style="display: block; margin-bottom: 5px; color: #4a5568;">Học kỳ <span style="color: #e53e3e;">*</span></label>
@@ -115,9 +115,15 @@
 
                 // Kiểm tra năm học có khớp với ngày bắt đầu không
                 const namBatDau = batDau.getFullYear();
+                const minNam = new Date().getFullYear();
+                if (namHoc < minNam) {
+                    e.preventDefault();
+                    alert('Chỉ được nhập năm học từ ' + minNam + ' trở về sau!');
+                    return;
+                }
                 if (namBatDau != namHoc) {
                     e.preventDefault();
-                    alert('Ngày bắt đầu phải thuộc năm hiện tại!');
+                    alert('Năm học phải khớp với năm của ngày bắt đầu!');
                     return;
                 }
             });

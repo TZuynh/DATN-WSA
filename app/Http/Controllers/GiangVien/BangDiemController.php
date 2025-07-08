@@ -110,10 +110,42 @@ class BangDiemController extends Controller
             return $bangDiem;
         });
 
+        // Gom nhóm bảng điểm theo giảng viên để tính trung bình báo cáo, tổng điểm trung bình, điểm tổng kết
+        $allGiangVienIds = $bangDiems->pluck('giang_vien_id')->unique();
+        $dsDiemBaoCaoTB = collect();
+        $dsTongDiemTB = collect();
+        $dsDiemTongKet = collect();
+        foreach ($allGiangVienIds as $giangVienId) {
+            $dsBangDiemGV = $bangDiems->where('giang_vien_id', $giangVienId);
+            // Tính trung bình điểm báo cáo
+            $diemBaoCaoArr = $dsBangDiemGV->pluck('diem_bao_cao')->filter(function($v){ return $v !== null; });
+            $diemBaoCaoTB = $diemBaoCaoArr->count() > 0 ? $diemBaoCaoArr->avg() : 0;
+            // Tính tổng điểm trung bình
+            $tongDiemArr = $dsBangDiemGV->map(function($bd) {
+                return ($bd->diem_thuyet_trinh ?? 0) + ($bd->diem_demo ?? 0) + ($bd->diem_cau_hoi ?? 0) + ($bd->diem_cong ?? 0);
+            });
+            $tongDiemTB = $tongDiemArr->count() > 0 ? $tongDiemArr->avg() : 0;
+            // Điểm tổng kết
+            $diemTongKet = ($diemBaoCaoTB !== 0 && $tongDiemTB !== 0) ? ($diemBaoCaoTB * 0.2 + $tongDiemTB * 0.8) : 0;
+            // Nếu cả điểm báo cáo TB và tổng điểm TB đều bằng 0 thì bỏ qua giảng viên này
+            if ($diemBaoCaoTB > 0 || $tongDiemTB > 0) {
+                $dsDiemBaoCaoTB->push($diemBaoCaoTB);
+                $dsTongDiemTB->push($tongDiemTB);
+                $dsDiemTongKet->push($diemTongKet);
+            }
+        }
+        // Tính trung bình chung các giá trị trên
+        $diemTrungBinhBaoCaoChung = $dsDiemBaoCaoTB->count() > 0 ? round($dsDiemBaoCaoTB->avg(), 2) : null;
+        $tongDiemTrungBinhChung = $dsTongDiemTB->count() > 0 ? round($dsTongDiemTB->avg(), 2) : null;
+        $diemTongKetChung = $dsDiemTongKet->count() > 0 ? round($dsDiemTongKet->avg(), 2) : null;
+
         return view('giangvien.bang-diem.index', compact(
             'dsSinhVien',
             'bangDiems',
-            'coDeTaiNhungKhongCoLichCham'
+            'coDeTaiNhungKhongCoLichCham',
+            'diemTrungBinhBaoCaoChung',
+            'tongDiemTrungBinhChung',
+            'diemTongKetChung'
         ));
     }
 

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('hoi_dong_id')->constrained();
             $table->foreignId('tai_khoan_id')->constrained('tai_khoans');
             $table->foreignId('vai_tro_id')->constrained('vai_tros'); // Vai trò trong hội đồng
+            $table->foreignId('de_tai_id')->nullable()->constrained('de_tais')->onDelete('cascade');
             $table->timestamps();
         });
     }

@@ -18,11 +18,18 @@ use Illuminate\Support\Facades\Schema;
 
 class DotBaoCaoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $dotBaoCaos = DotBaoCao::with('hocKy')->orderBy('created_at', 'desc')
-            ->paginate(10);
-            
+        $query = DotBaoCao::with('hocKy')->orderBy('created_at', 'desc');
+        
+        if ($request->filled('nam_hoc')) {
+            $query->where('nam_hoc', $request->nam_hoc);
+        }
+        if ($request->filled('hoc_ky_id')) {
+            $query->where('hoc_ky_id', $request->hoc_ky_id);
+        }
+        $dotBaoCaos = $query->paginate(10);
+        
         // Lấy số lượng thực tế từ bảng cho từng đợt báo cáo
         foreach ($dotBaoCaos as $dotBaoCao) {
             $dotBaoCao->so_luong_hoi_dong_thuc_te = $dotBaoCao->hoiDongs()->count();
@@ -30,7 +37,16 @@ class DotBaoCaoController extends Controller
             $dotBaoCao->so_luong_nhom_thuc_te = $dotBaoCao->deTais()->whereNotNull('nhom_id')->distinct('nhom_id')->count('nhom_id');
         }
 
-        return view('admin.dot-bao-cao.index', compact('dotBaoCaos'));
+        $hocKys = \App\Models\HocKy::all();
+        $namHocs = DotBaoCao::select('nam_hoc')->distinct()->orderBy('nam_hoc', 'desc')->pluck('nam_hoc');
+
+        return view('admin.dot-bao-cao.index', [
+            'dotBaoCaos' => $dotBaoCaos,
+            'hocKys' => $hocKys,
+            'namHocs' => $namHocs,
+            'filter_nam_hoc' => $request->nam_hoc,
+            'filter_hoc_ky_id' => $request->hoc_ky_id,
+        ]);
     }
 
     public function create()
@@ -42,7 +58,7 @@ class DotBaoCaoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nam_hoc' => 'required|integer|min:2000|max:2100',
+            'nam_hoc' => 'required|integer|min:' . date('Y') . '|max:2200',
             'hoc_ky_id' => 'required|exists:hoc_kys,id',
             'ngay_bat_dau' => 'required|date',
             'ngay_ket_thuc' => 'required|date|after:ngay_bat_dau'
@@ -80,7 +96,7 @@ class DotBaoCaoController extends Controller
             DB::beginTransaction();
 
             $request->validate([
-                'nam_hoc' => 'required|integer|min:2000|max:2100',
+                'nam_hoc' => 'required|integer|min:' . date('Y') . '|max:2200',
                 'hoc_ky_id' => 'required|exists:hoc_kys,id',
                 'ngay_bat_dau' => 'required|date',
                 'ngay_ket_thuc' => 'required|date|after:ngay_bat_dau'

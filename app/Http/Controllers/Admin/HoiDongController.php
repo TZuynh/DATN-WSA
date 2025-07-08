@@ -54,7 +54,7 @@ class HoiDongController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'ten' => 'required',
+            'ten' => 'required|unique:hoi_dongs,ten',
             'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
             'phong_id' => [
                 'nullable',
@@ -76,6 +76,9 @@ class HoiDongController extends Controller
             'dot_bao_cao_de_tai' => 'nullable|exists:dot_bao_caos,id',
             'nhom_id' => 'nullable|exists:nhoms,id',
             'giang_vien_id' => 'nullable|exists:tai_khoans,id'
+        ], [
+            'ten.unique' => 'Tên hội đồng đã tồn tại.',
+            'ten.required' => 'Vui lòng nhập tên hội đồng.',
         ]);
 
         try {
@@ -148,7 +151,7 @@ class HoiDongController extends Controller
     {
         $request->validate([
             'ma_hoi_dong' => 'required|string|max:255',
-            'ten' => 'required|string|max:255',
+            'ten' => 'required|string|max:255|unique:hoi_dongs,ten,' . $hoiDong->id,
             'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
             'phong_id' => [
                 'nullable',
@@ -167,6 +170,9 @@ class HoiDongController extends Controller
                 },
             ],
             'thoi_gian_bat_dau' => 'required|date'
+        ], [
+            'ten.unique' => 'Tên hội đồng đã tồn tại.',
+            'ten.required' => 'Vui lòng nhập tên hội đồng.',
         ]);
 
         try {
