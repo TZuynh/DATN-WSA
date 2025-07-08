@@ -31,7 +31,7 @@ class DeTaiController extends Controller
 
         if ($isPhanBien) {
             // Lấy các đề tài mà giảng viên được phân công phản biện
-            $deTais = \App\Models\DeTai::with(['nhoms.sinhViens', 'dotBaoCao.hocKy', 'giangVien'])
+            $deTais = \App\Models\DeTai::with(['chiTietBaoCao.hoiDong', 'nhoms.sinhViens', 'dotBaoCao.hocKy', 'giangVien'])
                 ->whereHas('chiTietBaoCao.hoiDong.phanCongVaiTros', function($query) use ($user) {
                     $query->where('tai_khoan_id', $user->id)
                         ->where('loai_giang_vien', 'Giảng Viên Phản Biện');
@@ -45,7 +45,7 @@ class DeTaiController extends Controller
                 ->whereHas('vaiTro', function($q) { $q->where('ten', 'Thư ký'); })
                 ->pluck('hoi_dong_id');
             $deTaiIds = \App\Models\ChiTietDeTaiBaoCao::whereIn('hoi_dong_id', $hoiDongIds)->pluck('de_tai_id');
-            $deTais = \App\Models\DeTai::with(['nhoms.sinhViens', 'dotBaoCao.hocKy', 'giangVien'])
+            $deTais = \App\Models\DeTai::with(['chiTietBaoCao.hoiDong', 'nhoms.sinhViens', 'dotBaoCao.hocKy', 'giangVien'])
                 ->whereIn('id', $deTaiIds)
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -96,45 +96,7 @@ class DeTaiController extends Controller
                 }
             }
 
-            $chiTiet = ChiTietDeTaiBaoCao::where('de_tai_id', $deTai->id)->first();
-            if (!$chiTiet) {
-                // Bạn cần xác định hội đồng nào sẽ nhận đề tài này (ví dụ lấy theo đợt báo cáo hoặc logic riêng)
-                // Ở đây ví dụ lấy hội đồng đầu tiên của đợt báo cáo
-                $hoiDong = \App\Models\HoiDong::where('dot_bao_cao_id', $deTai->dot_bao_cao_id)->first();
-                if ($hoiDong) {
-                    $chiTiet = ChiTietDeTaiBaoCao::create([
-                        'dot_bao_cao_id' => $deTai->dot_bao_cao_id,
-                        'de_tai_id' => $deTai->id,
-                        'hoi_dong_id' => $hoiDong->id,
-                    ]);
-                } else {
-                    // Nếu không có hội đồng, có thể báo lỗi hoặc xử lý logic khác
-                    return redirect()->back()->with('error', 'Không tìm thấy hội đồng phù hợp cho đề tài này.');
-                }
-            }
-            // Tự động phân công giảng viên hướng dẫn vào hội đồng
-            if ($deTai->giang_vien_id && $chiTiet && $chiTiet->hoi_dong_id) {
-                $phanCongGVHD = \App\Models\PhanCongVaiTro::where('hoi_dong_id', $chiTiet->hoi_dong_id)
-                    ->where('tai_khoan_id', $deTai->giang_vien_id)
-                    ->first();
-
-                if ($phanCongGVHD) {
-                    // Nếu đã có phân công, chỉ cập nhật loai_giang_vien
-                    $phanCongGVHD->update(['loai_giang_vien' => 'Giảng Viên Hướng Dẫn']);
-                } else {
-                    // Nếu chưa có phân công, tạo mới với vai trò "Thành viên"
-                    $vaiTro = \App\Models\VaiTro::firstOrCreate(
-                        ['ten' => 'Thành viên'],
-                        ['mo_ta' => 'Thành viên hội đồng']
-                    );
-                    \App\Models\PhanCongVaiTro::create([
-                        'hoi_dong_id' => $chiTiet->hoi_dong_id,
-                        'tai_khoan_id' => $deTai->giang_vien_id,
-                        'vai_tro_id' => $vaiTro->id,
-                        'loai_giang_vien' => 'Giảng Viên Hướng Dẫn'
-                    ]);
-                }
-            }
+            // KHÔNG tự động tạo ChiTietDeTaiBaoCao và KHÔNG phân công giảng viên vào hội đồng
 
             return redirect()->route('giangvien.de-tai.index')->with('success', 'Thêm đề tài thành công');
         } catch (\Exception $e) {

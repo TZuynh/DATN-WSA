@@ -17,4 +17,5 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     
     // Chuyển đề tài sang hội đồng khác
     Route::post('/admin/hoi-dong/chuyen-de-tai', [HoiDongController::class, 'chuyenDeTaiSangHoiDong'])->name('admin.hoi-dong.chuyen-de-tai');
+    Route::post('/admin/hoi-dong/{hoiDong}/them-de-tai', [HoiDongController::class, 'themDeTai'])->name('admin.hoi-dong.them-de-tai');
 });

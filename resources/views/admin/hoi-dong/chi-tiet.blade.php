@@ -100,6 +100,9 @@
                                                             <i class="fas fa-book me-1"></i>
                                                             {{ $phanCong->taiKhoan->deTais->count() }} đề tài
                                                         </button>
+                                                        <button type="button" class="btn btn-sm btn-primary ms-2 btn-mo-modal-chon-detai" data-bs-toggle="modal" data-bs-target="#modalDeTai{{ $phanCong->taiKhoan->id }}">
+                                                            <i class="fas fa-plus"></i> Chọn đề tài vào hội đồng
+                                                        </button>
                                                     @endif
                                                 </div>
                                             @endforeach
@@ -284,10 +287,16 @@
                                         <th>Tên đề tài</th>
                                         <th>Trạng thái</th>
                                         <th>Nhóm thực hiện</th>
+                                        <th>Chọn</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($phanCong->taiKhoan->deTais as $deTai)
+                                        @php
+                                            // Kiểm tra đề tài đã thuộc hội đồng này chưa
+                                            $daThuocHoiDong = $deTai->chiTietBaoCao && $deTai->chiTietBaoCao->hoi_dong_id == $hoiDong->id;
+                                        @endphp
+                                        @if(!$daThuocHoiDong)
                                         <tr>
                                             <td>{{ $deTai->ma_de_tai }}</td>
                                             <td>{{ $deTai->ten_de_tai }}</td>
@@ -319,7 +328,11 @@
                                                     <span class="text-muted">Chưa có nhóm</span>
                                                 @endif
                                             </td>
+                                            <td>
+                                                <input type="radio" name="chon_de_tai" value="{{ $deTai->id }}" data-giang-vien="{{ $phanCong->taiKhoan->id }}">
+                                            </td>
                                         </tr>
+                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>
@@ -327,6 +340,9 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="button" class="btn btn-primary btn-xac-nhan-chon-detai" data-giang-vien="{{ $phanCong->taiKhoan->id }}" data-hoi-dong="{{ $hoiDong->id }}">
+                            <i class="fas fa-plus"></i> Xác nhận chọn đề tài vào hội đồng
+                        </button>
                     </div>
                 </div>
             </div>
@@ -676,6 +692,41 @@
             } else {
                 $nhomSelect.prop('disabled', true);
             }
+        });
+
+        // Xác nhận chọn đề tài vào hội đồng
+        $('.btn-xac-nhan-chon-detai').click(function() {
+            var giangVienId = $(this).data('giang-vien');
+            var hoiDongId = $(this).data('hoi-dong');
+            var deTaiId = $("#modalDeTai" + giangVienId + " input[name='chon_de_tai']:checked").val();
+            if (!deTaiId) {
+                alert('Vui lòng chọn một đề tài!');
+                return;
+            }
+            if (!confirm('Bạn có chắc chắn muốn thêm đề tài này vào hội đồng?')) return;
+            $.ajax({
+                url: '/admin/hoi-dong/' + hoiDongId + '/them-de-tai',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    de_tai_id: deTaiId
+                },
+                success: function(res) {
+                    if (res.success) {
+                        alert(res.message || 'Thêm đề tài vào hội đồng thành công!');
+                        location.reload();
+                    } else {
+                        alert(res.message || 'Có lỗi xảy ra!');
+                    }
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Có lỗi xảy ra khi thêm đề tài vào hội đồng!';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    alert(errorMessage);
+                }
+            });
         });
     });
 </script>

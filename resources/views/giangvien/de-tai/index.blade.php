@@ -38,6 +38,7 @@
                                         <th style="width: 10%">Ý kiến GV</th>
                                     @endif
                                     <th style="width: 10%">Đợt báo cáo</th>
+                                    <th style="width: 12%">Hội đồng</th>
                                     <th style="width: 10%">Nhóm SV thực hiện</th>
                                     @if($isPhanBien)
                                         <th style="width: 10%">GVHD</th>
@@ -57,6 +58,13 @@
                                         <td>{!! Str::limit($deTai->y_kien_giang_vien, 100) !!}</td>
                                     @endif
                                     <td>{{ optional($deTai->dotBaoCao)->nam_hoc }} - {{ optional(optional($deTai->dotBaoCao)->hocKy)->ten }}</td>
+                                    <td>
+                                        @if($deTai->chiTietBaoCao && $deTai->chiTietBaoCao->hoiDong)
+                                            {{ $deTai->chiTietBaoCao->hoiDong->ten }}
+                                        @else
+                                            <span class="text-muted">Chưa có hội đồng</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         @php $nhom = $deTai->nhoms->first(); @endphp
                                         @if($nhom && $nhom->sinhViens->count() > 0)

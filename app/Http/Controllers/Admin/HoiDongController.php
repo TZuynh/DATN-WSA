@@ -473,4 +473,39 @@ class HoiDongController extends Controller
             return response()->json(['success' => false, 'message' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
         }
     }
+
+    public function themDeTai(Request $request, $hoiDongId)
+    {
+        $request->validate([
+            'de_tai_id' => 'required|exists:de_tais,id',
+        ]);
+
+        $deTaiId = $request->input('de_tai_id');
+
+        // Kiểm tra đề tài đã thuộc hội đồng này chưa
+        $daTonTai = \App\Models\ChiTietDeTaiBaoCao::where('de_tai_id', $deTaiId)
+            ->where('hoi_dong_id', $hoiDongId)
+            ->exists();
+
+        if ($daTonTai) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Đề tài đã thuộc hội đồng này!',
+            ]);
+        }
+
+        // Gán đề tài vào hội đồng
+        \App\Models\ChiTietDeTaiBaoCao::updateOrCreate(
+            ['de_tai_id' => $deTaiId],
+            [
+                'hoi_dong_id' => $hoiDongId,
+                'dot_bao_cao_id' => \App\Models\HoiDong::find($hoiDongId)->dot_bao_cao_id,
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Thêm đề tài vào hội đồng thành công!',
+        ]);
+    }
 } 
