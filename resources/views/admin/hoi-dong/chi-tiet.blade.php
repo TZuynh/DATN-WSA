@@ -291,6 +291,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @php $coDeTai = false; @endphp
                                     @foreach($phanCong->taiKhoan->deTais as $deTai)
                                         @php
                                             // Kiểm tra đề tài đã thuộc hội đồng này chưa
@@ -329,11 +330,17 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <input type="radio" name="chon_de_tai" value="{{ $deTai->id }}" data-giang-vien="{{ $phanCong->taiKhoan->id }}">
+                                                <input type="checkbox" name="chon_de_tai[]" value="{{ $deTai->id }}" data-giang-vien="{{ $phanCong->taiKhoan->id }}">
                                             </td>
                                         </tr>
+                                        @php $coDeTai = true; @endphp
                                         @endif
                                     @endforeach
+                                    @if(!$coDeTai)
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted">Trống</td>
+                                        </tr>
+                                    @endif
                                 </tbody>
                             </table>
                         </div>
@@ -698,18 +705,21 @@
         $('.btn-xac-nhan-chon-detai').click(function() {
             var giangVienId = $(this).data('giang-vien');
             var hoiDongId = $(this).data('hoi-dong');
-            var deTaiId = $("#modalDeTai" + giangVienId + " input[name='chon_de_tai']:checked").val();
-            if (!deTaiId) {
-                alert('Vui lòng chọn một đề tài!');
+            var deTaiIds = [];
+            $("#modalDeTai" + giangVienId + " input[name='chon_de_tai[]']:checked").each(function() {
+                deTaiIds.push($(this).val());
+            });
+            if (deTaiIds.length === 0) {
+                alert('Vui lòng chọn ít nhất một đề tài!');
                 return;
             }
-            if (!confirm('Bạn có chắc chắn muốn thêm đề tài này vào hội đồng?')) return;
+            if (!confirm('Bạn có chắc chắn muốn thêm các đề tài này vào hội đồng?')) return;
             $.ajax({
                 url: '/admin/hoi-dong/' + hoiDongId + '/them-de-tai',
                 method: 'POST',
                 data: {
                     _token: '{{ csrf_token() }}',
-                    de_tai_id: deTaiId
+                    de_tai_ids: deTaiIds
                 },
                 success: function(res) {
                     if (res.success) {

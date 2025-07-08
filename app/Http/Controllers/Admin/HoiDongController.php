@@ -476,36 +476,55 @@ class HoiDongController extends Controller
 
     public function themDeTai(Request $request, $hoiDongId)
     {
-        $request->validate([
-            'de_tai_id' => 'required|exists:de_tais,id',
-        ]);
-
-        $deTaiId = $request->input('de_tai_id');
-
-        // Kiểm tra đề tài đã thuộc hội đồng này chưa
-        $daTonTai = \App\Models\ChiTietDeTaiBaoCao::where('de_tai_id', $deTaiId)
-            ->where('hoi_dong_id', $hoiDongId)
-            ->exists();
-
-        if ($daTonTai) {
+        $deTaiIds = $request->input('de_tai_ids', []);
+        if (!is_array($deTaiIds)) {
+            // Trường hợp cũ: chỉ 1 id
+            $deTaiIds = [$request->input('de_tai_id')];
+        }
+        if (empty($deTaiIds) || !is_array($deTaiIds)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Đề tài đã thuộc hội đồng này!',
+                'message' => 'Vui lòng chọn ít nhất một đề tài!'
             ]);
         }
-
-        // Gán đề tài vào hội đồng
-        \App\Models\ChiTietDeTaiBaoCao::updateOrCreate(
-            ['de_tai_id' => $deTaiId],
-            [
-                'hoi_dong_id' => $hoiDongId,
-                'dot_bao_cao_id' => \App\Models\HoiDong::find($hoiDongId)->dot_bao_cao_id,
-            ]
-        );
-
+        $hoiDong = \App\Models\HoiDong::find($hoiDongId);
+        if (!$hoiDong) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy hội đồng!'
+            ]);
+        }
+        $dotBaoCaoId = $hoiDong->dot_bao_cao_id;
+        $added = 0;
+        $skipped = 0;
+        foreach ($deTaiIds as $deTaiId) {
+            if (!\App\Models\DeTai::where('id', $deTaiId)->exists()) {
+                $skipped++;
+                continue;
+            }
+            $daTonTai = \App\Models\ChiTietDeTaiBaoCao::where('de_tai_id', $deTaiId)
+                ->where('hoi_dong_id', $hoiDongId)
+                ->exists();
+            if ($daTonTai) {
+                $skipped++;
+                continue;
+            }
+            \App\Models\ChiTietDeTaiBaoCao::updateOrCreate(
+                ['de_tai_id' => $deTaiId],
+                [
+                    'hoi_dong_id' => $hoiDongId,
+                    'dot_bao_cao_id' => $dotBaoCaoId,
+                ]
+            );
+            $added++;
+        }
+        $msg = "Đã thêm $added đề tài vào hội đồng.";
+        if ($skipped > 0) {
+            $msg .= " $skipped đề tài đã tồn tại hoặc không hợp lệ.";
+        }
         return response()->json([
             'success' => true,
-            'message' => 'Thêm đề tài vào hội đồng thành công!',
+            'message' => $msg,
         ]);
     }
 } 
