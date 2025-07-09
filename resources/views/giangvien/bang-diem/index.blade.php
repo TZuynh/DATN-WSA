@@ -20,13 +20,13 @@
                 <table class="table table-bordered table-striped">
                   <thead>
                     <tr>
-                      <th>#</th>
+                      <th>ID</th>
                       <th>MSV</th>
                       <th>Họ tên</th>
                       <th>Mã đề tài</th>
                       <th>Tên đề tài</th>
                       <th>Nhóm</th>
-                      <th>BC</th>
+                      <th>Đợt báo cáo</th>
                       <th>Lịch</th>
                       <th>Vai trò</th>
                       <th>BC</th>
