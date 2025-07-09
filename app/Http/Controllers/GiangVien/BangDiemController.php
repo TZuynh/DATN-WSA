@@ -188,16 +188,16 @@ class BangDiemController extends Controller
             return redirect()->route('giangvien.bang-diem.index')->with('error', 'Bạn chưa được phân công vào hội đồng chấm đề tài này.');
         }
 
-        // Kiểm tra GVHD và GVPB đã đồng ý chưa
-        $hoiDong = $phanCongVaiTro->hoiDong;
-        $phanCongVaiTros = $hoiDong->phanCongVaiTros ?? collect();
+        // // Kiểm tra GVHD và GVPB đã đồng ý chưa
+        // $hoiDong = $phanCongVaiTro->hoiDong;
+        // $phanCongVaiTros = $hoiDong->phanCongVaiTros ?? collect();
 
-        $gvhdDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')->where('trang_thai', 'đồng ý')->count() > 0;
-        $gvpbDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Phản Biện')->where('trang_thai', 'đồng ý')->count() > 0;
+        // $gvhdDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')->where('trang_thai', 'đồng ý')->count() > 0;
+        // $gvpbDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Phản Biện')->where('trang_thai', 'đồng ý')->count() > 0;
 
-        if (!($gvhdDongY && $gvpbDongY)) {
-            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ được chấm khi GVHD và GVPB đã đồng ý.');
-        }
+        // if (!($gvhdDongY && $gvpbDongY)) {
+        //     return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ được chấm khi GVHD và GVPB đã đồng ý.');
+        // }
 
         $bangDiem = new BangDiem();
         $bangDiem->sinh_vien_id = $sinhVienId;
