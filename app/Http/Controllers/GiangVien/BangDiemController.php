@@ -4,6 +4,7 @@ namespace App\Http\Controllers\GiangVien;
 
 use App\Http\Controllers\Controller;
 use App\Models\BangDiem;
+use App\Models\PhanCongVaiTro;
 use App\Models\SinhVien;
 use App\Models\DotBaoCao;
 use App\Models\PhanCongCham;
@@ -21,68 +22,77 @@ class BangDiemController extends Controller
      */
     public function index()
     {
-        $giangVienId = (int)Auth::id();
+        $giangVienId = Auth::id();
 
-        // Lấy các phân công chấm có vai trò của giảng viên hiện tại trong hội đồng và có lịch chấm (có đợt báo cáo)
-        $phanCongChams = PhanCongCham::with(['deTai.nhom.sinhViens', 'deTai.lichCham', 'hoiDong.phanCongVaiTros'])
-            ->whereNotNull('hoi_dong_id')
-            ->whereHas('hoiDong.phanCongVaiTros', function ($query) use ($giangVienId) {
-                $query->where('tai_khoan_id', $giangVienId);
-            })
-            ->whereHas('deTai.lichCham') // Chỉ lấy đề tài đã có lịch chấm
-            ->get();
+        // 1. Lấy tất cả phân công (hội đồng + riêng đề tài)
+        $phanCongVaiTros = PhanCongVaiTro::with([
+            // đề tài của hội đồng
+            'hoiDong.chiTietBaoCaos.deTai.nhom.sinhViens',
+            'hoiDong.chiTietBaoCaos.deTai.lichCham',
+            // đề tài phân công riêng
+            'deTai.nhom.sinhViens',
+            'deTai.lichCham',
+            'vaiTro',
+            'taiKhoan',
+        ])
+        ->where('tai_khoan_id', Auth::id())
+        ->get();
 
-        // Lọc phân công hợp lệ
-        $phanCongChamsFiltered = $phanCongChams->filter(function ($phanCong) {
-            return $phanCong->deTai
-                && $phanCong->deTai->nhom
-                && $phanCong->deTai->nhom->sinhViens->count() > 0
-                && $phanCong->deTai->lichCham
-                && $phanCong->deTai->lichCham->dot_bao_cao_id;
-        });
 
-        $coDeTaiNhungKhongCoLichCham = $phanCongChams->contains(function ($phanCong) {
-            return $phanCong->deTai && !$phanCong->deTai->lichCham;
-        });
+        // 2. Lọc phân công riêng theo đề tài (de_tai_id != null)
+        $phanCongTheoDeTai = $phanCongVaiTros->filter(fn($pc) => ! is_null($pc->de_tai_id));
 
-        // Tạo collection phẳng các sinh viên cần chấm điểm
-        $dsSinhVien = collect();
-        foreach ($phanCongChamsFiltered as $phanCong) {
-            $phanCongVaiTro = $phanCong->hoiDong->phanCongVaiTros->firstWhere('tai_khoan_id', $giangVienId);
-            if ($phanCongVaiTro) {
-                // Ưu tiên loai_giang_vien nếu có, nếu không thì lấy vai_tro
-                if ($phanCongVaiTro->loai_giang_vien) {
-                    $vai_tro_cham = $phanCongVaiTro->loai_giang_vien;
-                } else {
-                    $vai_tro_cham = $phanCongVaiTro->vaiTro->ten ?? null;
+        // 3. Gom đề tài được chấm
+        $deTaisDuocCham = collect();
+        foreach ($phanCongVaiTros as $phanCong) {
+            if ($phanCong->de_tai_id) {
+                // riêng 1 đề tài
+                $deTai = $phanCong->deTai;
+                if ($deTai && $deTai->lichCham) {
+                    $deTaisDuocCham->push(compact('phanCong', 'deTai'));
                 }
             } else {
-                $vai_tro_cham = null;
-            }
-            if ($phanCong->deTai && $phanCong->deTai->nhom && $phanCong->deTai->nhom->sinhViens) {
-                foreach ($phanCong->deTai->nhom->sinhViens as $sinhVien) {
-                    $dsSinhVien->push([
-                        'phan_cong' => $phanCong,
-                        'sinh_vien' => $sinhVien,
-                        'nhom' => $phanCong->deTai->nhom,
-                        'de_tai' => $phanCong->deTai,
-                        'vai_tro_cham' => $vai_tro_cham,
-                    ]);
+                // toàn bộ đề tài trong hội đồng
+                foreach ($phanCong->hoiDong->chiTietBaoCaos as $chiTiet) {
+                    $deTai = $chiTiet->deTai;
+                    if ($deTai && $deTai->lichCham) {
+                        $deTaisDuocCham->push(compact('phanCong', 'deTai'));
+                    }
                 }
             }
         }
 
-        // Sắp xếp theo tên nhóm, sau đó theo tên sinh viên
-        $dsSinhVien = $dsSinhVien->sortBy([
-            ['nhom.ten', 'asc'],
-            ['sinh_vien.ten', 'asc'],
-        ])->values();
+        // 4. Tách xuống danh sách sinh viên
+        $dsSinhVien = collect();
+        foreach ($deTaisDuocCham as $item) {
+            $phanCong = $item['phanCong'];
+            $deTai    = $item['deTai'];
+            foreach ($deTai->nhom->sinhViens as $sinhVien) {
+                $dsSinhVien->push([
+                    'phan_cong_vai_tro' => $phanCong,
+                    'sinh_vien'         => $sinhVien,
+                    'nhom'              => $deTai->nhom,
+                    'de_tai'            => $deTai,
+                    'vai_tro_cham'      => $phanCong->vaiTro->ten ?? $phanCong->loai_giang_vien,
+                ]);
+            }
+        }
 
+        // 5. Sắp xếp
+        $dsSinhVien = $dsSinhVien
+            ->sortBy([['nhom.ten','asc'], ['sinh_vien.ten','asc']])
+            ->values();
+
+        // 6. Lấy bảng điểm hiện có
         $bangDiems = BangDiem::where('giang_vien_id', $giangVienId)
             ->with(['sinhVien', 'dotBaoCao'])
-            ->orderBy('created_at', 'desc')
+            ->orderBy('created_at','desc')
             ->get();
 
+        // 7. Tính xem có đề tài nhưng chưa có lịch chấm
+        $coDeTaiNhungKhongCoLichCham = $phanCongTheoDeTai->contains(fn($pc) => ! $pc->deTai->lichCham);
+
+        // 8. (Tuỳ bạn) Tính các điểm trung bình chung
         $bangDiems = $bangDiems->map(function($bangDiem) use ($giangVienId) {
             $bangDiem->vai_tro_cham = 'Không xác định';
 
@@ -139,15 +149,18 @@ class BangDiemController extends Controller
         $tongDiemTrungBinhChung = $dsTongDiemTB->count() > 0 ? round($dsTongDiemTB->avg(), 2) : null;
         $diemTongKetChung = $dsDiemTongKet->count() > 0 ? round($dsDiemTongKet->avg(), 2) : null;
 
-        return view('giangvien.bang-diem.index', compact(
-            'dsSinhVien',
-            'bangDiems',
-            'coDeTaiNhungKhongCoLichCham',
-            'diemTrungBinhBaoCaoChung',
-            'tongDiemTrungBinhChung',
-            'diemTongKetChung'
-        ));
+        // 9. Trả về view, chắc chắn include đủ biến
+        return view('giangvien.bang-diem.index', [
+            'dsSinhVien'                 => $dsSinhVien,
+            'bangDiems'                  => $bangDiems,
+            'phanCongTheoDeTai'          => $phanCongTheoDeTai,
+            'coDeTaiNhungKhongCoLichCham'=> $coDeTaiNhungKhongCoLichCham,
+            'diemTrungBinhBaoCaoChung' => $diemTrungBinhBaoCaoChung,
+            'tongDiemTrungBinhChung'   => $tongDiemTrungBinhChung,
+            'diemTongKetChung'         => $diemTongKetChung,
+        ]);
     }
+
 
     /**
      * Hiển thị form chấm điểm
@@ -160,22 +173,30 @@ class BangDiemController extends Controller
             return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ có thể chấm điểm khi đề tài đã có lịch chấm.');
         }
         $deTai = $chiTietNhom->nhom->deTai;
-        $phanCongCham = $deTai->phanCongCham;
-        if (!$phanCongCham || !$phanCongCham->hoiDong) {
-            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chưa phân công hội đồng.');
+
+        // Kiểm tra giảng viên có được phân công vào hội đồng chứa đề tài này không
+        $giangVienId = Auth::id();
+        $phanCongVaiTro = \App\Models\PhanCongVaiTro::with(['hoiDong.chiTietBaoCaos.deTai'])
+            ->where('tai_khoan_id', $giangVienId)
+            ->whereNull('de_tai_id')
+            ->whereHas('hoiDong.chiTietBaoCaos.deTai', function($query) use ($deTai) {
+                $query->where('de_tais.id', $deTai->id);
+            })
+            ->first();
+
+        if (!$phanCongVaiTro) {
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Bạn chưa được phân công vào hội đồng chấm đề tài này.');
         }
-        $phanCongVaiTros = $phanCongCham->hoiDong->phanCongVaiTros ?? collect();
+
+        // Kiểm tra GVHD và GVPB đã đồng ý chưa
+        $hoiDong = $phanCongVaiTro->hoiDong;
+        $phanCongVaiTros = $hoiDong->phanCongVaiTros ?? collect();
 
         $gvhdDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')->where('trang_thai', 'đồng ý')->count() > 0;
         $gvpbDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Phản Biện')->where('trang_thai', 'đồng ý')->count() > 0;
 
         if (!($gvhdDongY && $gvpbDongY)) {
             return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ được chấm khi GVHD và GVPB đã đồng ý.');
-        }
-
-        $giangVienId = Auth::id();
-        if (!$this->isGiangVienDuocPhanCongCham($deTai, $giangVienId)) {
-            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Bạn chưa được phân công chấm đề tài này.');
         }
 
         $bangDiem = new BangDiem();
@@ -212,7 +233,7 @@ class BangDiemController extends Controller
         $tenDeTai = 'N/A';
         if ($dotBaoCaoId) {
             $dotBaoCao = DotBaoCao::with(['lichChams.hoiDong', 'hocKy'])->findOrFail($dotBaoCaoId);
-            
+
             // Lấy tên nhóm và tên đề tài
             $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $sinhVienId)->first();
             if ($chiTietNhom && $chiTietNhom->nhom) {
@@ -224,23 +245,7 @@ class BangDiemController extends Controller
         }
 
         // Lấy vai trò chấm điểm
-        $giangVienId = Auth::id();
-        $vaiTroCham = null;
-        $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $sinhVienId)->first();
-        if ($chiTietNhom && $chiTietNhom->nhom) {
-            $nhom = $chiTietNhom->nhom;
-            $deTai = $nhom->deTai;
-            if (!$deTai) {
-                $deTai = \App\Models\DeTai::where('nhom_id', $nhom->id)->first();
-            }
-            if ($deTai && $deTai->phanCongCham) {
-                $phanCongCham = $deTai->phanCongCham;
-                if ($phanCongCham->hoiDong && $phanCongCham->hoiDong->phanCongVaiTros) {
-                    $phanCongVaiTro = $phanCongCham->hoiDong->phanCongVaiTros->firstWhere('tai_khoan_id', $giangVienId);
-                    $vaiTroCham = $phanCongVaiTro ? $phanCongVaiTro->loai_giang_vien : null;
-                }
-            }
-        }
+        $vaiTroCham = $phanCongVaiTro->vaiTro->ten ?? $phanCongVaiTro->loai_giang_vien;
 
         return view('giangvien.bang-diem.create', compact(
             'bangDiem',
@@ -265,13 +270,30 @@ class BangDiemController extends Controller
         if (!$deTai && $nhom) {
             $deTai = \App\Models\DeTai::where('nhom_id', $nhom->id)->first();
         }
-        if (!$deTai || !$this->checkGVHDAndGVPBDongY($deTai)) {
-            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ được chấm khi GVHD và GVPB đã đồng ý.');
+
+        // Kiểm tra giảng viên có được phân công vào hội đồng chứa đề tài này không
+        $giangVienId = Auth::id();
+        $phanCongVaiTro = \App\Models\PhanCongVaiTro::with(['hoiDong.chiTietBaoCaos.deTai'])
+            ->where('tai_khoan_id', $giangVienId)
+            ->whereNull('de_tai_id')
+            ->whereHas('hoiDong.chiTietBaoCaos.deTai', function($query) use ($deTai) {
+                $query->where('de_tais.id', $deTai->id);
+            })
+            ->first();
+
+        if (!$phanCongVaiTro) {
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Bạn chưa được phân công vào hội đồng chấm đề tài này.');
         }
 
-        $giangVienId = Auth::id();
-        if (!$this->isGiangVienDuocPhanCongCham($deTai, $giangVienId)) {
-            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Bạn chưa được phân công chấm đề tài này.');
+        // Kiểm tra GVHD và GVPB đã đồng ý chưa
+        $hoiDong = $phanCongVaiTro->hoiDong;
+        $phanCongVaiTros = $hoiDong->phanCongVaiTros ?? collect();
+
+        $gvhdDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')->where('trang_thai', 'đồng ý')->count() > 0;
+        $gvpbDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Phản Biện')->where('trang_thai', 'đồng ý')->count() > 0;
+
+        if (!($gvhdDongY && $gvpbDongY)) {
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ được chấm khi GVHD và GVPB đã đồng ý.');
         }
 
         $rules = [
@@ -343,27 +365,10 @@ class BangDiemController extends Controller
                 $data['diem_cong'] = $request->diem_cong ?? 0;
 
                 // Xác định vai trò chấm điểm
-                $giangVienId = Auth::id();
-                $vaiTroCham = null;
-                $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $request->sinh_vien_id)->first();
-                if ($chiTietNhom && $chiTietNhom->nhom) {
-                    $nhom = $chiTietNhom->nhom;
-                    $deTai = $nhom->deTai;
-                    if (!$deTai) {
-                        $deTai = \App\Models\DeTai::where('nhom_id', $nhom->id)->first();
-                    }
-                    if ($deTai && $deTai->phanCongCham) {
-                        $phanCongCham = $deTai->phanCongCham;
-                        if ($phanCongCham->hoiDong && $phanCongCham->hoiDong->phanCongVaiTros) {
-                            $phanCongVaiTro = $phanCongCham->hoiDong->phanCongVaiTros->firstWhere('tai_khoan_id', $giangVienId);
-                            $vaiTroCham = $phanCongVaiTro ? $phanCongVaiTro->loai_giang_vien : null;
-                        }
-                    }
-                }
+                $vaiTroCham = $phanCongVaiTro->vaiTro->ten ?? $phanCongVaiTro->loai_giang_vien;
+
                 // Lưu điểm báo cáo vào đúng cột
-                if ($vaiTroCham === 'Giảng Viên Hướng Dẫn') {
-                    $data['diem_bao_cao'] = $request->diem_bao_cao;
-                } elseif ($vaiTroCham === 'Giảng Viên Phản Biện') {
+                if (in_array($vaiTroCham, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện'])) {
                     $data['diem_bao_cao'] = $request->diem_bao_cao;
                 }
             } else {
@@ -449,40 +454,42 @@ class BangDiemController extends Controller
             return redirect()->route('giangvien.bang-diem.index')
                 ->with('error', 'Bạn không có quyền chỉnh sửa điểm này.');
         }
+
         // Kiểm tra đề tài có lịch chấm không
         $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $bangDiem->sinh_vien_id)->first();
         if (!$chiTietNhom || !$chiTietNhom->nhom || !$chiTietNhom->nhom->deTai) {
             return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ có thể sửa điểm khi đề tài đã có lịch chấm.');
         }
         $deTai = $chiTietNhom->nhom->deTai;
-        if (!$deTai || !$this->checkGVHDAndGVPBDongY($deTai)) {
-            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ được chấm khi GVHD và GVPB đã đồng ý.');
+
+        // Kiểm tra giảng viên có được phân công vào hội đồng chứa đề tài này không
+        $giangVienId = Auth::id();
+        $phanCongVaiTro = \App\Models\PhanCongVaiTro::with(['hoiDong.chiTietBaoCaos.deTai'])
+            ->where('tai_khoan_id', $giangVienId)
+            ->whereNull('de_tai_id')
+            ->whereHas('hoiDong.chiTietBaoCaos.deTai', function($query) use ($deTai) {
+                $query->where('de_tais.id', $deTai->id);
+            })
+            ->first();
+
+        if (!$phanCongVaiTro) {
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Bạn chưa được phân công vào hội đồng chấm đề tài này.');
         }
 
-        $giangVienId = Auth::id();
-        if (!$this->isGiangVienDuocPhanCongCham($deTai, $giangVienId)) {
-            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Bạn chưa được phân công chấm đề tài này.');
+        // Kiểm tra GVHD và GVPB đã đồng ý chưa
+        $hoiDong = $phanCongVaiTro->hoiDong;
+        $phanCongVaiTros = $hoiDong->phanCongVaiTros ?? collect();
+
+        $gvhdDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')->where('trang_thai', 'đồng ý')->count() > 0;
+        $gvpbDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Phản Biện')->where('trang_thai', 'đồng ý')->count() > 0;
+
+        if (!($gvhdDongY && $gvpbDongY)) {
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ được chấm khi GVHD và GVPB đã đồng ý.');
         }
 
         // Xác định có đợt báo cáo hay không
         $hasDotBaoCao = $bangDiem->dot_bao_cao_id !== null;
-        $vaiTroCham = null;
-        $giangVienId = Auth::id();
-        $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $bangDiem->sinh_vien_id)->first();
-        if ($chiTietNhom && $chiTietNhom->nhom) {
-            $nhom = $chiTietNhom->nhom;
-            $deTai = $nhom->deTai;
-            if (!$deTai) {
-                $deTai = \App\Models\DeTai::where('nhom_id', $nhom->id)->first();
-            }
-            if ($deTai && $deTai->phanCongCham) {
-                $phanCongCham = $deTai->phanCongCham;
-                if ($phanCongCham->hoiDong && $phanCongCham->hoiDong->phanCongVaiTros) {
-                    $phanCongVaiTro = $phanCongCham->hoiDong->phanCongVaiTros->firstWhere('tai_khoan_id', $giangVienId);
-                    $vaiTroCham = $phanCongVaiTro ? $phanCongVaiTro->loai_giang_vien : null;
-                }
-            }
-        }
+        $vaiTroCham = $phanCongVaiTro->vaiTro->ten ?? $phanCongVaiTro->loai_giang_vien;
         $canEditBaoCaoAndThuyetTrinh = in_array($vaiTroCham, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện']);
 
         return view('giangvien.bang-diem.edit', compact(
@@ -505,19 +512,37 @@ class BangDiemController extends Controller
             return redirect()->route('giangvien.bang-diem.index')
                 ->with('error', 'Bạn không có quyền chỉnh sửa điểm này.');
         }
+
         // Kiểm tra đề tài có lịch chấm không
         $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $bangDiem->sinh_vien_id)->first();
         if (!$chiTietNhom || !$chiTietNhom->nhom || !$chiTietNhom->nhom->deTai) {
             return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ có thể cập nhật điểm khi đề tài đã có lịch chấm.');
         }
         $deTai = $chiTietNhom->nhom->deTai;
-        if (!$deTai || !$this->checkGVHDAndGVPBDongY($deTai)) {
-            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ được chấm khi GVHD và GVPB đã đồng ý.');
+
+        // Kiểm tra giảng viên có được phân công vào hội đồng chứa đề tài này không
+        $giangVienId = Auth::id();
+        $phanCongVaiTro = \App\Models\PhanCongVaiTro::with(['hoiDong.chiTietBaoCaos.deTai'])
+            ->where('tai_khoan_id', $giangVienId)
+            ->whereNull('de_tai_id')
+            ->whereHas('hoiDong.chiTietBaoCaos.deTai', function($query) use ($deTai) {
+                $query->where('de_tais.id', $deTai->id);
+            })
+            ->first();
+
+        if (!$phanCongVaiTro) {
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Bạn chưa được phân công vào hội đồng chấm đề tài này.');
         }
 
-        $giangVienId = Auth::id();
-        if (!$this->isGiangVienDuocPhanCongCham($deTai, $giangVienId)) {
-            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Bạn chưa được phân công chấm đề tài này.');
+        // Kiểm tra GVHD và GVPB đã đồng ý chưa
+        $hoiDong = $phanCongVaiTro->hoiDong;
+        $phanCongVaiTros = $hoiDong->phanCongVaiTros ?? collect();
+
+        $gvhdDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')->where('trang_thai', 'đồng ý')->count() > 0;
+        $gvpbDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Phản Biện')->where('trang_thai', 'đồng ý')->count() > 0;
+
+        if (!($gvhdDongY && $gvpbDongY)) {
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ được chấm khi GVHD và GVPB đã đồng ý.');
         }
 
         $rules = [];
@@ -563,23 +588,7 @@ class BangDiemController extends Controller
             // Nếu có đợt báo cáo, chỉ cho phép GVHD và GV Phản Biện sửa điểm báo cáo/thuyết trình
             if ($hasDotBaoCao) {
                 // Lấy vai trò chấm điểm
-                $giangVienId = Auth::id();
-                $vaiTroCham = null;
-                $chiTietNhom = \App\Models\ChiTietNhom::where('sinh_vien_id', $bangDiem->sinh_vien_id)->first();
-                if ($chiTietNhom && $chiTietNhom->nhom) {
-                    $nhom = $chiTietNhom->nhom;
-                    $deTai = $nhom->deTai;
-                    if (!$deTai) {
-                        $deTai = \App\Models\DeTai::where('nhom_id', $nhom->id)->first();
-                    }
-                    if ($deTai && $deTai->phanCongCham) {
-                        $phanCongCham = $deTai->phanCongCham;
-                        if ($phanCongCham->hoiDong && $phanCongCham->hoiDong->phanCongVaiTros) {
-                            $phanCongVaiTro = $phanCongCham->hoiDong->phanCongVaiTros->firstWhere('tai_khoan_id', $giangVienId);
-                            $vaiTroCham = $phanCongVaiTro ? $phanCongVaiTro->loai_giang_vien : null;
-                        }
-                    }
-                }
+                $vaiTroCham = $phanCongVaiTro->vaiTro->ten ?? $phanCongVaiTro->loai_giang_vien;
                 if (in_array($vaiTroCham, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện'])) {
                     $data['diem_bao_cao'] = $request->diem_bao_cao;
                 } else {
@@ -784,26 +793,5 @@ class BangDiemController extends Controller
         ];
 
         return response()->json($debugData);
-    }
-
-    private function checkGVHDAndGVPBDongY($deTai)
-    {
-        $phanCongCham = $deTai->phanCongCham;
-        if (!$phanCongCham || !$phanCongCham->hoiDong) return false;
-        $phanCongVaiTros = $phanCongCham->hoiDong->phanCongVaiTros ?? collect();
-
-        $gvhdDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')->where('trang_thai', 'đồng ý')->count() > 0;
-        $gvpbDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Phản Biện')->where('trang_thai', 'đồng ý')->count() > 0;
-
-        return $gvhdDongY && $gvpbDongY;
-    }
-
-    private function isGiangVienDuocPhanCongCham($deTai, $giangVienId)
-    {
-        return \App\Models\PhanCongCham::where('de_tai_id', $deTai->id)
-            ->whereHas('hoiDong.phanCongVaiTros', function($q) use ($giangVienId) {
-                $q->where('tai_khoan_id', $giangVienId);
-            })
-            ->exists();
     }
 }

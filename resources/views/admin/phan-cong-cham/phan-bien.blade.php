@@ -37,9 +37,7 @@
                 <label for="giang_vien_id">Chọn giảng viên phản biện:</label>
                 <select id="giang_vien_id" name="giang_vien_id" class="form-control" required>
                     <option value="">-- Chọn giảng viên --</option>
-                    @foreach($giangViens as $gv)
-                        <option value="{{ $gv->id }}">{{ $gv->ten }}</option>
-                    @endforeach
+                    {{-- Option sẽ được JS cập nhật --}}
                 </select>
                 <small class="form-text text-muted">Lưu ý: Giảng viên hướng dẫn không thể phản biện đề tài của chính mình</small>
             </div>
@@ -62,34 +60,17 @@
 document.getElementById('de_tai_id')?.addEventListener('change', function() {
     var deTaiId = this.value;
     var giangVienSelect = document.getElementById('giang_vien_id');
-    var thongTinDeTai = document.getElementById('thongTinDeTai');
-    var chiTietDeTai = document.getElementById('chiTietDeTai');
-
     if (deTaiId) {
-        // Lấy danh sách giảng viên có thể phản biện
         fetch('/admin/phan-cong-cham/giang-vien-hoi-dong/' + deTaiId)
             .then(response => response.json())
             .then(data => {
-                // Cập nhật select giảng viên
-                giangVienSelect.innerHTML = '<option value="">-- Chọn giảng viên --</option>';
+                giangVienSelect.innerHTML = '<option value=\"\">-- Chọn giảng viên --</option>';
                 data.forEach(gv => {
-                    giangVienSelect.innerHTML += `<option value="${gv.id}">${gv.ten}</option>`;
+                    giangVienSelect.innerHTML += `<option value=\"${gv.id}\">${gv.ten} (${gv.vai_tro})</option>`;
                 });
-
-                // Hiển thị thông tin đề tài
-                const selectedDeTai = Array.from(this.options).find(option => option.value === deTaiId);
-                if (selectedDeTai) {
-                    thongTinDeTai.classList.remove('d-none');
-                    chiTietDeTai.innerHTML = `<p><strong>Đề tài:</strong> ${selectedDeTai.text}</p>`;
-                }
-            })
-            .catch(error => {
-                console.error('Lỗi:', error);
-                giangVienSelect.innerHTML = '<option value="">-- Lỗi khi tải danh sách giảng viên --</option>';
             });
     } else {
-        giangVienSelect.innerHTML = '<option value="">-- Chọn giảng viên --</option>';
-        thongTinDeTai.classList.add('d-none');
+        giangVienSelect.innerHTML = '<option value=\"\">-- Chọn giảng viên --</option>';
     }
 });
 </script>

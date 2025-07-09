@@ -284,6 +284,7 @@ class PhanCongChamController extends Controller
                 ->filter(function($pc) use ($giangVienHuongDanId) {
                     return $pc->tai_khoan_id != $giangVienHuongDanId;
                 })
+                ->unique('tai_khoan_id') // Loại trùng theo tài khoản
                 ->map(function($pc) {
                     return [
                         'id' => $pc->tai_khoan_id,

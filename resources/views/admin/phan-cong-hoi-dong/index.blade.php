@@ -135,13 +135,15 @@
                         @endif
                     </div>
                     <div class="modal-footer">
-                        <button type="button"
-                                class="btn btn-success"
-                                data-bs-dismiss="modal"
-                                data-bs-toggle="modal"
-                                data-bs-target="#modalAssignCham{{ $hoiDongId }}">
-                            Phân công chấm
-                        </button>
+                        @if($hoiDongObj->chiTietBaoCaos->isNotEmpty())
+                            <button type="button"
+                                    class="btn btn-success"
+                                    data-bs-dismiss="modal"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalAssignCham{{ $hoiDongId }}">
+                                Phân công chấm
+                            </button>
+                        @endif
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                     </div>
                 </div>
@@ -176,8 +178,19 @@
                                 <label class="form-label">Giảng viên</label>
                                 <select name="tai_khoan_id" class="form-select" required>
                                     <option value="">-- Chọn giảng viên --</option>
-                                    @foreach($hoiDongObj->phanCongVaiTros->where('de_tai_id', null)->where('vaiTro.ten','Thành viên')->unique('tai_khoan_id') as $pc)
-                                        <option value="{{ $pc->tai_khoan_id }}">{{ $pc->taiKhoan->ten }}</option>
+                                    @foreach($hoiDongObj->phanCongVaiTros->where('de_tai_id', null)->unique('tai_khoan_id') as $pc)
+                                        @php
+                                            $vaiTro = $pc->vaiTro->ten;
+                                            $badge = match($vaiTro) {
+                                                'Trưởng tiểu ban' => 'badge bg-danger',
+                                                'Thư ký'           => 'badge bg-dark',
+                                                'Thành viên'       => 'badge bg-primary',
+                                                default            => '',
+                                            };
+                                        @endphp
+                                        <option value="{{ $pc->tai_khoan_id }}">
+                                            {{ $pc->taiKhoan->ten }} ({{ $vaiTro }})
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>

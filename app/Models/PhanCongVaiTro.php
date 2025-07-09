@@ -19,9 +19,14 @@ class PhanCongVaiTro extends Model
         'de_tai_id'
     ];
 
+    public function deTai()
+    {
+        return $this->belongsTo(DeTai::class, 'de_tai_id');
+    }
+    
     public function hoiDong()
     {
-        return $this->belongsTo(HoiDong::class);
+        return $this->belongsTo(HoiDong::class, 'hoi_dong_id');
     }
 
     public function vaiTro()
