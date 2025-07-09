@@ -20,7 +20,7 @@ class BaoCaoQuaTrinhController extends Controller
 
     public function create()
     {
-        $nhoms = Nhom::all();
+        $nhoms = Nhom::with('sinhViens')->whereNotNull('de_tai_id')->get();
         $dotBaoCaos = DotBaoCao::all();
         return view('giangvien.bao-cao-qua-trinh.create', compact('nhoms', 'dotBaoCaos'));
     }

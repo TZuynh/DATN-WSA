@@ -261,39 +261,31 @@ class PhanCongChamController extends Controller
     // AJAX: Lấy danh sách giảng viên có thể phản biện cho đề tài
     public function getGiangVienHoiDong($de_tai_id)
     {
-        $deTai = DeTai::with('giangVien', 'chiTietBaoCao.hoiDong.phanCongVaiTros.taiKhoan')->findOrFail($de_tai_id);
-        $giangVienHuongDanId = $deTai->giang_vien_id;
-        $hoiDong = null;
-        // Tìm hội đồng mà giảng viên hướng dẫn là thành viên
-        if ($deTai->chiTietBaoCao && $deTai->chiTietBaoCao->hoiDong) {
-            $hoiDong = $deTai->chiTietBaoCao->hoiDong;
-            $isGVHDInHoiDong = $hoiDong->phanCongVaiTros->contains(function($pc) use ($giangVienHuongDanId) {
-                return $pc->tai_khoan_id == $giangVienHuongDanId;
-            });
-            if (!$isGVHDInHoiDong) {
-                // Nếu hội đồng hiện tại không có GVHD, tìm hội đồng khác trong cùng đợt mà GVHD là thành viên
-                $hoiDong = \App\Models\HoiDong::where('dot_bao_cao_id', $deTai->dot_bao_cao_id)
-                    ->whereHas('phanCongVaiTros', function($q) use ($giangVienHuongDanId) {
-                        $q->where('tai_khoan_id', $giangVienHuongDanId);
-                    })->with('phanCongVaiTros.taiKhoan', 'phanCongVaiTros.vaiTro')->first();
-            }
+        $chiTiet = \App\Models\ChiTietDeTaiBaoCao::where('de_tai_id', $de_tai_id)
+            ->with('hoiDong.phanCongVaiTros.taiKhoan', 'hoiDong.phanCongVaiTros.vaiTro')
+            ->first();
+
+        if (!$chiTiet || !$chiTiet->hoiDong) {
+            return response()->json([]);
         }
-        $giangViens = collect();
-        if ($hoiDong) {
-            $giangViens = $hoiDong->phanCongVaiTros
-                ->filter(function($pc) use ($giangVienHuongDanId) {
-                    return $pc->tai_khoan_id != $giangVienHuongDanId;
-                })
-                ->unique('tai_khoan_id') // Loại trùng theo tài khoản
-                ->map(function($pc) {
-                    return [
-                        'id' => $pc->tai_khoan_id,
-                        'ten' => optional($pc->taiKhoan)->ten,
-                        'vai_tro' => optional($pc->vaiTro)->ten,
-                    ];
-                })
-                ->values();
-        }
+
+        $deTai = \App\Models\DeTai::find($de_tai_id);
+        $giangVienHuongDanId = $deTai ? $deTai->giang_vien_id : null;
+
+        $giangViens = $chiTiet->hoiDong->phanCongVaiTros
+            ->filter(function($pc) use ($giangVienHuongDanId) {
+                return $pc->tai_khoan_id != $giangVienHuongDanId;
+            })
+            ->unique('tai_khoan_id')
+            ->map(function($pc) {
+                return [
+                    'id' => $pc->tai_khoan_id,
+                    'ten' => optional($pc->taiKhoan)->ten,
+                    'vai_tro' => optional($pc->vaiTro)->ten,
+                ];
+            })
+            ->values();
+
         return response()->json($giangViens);
     }
 

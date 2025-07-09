@@ -23,6 +23,13 @@
                 @foreach($nhoms as $nhom)
                     <option value="{{ $nhom->id }}" {{ old('nhom_id') == $nhom->id ? 'selected' : '' }}>
                         {{ $nhom->ten ?? $nhom->id }}
+                        @if($nhom->sinhViens && count($nhom->sinhViens))
+                            (
+                            @foreach($nhom->sinhViens as $sv)
+                                {{ $sv->mssv }} - {{ $sv->ten }}@if(!$loop->last), @endif
+                            @endforeach
+                            )
+                        @endif
                     </option>
                 @endforeach
             </select>
@@ -55,7 +62,7 @@
         </div>        
         <div class="mb-3">
             <label for="noi_dung_bao_cao" class="form-label">Nội dung báo cáo <span class="text-danger">*</span></label>
-            <textarea name="noi_dung_bao_cao" id="noi_dung_bao_cao" class="form-control" required>{{ old('noi_dung_bao_cao') }}</textarea>
+            <textarea name="noi_dung_bao_cao" id="noi_dung_bao_cao" class="form-control">{{ old('noi_dung_bao_cao') }}</textarea>
         </div>
         <button type="submit" class="btn btn-success">Lưu</button>
         <a href="{{ route('giangvien.bao-cao-qua-trinh.index') }}" class="btn btn-secondary">Quay lại</a>
@@ -66,6 +73,8 @@
 @push('scripts')
 <!-- CKEditor -->
 <script src="https://cdn.ckeditor.com/ckeditor5/40.1.0/classic/ckeditor.js"></script>
+<!-- Flatpickr Vietnamese locale -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/vn.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         ClassicEditor.create(document.querySelector('#noi_dung_bao_cao'), {
@@ -82,7 +91,7 @@
 
         // Flatpickr cho ngày giờ
         flatpickr('#ngay_bao_cao', {
-            locale: 'vi',
+            locale: 'vn',
             enableTime: false,
             dateFormat: 'Y-m-d',
             minDate: 'today'

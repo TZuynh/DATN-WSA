@@ -68,15 +68,11 @@
                                         @csrf @method('DELETE')
                                         <button class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
                                     </form>
-                                    <button class="btn btn-sm btn-warning"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#modalChangeGV{{ $phanCong->id }}">
+                                     <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalChangeGV{{ $phanCong->id }}">
                                         <i class="fas fa-exchange-alt"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-info"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#modalSwapGV{{ $phanCong->id }}">
-                                        <i class="fas fa-random"></i>
+                                    <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#modalSwapGV{{ $phanCong->id }}">
+                                    <i class="fas fa-random"></i>
                                     </button>
                                 </td>
                             </tr>
@@ -207,6 +203,70 @@
                 </form>
             </div>
         </div>
+    @endforeach
+
+    @foreach ($phanCongByHoiDong as $hoiDongId => $phanCongs)
+        @foreach ($phanCongs as $phanCong)
+            <div class="modal fade" id="modalSwapGV{{ $phanCong->id }}" tabindex="-1">
+                <div class="modal-dialog">
+                    <form action="{{ route('admin.phan-cong-hoi-dong.swap-giang-vien') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="phan_cong_id_1" value="{{ $phanCong->id }}">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Hoán đổi giảng viên (vai trò: {{ $phanCong->vaiTro->ten }})</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <label>Chọn giảng viên ở hội đồng khác để hoán đổi:</label>
+                                <select name="phan_cong_id_2" class="form-select" required>
+                                    @foreach($phanCongVaiTros->where('vai_tro_id', $phanCong->vai_tro_id)->where('id', '!=', $phanCong->id) as $otherPC)
+                                        @if($otherPC->hoi_dong_id != $phanCong->hoi_dong_id)
+                                            <option value="{{ $otherPC->id }}">
+                                                {{ $otherPC->taiKhoan->ten ?? 'N/A' }} ({{ $otherPC->hoiDong->ten ?? 'N/A' }})
+                                            </option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Hoán đổi</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        @endforeach
+    @endforeach
+
+    @foreach ($phanCongByHoiDong as $hoiDongId => $phanCongs)
+        @foreach ($phanCongs as $phanCong)
+            <!-- Modal chuyển giảng viên -->
+            <div class="modal fade" id="modalChangeGV{{ $phanCong->id }}" tabindex="-1">
+                <div class="modal-dialog">
+                    <form action="{{ route('admin.phan-cong-hoi-dong.change-giang-vien', $phanCong->id) }}" method="POST">
+                        @csrf
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Chuyển giảng viên (vai trò: {{ $phanCong->vaiTro->ten }})</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <label>Chọn giảng viên mới:</label>
+                                <select name="tai_khoan_id" class="form-select" required>
+                                    @foreach($taiKhoansChuaPhanCong as $gv)
+                                        <option value="{{ $gv->id }}">{{ $gv->ten }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Chuyển</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        @endforeach
     @endforeach
 
     {{-- Bootstrap JS --}}

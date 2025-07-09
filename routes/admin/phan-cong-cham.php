@@ -14,4 +14,5 @@ Route::prefix('admin/phan-cong-cham')->middleware(['auth', 'role:admin'])->group
     Route::post('get-hoi-dong-info', [PhanCongChamController::class, 'getHoiDongInfo'])->name('admin.phan-cong-cham.getHoiDongInfo');
     Route::get('phan-bien', [PhanCongChamController::class, 'phanCongPhanBien'])->name('admin.phan-cong-cham.phan-bien');
     Route::post('phan-bien', [PhanCongChamController::class, 'storePhanBien'])->name('admin.phan-cong-cham.phan-bien.store');
+    Route::get('phan-cong-cham/giang-vien-hoi-dong/{de_tai_id}', [PhanCongChamController::class, 'getGiangVienHoiDong']);
 }); 
