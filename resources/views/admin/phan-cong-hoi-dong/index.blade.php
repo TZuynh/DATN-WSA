@@ -49,27 +49,36 @@
                     </thead>
                     <tbody>
                         @foreach ($phanCongs as $phanCong)
-                            @php
-                                $vaiTro = $phanCong->vaiTro->ten;
-                                $badge = match($vaiTro) {
-                                    'Trưởng tiểu ban' => 'badge bg-danger',
-                                    'Thư ký'           => 'badge bg-dark',
-                                    'Thành viên'       => 'badge bg-primary',
-                                    default            => '',
-                                };
-                            @endphp
-                            <tr>
-                                <td>{{ $phanCong->id }}</td>
-                                <td>{{ $phanCong->taiKhoan->ten }}</td>
-                                <td>@if($badge)<span class="{{ $badge }}">{{ $vaiTro }}</span>@endif</td>
-                                <td>{{ $phanCong->created_at->format('d-m-Y') }}</td>
-                                <td>
-                                    <form action="{{ route('admin.phan-cong-hoi-dong.destroy', $phanCong->id) }}"
-                                          method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?')">
-                                        @csrf @method('DELETE')
-                                        <button class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
-                                    </form>
-                                     <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalChangeGV{{ $phanCong->id }}">
+                        @php
+                        $vaiTro = $phanCong->vaiTro->ten;
+                        $badge = match($vaiTro) {
+                            'Trưởng tiểu ban' => 'badge bg-danger',
+                            'Thư ký'           => 'badge bg-dark',
+                            'Thành viên'       => 'badge bg-primary',
+                            default            => '',
+                        };
+                        $confirmMsg = in_array($vaiTro, ['Trưởng tiểu ban', 'Thư ký'])
+                            ? 'Bạn có chắc chắn muốn xóa vai trò quan trọng này không ?'
+                            : 'Bạn có chắc chắn muốn xóa?';
+                    @endphp
+                    <tr>
+                        <td>{{ $phanCong->id }}</td>
+                        <td>{{ $phanCong->taiKhoan->ten }}</td>
+                        <td>@if($badge)<span class="{{ $badge }}">{{ $vaiTro }}</span>@endif</td>
+                        <td>{{ $phanCong->created_at->format('d-m-Y') }}</td>
+                        <td>
+                            <button type="button"
+                                class="btn btn-sm btn-danger btn-confirm-delete"
+                                data-confirm="{{ $confirmMsg }}"
+                                data-form-id="form-delete-{{ $phanCong->id }}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                            <form id="form-delete-{{ $phanCong->id }}"
+                                action="{{ route('admin.phan-cong-hoi-dong.destroy', $phanCong->id) }}"
+                                method="POST" class="d-none">
+                                @csrf @method('DELETE')
+                            </form>
+                                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalChangeGV{{ $phanCong->id }}">
                                         <i class="fas fa-exchange-alt"></i>
                                     </button>
                                     <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#modalSwapGV{{ $phanCong->id }}">
@@ -265,6 +274,30 @@
 
     {{-- Bootstrap JS --}}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    document.querySelectorAll('.btn-confirm-delete').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const confirmMsg = btn.getAttribute('data-confirm');
+            const formId = btn.getAttribute('data-form-id');
+            Swal.fire({
+                title: 'Xác nhận xóa',
+                text: confirmMsg,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Xóa',
+                cancelButtonText: 'Hủy',
+                reverseButtons: true,
+                focusCancel: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit();
+                }
+            });
+        });
+    });
+    </script>
+
 
     {{-- Tự động chuyển modal và gỡ backdrop thừa --}}
     <script>
