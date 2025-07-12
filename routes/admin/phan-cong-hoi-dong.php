@@ -15,4 +15,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('admin/phan-cong-hoi-dong/swap-giang-vien', [PhanCongHoiDongController::class, 'swapGiangVien'])
         ->name('admin.phan-cong-hoi-dong.swap-giang-vien');
     Route::post('/admin/phan-cong-hoi-dong/add-cham', [PhanCongHoiDongController::class, 'addCham'])->name('admin.phan-cong-hoi-dong.add-cham');
+    Route::post('/admin/phan-cong-hoi-dong/replace-and-delete', [PhanCongHoiDongController::class, 'replaceAndDelete'])
+    ->name('admin.phan-cong-hoi-dong.replace-and-delete');
 });

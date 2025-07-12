@@ -49,35 +49,49 @@
                     </thead>
                     <tbody>
                         @foreach ($phanCongs as $phanCong)
+                            @php
+                            $vaiTro = $phanCong->vaiTro->ten;
+                            $badge = match($vaiTro) {
+                                'Trưởng tiểu ban' => 'badge bg-danger',
+                                'Thư ký'           => 'badge bg-dark',
+                                'Thành viên'       => 'badge bg-primary',
+                                default            => '',
+                            };
+                            $confirmMsg = in_array($vaiTro, ['Trưởng tiểu ban', 'Thư ký'])
+                                ? 'Bạn có chắc chắn muốn xóa vai trò quan trọng này không ?'
+                                : 'Bạn có chắc chắn muốn xóa?';
+                        @endphp
                         @php
-                        $vaiTro = $phanCong->vaiTro->ten;
-                        $badge = match($vaiTro) {
-                            'Trưởng tiểu ban' => 'badge bg-danger',
-                            'Thư ký'           => 'badge bg-dark',
-                            'Thành viên'       => 'badge bg-primary',
-                            default            => '',
-                        };
-                        $confirmMsg = in_array($vaiTro, ['Trưởng tiểu ban', 'Thư ký'])
-                            ? 'Bạn có chắc chắn muốn xóa vai trò quan trọng này không ?'
-                            : 'Bạn có chắc chắn muốn xóa?';
-                    @endphp
+                            $vaiTro = $phanCong->vaiTro->ten;
+                            $isQuanTrong = in_array($vaiTro, ['Trưởng tiểu ban', 'Thư ký']);
+                        @endphp
                     <tr>
                         <td>{{ $phanCong->id }}</td>
                         <td>{{ $phanCong->taiKhoan->ten }}</td>
                         <td>@if($badge)<span class="{{ $badge }}">{{ $vaiTro }}</span>@endif</td>
                         <td>{{ $phanCong->created_at->format('d-m-Y') }}</td>
                         <td>
-                            <button type="button"
-                                class="btn btn-sm btn-danger btn-confirm-delete"
-                                data-confirm="{{ $confirmMsg }}"
-                                data-form-id="form-delete-{{ $phanCong->id }}">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                            <form id="form-delete-{{ $phanCong->id }}"
-                                action="{{ route('admin.phan-cong-hoi-dong.destroy', $phanCong->id) }}"
-                                method="POST" class="d-none">
-                                @csrf @method('DELETE')
-                            </form>
+                                @if ($isQuanTrong)
+                                <button type="button"
+                                        class="btn btn-sm btn-danger btn-delete-quan-trong"
+                                        data-phan-cong-id="{{ $phanCong->id }}"
+                                        data-vai-tro="{{ $vaiTro }}"
+                                        data-hoi-dong-id="{{ $phanCong->hoi_dong_id }}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                                @else
+                                    <button type="button"
+                                            class="btn btn-sm btn-danger btn-confirm-delete"
+                                            data-confirm="Bạn có chắc chắn muốn xóa?"
+                                            data-form-id="form-delete-{{ $phanCong->id }}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                    <form id="form-delete-{{ $phanCong->id }}"
+                                        action="{{ route('admin.phan-cong-hoi-dong.destroy', $phanCong->id) }}"
+                                        method="POST" class="d-none">
+                                        @csrf @method('DELETE')
+                                    </form>
+                                @endif
                                     <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalChangeGV{{ $phanCong->id }}">
                                         <i class="fas fa-exchange-alt"></i>
                                     </button>
@@ -97,6 +111,47 @@
         @endforelse
 
         <div class="mt-3">{{ $phanCongVaiTros->links() }}</div>
+    </div>
+
+   <!-- Modal chọn người thay thế vai trò quan trọng -->
+    <div class="modal fade" id="modalThayTheQuanTrong" tabindex="-1">
+        <div class="modal-dialog">
+            <form id="form-thay-the-quan-trong"
+                method="POST"
+                action="{{ route('admin.phan-cong-hoi-dong.replace-and-delete') }}">
+                @csrf
+                <input type="hidden" name="phan_cong_id" id="phanCongIdThayThe">
+                <input type="hidden" name="vai_tro" id="vaiTroThayThe">
+                <input type="hidden" name="hoi_dong_id" id="hoiDongIdThayThe">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Thay thế vai trò <span id="vaiTroLabel"></span></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if ($errors->has('tai_khoan_id'))
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                {{ $errors->first('tai_khoan_id') }}
+                            </div>
+                        @endif
+                        <div class="mb-3">
+                            <label>Chọn giảng viên thay thế:</label>
+                            <select name="tai_khoan_id" id="selectThayTheGV" class="form-select @error('tai_khoan_id') is-invalid @enderror" required>
+                                <!-- JS sẽ render -->
+                            </select>
+                            @error('tai_khoan_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Xác nhận thay thế & Xóa</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
     {{-- Modal danh sách đề tài --}}
@@ -261,6 +316,9 @@
                                         <option value="{{ $gv->id }}">{{ $gv->ten }}</option>
                                     @endforeach
                                 </select>
+                                @error('tai_khoan_id')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
                             </div>
                             <div class="modal-footer">
                                 <button type="submit" class="btn btn-primary">Chuyển</button>
@@ -275,6 +333,23 @@
     {{-- Bootstrap JS --}}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    {{-- Debug: Hiển thị lỗi nếu có --}}
+    @if($errors->any())
+        <script>
+            console.log('Có lỗi validation:', @json($errors->all()));
+            @if($errors->has('tai_khoan_id'))
+                console.log('Lỗi tai_khoan_id:', '{{ $errors->first("tai_khoan_id") }}');
+                // Hiển thị thông báo lỗi bằng SweetAlert2
+                Swal.fire({
+                    title: 'Lỗi!',
+                    text: '{{ $errors->first("tai_khoan_id") }}',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            @endif
+        </script>
+    @endif
     <script>
     document.querySelectorAll('.btn-confirm-delete').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -296,6 +371,52 @@
             });
         });
     });
+    </script>
+
+    <script>
+        window.dsGiangVienThayThe = @json($dsGiangVienThayThe);
+    </script>
+
+    <script>
+        // Gắn biến JSON từ PHP
+        window.dsGiangVienThayThe = @json($dsGiangVienThayThe);
+
+        // Bắt sự kiện nút xóa vai trò quan trọng
+        document.querySelectorAll('.btn-delete-quan-trong').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const phanCongId = btn.getAttribute('data-phan-cong-id');
+                const vaiTro = btn.getAttribute('data-vai-tro');
+                const hoiDongId = btn.getAttribute('data-hoi-dong-id');
+
+                document.getElementById('vaiTroLabel').textContent = vaiTro;
+                document.getElementById('phanCongIdThayThe').value = phanCongId;
+                document.getElementById('vaiTroThayThe').value = vaiTro;
+                document.getElementById('hoiDongIdThayThe').value = hoiDongId;
+
+                // Đổ giảng viên thay thế vào select
+                let listGV = [];
+                try {
+                    listGV = window.dsGiangVienThayThe[hoiDongId][vaiTro] ?? [];
+                } catch { listGV = []; }
+                const select = document.getElementById('selectThayTheGV');
+                select.innerHTML = '';
+                listGV.forEach(gv => {
+                    const option = document.createElement('option');
+                    option.value = gv.id;
+                    option.text = gv.ten;
+                    select.appendChild(option);
+                });
+                if (listGV.length === 0) {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.text = 'Không có giảng viên phù hợp để thay thế';
+                    select.appendChild(option);
+                }
+
+                // Mở modal
+                new bootstrap.Modal(document.getElementById('modalThayTheQuanTrong')).show();
+            });
+        });
     </script>
 
 
@@ -328,6 +449,65 @@
         document.addEventListener('DOMContentLoaded', () => {
           document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
           new bootstrap.Modal(document.getElementById('modalDeTaiList{{ session("openModal") }}')).show();
+        });
+      @endif
+
+      // Nếu có lỗi validation, tự động mở modal thay thế vai trò
+      @if($errors->has('tai_khoan_id'))
+        document.addEventListener('DOMContentLoaded', () => {
+          let modalData = null;
+          
+          // Thử lấy từ session trước
+          @if(session('openReplaceModal'))
+            modalData = @json(session('openReplaceModal'));
+          @elseif(request()->has('phan_cong_id'))
+            // Fallback: lấy từ request nếu không có session
+            modalData = {
+              phan_cong_id: '{{ request("phan_cong_id") }}',
+              vai_tro: '{{ request("vai_tro") }}',
+              hoi_dong_id: '{{ request("hoi_dong_id") }}'
+            };
+          @endif
+          
+          if (modalData) {
+            const phanCongId = modalData.phan_cong_id;
+            const vaiTro = modalData.vai_tro;
+            const hoiDongId = modalData.hoi_dong_id;
+            
+            // Thiết lập lại form
+            document.getElementById('vaiTroLabel').textContent = vaiTro;
+            document.getElementById('phanCongIdThayThe').value = phanCongId;
+            document.getElementById('vaiTroThayThe').value = vaiTro;
+            document.getElementById('hoiDongIdThayThe').value = hoiDongId;
+
+            // Đổ lại danh sách giảng viên
+            let listGV = [];
+            try {
+              listGV = window.dsGiangVienThayThe[hoiDongId][vaiTro] ?? [];
+            } catch { listGV = []; }
+            const select = document.getElementById('selectThayTheGV');
+            select.innerHTML = '';
+            listGV.forEach(gv => {
+              const option = document.createElement('option');
+              option.value = gv.id;
+              option.text = gv.ten;
+              // Đánh dấu giá trị đã chọn trước đó
+              if (gv.id == '{{ old("tai_khoan_id") }}') {
+                option.selected = true;
+              }
+              select.appendChild(option);
+            });
+            if (listGV.length === 0) {
+              const option = document.createElement('option');
+              option.value = '';
+              option.text = 'Không có giảng viên phù hợp để thay thế';
+              select.appendChild(option);
+            }
+
+            // Mở modal
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            new bootstrap.Modal(document.getElementById('modalThayTheQuanTrong')).show();
+          }
         });
       @endif
     </script>

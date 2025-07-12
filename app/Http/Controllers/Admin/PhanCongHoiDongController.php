@@ -33,9 +33,27 @@ class PhanCongHoiDongController extends Controller
             'phanCongVaiTros.vaiTro',
         ])->get();
 
+        // Tạo mảng theo hội đồng và vai trò
+        $dsGiangVienThayThe = [];
+        foreach ($hoiDongs as $hd) {
+            foreach (['Trưởng tiểu ban', 'Thư ký'] as $vaiTro) {
+                // Lấy id vai trò
+                $vaiTroId = VaiTro::where('ten', $vaiTro)->value('id');
+                // Giảng viên trong hội đồng này, chưa giữ vai trò đó
+                $daPhanCongIds = PhanCongVaiTro::where('hoi_dong_id', $hd->id)
+                    ->where('vai_tro_id', $vaiTroId)
+                    ->pluck('tai_khoan_id')
+                    ->toArray();
+                $dsGV = TaiKhoan::where('vai_tro', 'giang_vien')
+                    ->whereNotIn('id', $daPhanCongIds)
+                    ->get(['id', 'ten']);
+                $dsGiangVienThayThe[$hd->id][$vaiTro] = $dsGV->toArray();
+            }
+        }
+
         return view('admin.phan-cong-hoi-dong.index', compact(
-            'phanCongVaiTros','taiKhoansChuaPhanCong','hoiDongs'
-        ));
+            'phanCongVaiTros','taiKhoansChuaPhanCong','hoiDongs','dsGiangVienThayThe'
+        ));        
     }
 
     public function create(Request $request)
@@ -370,4 +388,63 @@ class PhanCongHoiDongController extends Controller
             ->with('success','Phân công chấm thành công!')
             ->with('openModal',$request->hoi_dong_id);
     }
+
+    public function replaceAndDelete(Request $request)
+    {
+        $request->validate([
+            'phan_cong_id' => 'required|exists:phan_cong_vai_tros,id',
+            'tai_khoan_id' => 'required|exists:tai_khoans,id',
+            'vai_tro'      => 'required',
+            'hoi_dong_id'  => 'required|exists:hoi_dongs,id',
+        ]);
+        $phanCong = PhanCongVaiTro::findOrFail($request->phan_cong_id);
+        $vaiTroId = VaiTro::where('ten', $request->vai_tro)->value('id');
+    
+        // Kiểm tra giảng viên đã được phân công ở hội đồng khác chưa (trừ chính bản ghi bị thay)
+        $existsGV = PhanCongVaiTro::where('tai_khoan_id', $request->tai_khoan_id)
+            ->where('id', '!=', $phanCong->id)
+            ->exists();
+        if ($existsGV) {
+            return back()
+                ->withErrors(['tai_khoan_id' => 'Giảng viên này đã được phân công vào hội đồng khác! Mỗi giảng viên chỉ được phân công vào 1 hội đồng duy nhất.'])
+                ->withInput()
+                ->with('openReplaceModal', [
+                    'phan_cong_id' => $request->phan_cong_id,
+                    'vai_tro' => $request->vai_tro,
+                    'hoi_dong_id' => $request->hoi_dong_id
+                ]);
+        }
+    
+        // Kiểm tra giảng viên đã được phân công vào hội đồng này chưa (trừ chính bản ghi bị thay)
+        $existsGVInSameHoiDong = PhanCongVaiTro::where('tai_khoan_id', $request->tai_khoan_id)
+            ->where('hoi_dong_id', $request->hoi_dong_id)
+            ->where('id', '!=', $phanCong->id)
+            ->exists();
+        if ($existsGVInSameHoiDong) {
+            return back()
+                ->withErrors(['tai_khoan_id' => 'Giảng viên này đã được phân công vào hội đồng này!'])
+                ->withInput()
+                ->with('openReplaceModal', [
+                    'phan_cong_id' => $request->phan_cong_id,
+                    'vai_tro' => $request->vai_tro,
+                    'hoi_dong_id' => $request->hoi_dong_id
+                ]);
+        }
+    
+        DB::beginTransaction();
+        try {
+            PhanCongVaiTro::create([
+                'hoi_dong_id'  => $request->hoi_dong_id,
+                'tai_khoan_id' => $request->tai_khoan_id,
+                'vai_tro_id'   => $vaiTroId,
+            ]);
+            $phanCong->delete();
+            DB::commit();
+            return redirect()->route('admin.phan-cong-hoi-dong.index')
+                ->with('success', 'Đã thay thế và xóa thành công!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }    
 }
