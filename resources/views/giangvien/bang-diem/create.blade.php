@@ -78,24 +78,12 @@
                         @endif
                     </div>
 
-                    <form action="{{ route('giangvien.bang-diem.store', [$sinhVien->id, $dotBaoCao->id ?? null]) }}" method="POST">
+                    <form action="{{ route('giangvien.bang-diem.store') }}" method="POST">
                         @csrf
                         <input type="hidden" name="sinh_vien_id" value="{{ $sinhVien->id }}">
                         @if($dotBaoCao)
                             <input type="hidden" name="dot_bao_cao_id" value="{{ $dotBaoCao->id }}">
                         @endif
-
-                        @php
-                            $canGradeBaoCaoAndThuyetTrinh = in_array($vaiTroCham, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện']);
-                            $diemCu = null;
-                            if ($hasDotBaoCao) {
-                                $diemCu = App\Models\BangDiem::where('sinh_vien_id', $sinhVien->id)
-                                    ->whereNull('dot_bao_cao_id')
-                                    ->where('giang_vien_id', Auth::id())
-                                    ->first();
-                            }
-                            $shouldDisableBasicScores = $hasDotBaoCao && $diemCu;
-                        @endphp
 
                         <div class="row">
                             <div class="col-md-6">
@@ -117,7 +105,7 @@
                                     @error('diem_bao_cao')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                </div>
+                                </div>                                 
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -131,11 +119,9 @@
                                            max="3"
                                            step="0.1"
                                            placeholder="Tối đa 3.0"
-                                           {{ ($shouldDisableBasicScores || !$canGradeBaoCaoAndThuyetTrinh) ? '' : '' }}>
+                                           @if($shouldDisableBasicScores) readonly @endif>
                                     @if($shouldDisableBasicScores)
                                         <small class="text-muted">Điểm thuyết trình được giữ nguyên từ điểm cũ</small>
-                                    @elseif(!$canGradeBaoCaoAndThuyetTrinh)
-                                        <small class="text-muted">Chỉ Giảng viên hướng dẫn và Giảng viên phản biện mới được chấm điểm này</small>
                                     @endif
                                     @error('diem_thuyet_trinh')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -143,6 +129,7 @@
                                 </div>
                             </div>
                         </div>
+
                         @if($hasDotBaoCao)
                         <div class="row">
                             <div class="col-md-6">

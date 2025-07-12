@@ -23,7 +23,8 @@
     {{-- Danh sách phân công theo hội đồng --}}
     <div class="bg-white p-4 rounded shadow-sm overflow-auto">
         @php
-            $phanCongByHoiDong = $phanCongVaiTros->groupBy(fn($item) => $item->hoiDong->id ?? 0);
+            // Chỉ group và hiển thị các bản ghi phân công hội đồng (de_tai_id = null)
+            $phanCongByHoiDong = $phanCongVaiTros->where('de_tai_id', null)->groupBy(fn($item) => $item->hoiDong->id ?? 0);
         @endphp
 
         @forelse ($phanCongByHoiDong as $hoiDongId => $phanCongs)
@@ -108,16 +109,18 @@
                                 <tbody>
                                     @foreach($hoiDongObj->chiTietBaoCaos as $chiTiet)
                                         @php
+                                            // Lấy tất cả các bản ghi phân công chấm cho đề tài này (không lọc vai trò)
                                             $chamList = $hoiDongObj->phanCongVaiTros
-                                                ->where('de_tai_id', $chiTiet->deTai->id)
-                                                ->where('vaiTro.ten', 'Thành viên');
+                                                ->where('de_tai_id', $chiTiet->deTai->id);
                                         @endphp
                                         <tr>
                                             <td>{{ $chiTiet->deTai->ten_de_tai }}</td>
                                             <td>{{ $chiTiet->deTai->giangVien->ten }}</td>
                                             <td>
                                                 @forelse($chamList as $pc)
-                                                    <span class="badge bg-info me-1">{{ $pc->taiKhoan->ten }}</span>
+                                                    <span class="badge bg-info me-1">
+                                                        {{ $pc->taiKhoan->ten }} ({{ $pc->vaiTro->ten }}, chấm đề tài)
+                                                    </span>
                                                 @empty
                                                     <span class="text-muted">Chưa có</span>
                                                 @endforelse
@@ -175,17 +178,8 @@
                                 <select name="tai_khoan_id" class="form-select" required>
                                     <option value="">-- Chọn giảng viên --</option>
                                     @foreach($hoiDongObj->phanCongVaiTros->where('de_tai_id', null)->unique('tai_khoan_id') as $pc)
-                                        @php
-                                            $vaiTro = $pc->vaiTro->ten;
-                                            $badge = match($vaiTro) {
-                                                'Trưởng tiểu ban' => 'badge bg-danger',
-                                                'Thư ký'           => 'badge bg-dark',
-                                                'Thành viên'       => 'badge bg-primary',
-                                                default            => '',
-                                            };
-                                        @endphp
                                         <option value="{{ $pc->tai_khoan_id }}">
-                                            {{ $pc->taiKhoan->ten }} ({{ $vaiTro }})
+                                            {{ $pc->taiKhoan->ten }} ({{ $pc->vaiTro->ten }})
                                         </option>
                                     @endforeach
                                 </select>

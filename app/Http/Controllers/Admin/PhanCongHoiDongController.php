@@ -335,27 +335,34 @@ class PhanCongHoiDongController extends Controller
             'tai_khoan_id' => 'required|exists:tai_khoans,id',
         ]);
 
-        $vaiTroThanhVien = VaiTro::where('ten','Thành viên')->firstOrFail();
+        // Tìm vai_tro_id và loai_giang_vien gốc của giảng viên trong hội đồng
+        $phanCongGoc = PhanCongVaiTro::where('hoi_dong_id', $request->hoi_dong_id)
+            ->where('tai_khoan_id', $request->tai_khoan_id)
+            ->whereNull('de_tai_id')
+            ->first();
+
+        $vai_tro_id = $phanCongGoc ? $phanCongGoc->vai_tro_id : VaiTro::where('ten','Thành viên')->value('id');
+        $loai_giang_vien = $phanCongGoc ? $phanCongGoc->loai_giang_vien : null;
 
         // Kiểm tra đã phân công chấm đề tài này cho giảng viên này chưa
         $exists = PhanCongVaiTro::where([
             ['hoi_dong_id',  $request->hoi_dong_id],
             ['de_tai_id',    $request->de_tai_id],
             ['tai_khoan_id', $request->tai_khoan_id],
-            ['vai_tro_id',   $vaiTroThanhVien->id],
+            ['vai_tro_id',   $vai_tro_id],
         ])->exists();
 
         if ($exists) {
             return back()->withErrors(['error'=>'Giảng viên đã được phân công chấm đề tài!']);
         }
 
-        // Tạo bản ghi phân công chấm mới
+        // Tạo bản ghi phân công chấm mới (phải giữ nguyên loai_giang_vien)
         PhanCongVaiTro::create([
             'hoi_dong_id'    => $request->hoi_dong_id,
             'de_tai_id'      => $request->de_tai_id,
             'tai_khoan_id'   => $request->tai_khoan_id,
-            'vai_tro_id'     => $vaiTroThanhVien->id,
-            'loai_giang_vien'=> null,
+            'vai_tro_id'     => $vai_tro_id,
+            'loai_giang_vien'=> $loai_giang_vien,
         ]);
 
         return redirect()

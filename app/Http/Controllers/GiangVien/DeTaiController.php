@@ -404,16 +404,13 @@ class DeTaiController extends Controller
             );
 
             // Đảm bảo có bản ghi Giảng Viên Phản Biện
-            // Chỉ cập nhật loai_giang_vien, không thay đổi vai_tro_id
             $phanCongPhanBien = \App\Models\PhanCongVaiTro::where('hoi_dong_id', $chiTiet->hoi_dong_id)
                 ->where('tai_khoan_id', $user->id)
                 ->first();
 
             if ($phanCongPhanBien) {
-                // Nếu đã có phân công, chỉ cập nhật loai_giang_vien
                 $phanCongPhanBien->update(['loai_giang_vien' => 'Giảng Viên Phản Biện']);
             } else {
-                // Nếu chưa có phân công, tạo mới với vai trò "Thành viên"
                 $vaiTro = \App\Models\VaiTro::firstOrCreate(
                     ['ten' => 'Thành viên'],
                     ['mo_ta' => 'Thành viên hội đồng']
@@ -433,10 +430,8 @@ class DeTaiController extends Controller
                     ->first();
 
                 if ($phanCongGVHD) {
-                    // Nếu đã có phân công, chỉ cập nhật loai_giang_vien
                     $phanCongGVHD->update(['loai_giang_vien' => 'Giảng Viên Hướng Dẫn']);
                 } else {
-                    // Nếu chưa có phân công, tạo mới với vai trò "Thành viên"
                     $vaiTro = \App\Models\VaiTro::firstOrCreate(
                         ['ten' => 'Thành viên'],
                         ['mo_ta' => 'Thành viên hội đồng']
@@ -451,12 +446,33 @@ class DeTaiController extends Controller
             }
 
             // Tạo bản ghi phân công chấm nếu chưa có
-            \App\Models\PhanCongCham::firstOrCreate([
+            $phanCongCham = \App\Models\PhanCongCham::firstOrCreate([
                 'de_tai_id' => $deTai->id,
                 'hoi_dong_id' => $chiTiet->hoi_dong_id,
             ], [
                 'lich_cham' => now(),
             ]);
+
+            // *** TỰ ĐỘNG TẠO LỊCH CHẤM ***
+            $nhom = $deTai->nhom;
+            if ($nhom) {
+                $lichDaCo = \App\Models\LichCham::where('de_tai_id', $deTai->id)->exists();
+                if (!$lichDaCo && $request->action === 'approve') { // Chỉ tạo lịch khi DUYỆT
+                    $maxThuTu = \App\Models\LichCham::where('hoi_dong_id', $chiTiet->hoi_dong_id)->max('thu_tu');
+                    $thu_tu = $maxThuTu ? $maxThuTu + 1 : 1;
+                    $ngayBaoVe = \Carbon\Carbon::now(); // hoặc lấy ngày của dot_bao_cao_id
+
+                    \App\Models\LichCham::create([
+                        'hoi_dong_id'       => $chiTiet->hoi_dong_id,
+                        'dot_bao_cao_id'    => $deTai->dot_bao_cao_id,
+                        'nhom_id'           => $nhom->id,
+                        'de_tai_id'         => $deTai->id,
+                        'phan_cong_cham_id' => $phanCongCham->id ?? null,
+                        'lich_tao'          => $ngayBaoVe,
+                        'thu_tu'            => $thu_tu,
+                    ]);
+                }
+            }
         }
 
         return redirect()->route('giangvien.de-tai.index')->with('success', $msg);

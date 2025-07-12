@@ -40,14 +40,14 @@
                   </thead>
                   <tbody>
                     @foreach($phanCongTheoDeTai as $idx => $pc)
-                      @php
-                        $deTai   = $pc->deTai;
-                        $nhom    = $deTai->nhom;
-                        $lich    = $deTai->lichCham;
-                        $baoCao  = optional($lich)->dotBaoCao;
-                        $role    = $pc->vaiTro->ten ?? $pc->loai_giang_vien;
-                        $dotBcId = optional($baoCao)->id;
-                      @endphp
+                        @php
+                          $deTai   = $pc['de_tai'];
+                          $nhom    = $pc['nhom'];
+                          $lich    = $pc['lich'];
+                          $baoCao  = optional($lich)->dotBaoCao;
+                          $role    = $pc['vai_tro_cham'];
+                          $dotBcId = optional($baoCao)->id;
+                        @endphp
                       @foreach($nhom->sinhViens as $sv)
                         @php
                           $row  = ($idx+1) . '.' . $loop->iteration;
@@ -61,8 +61,8 @@
                           $tong = (is_numeric($bc) && is_numeric($tt))
                                   ? number_format($bc + $tt + ($demo==='-'?0:$demo) + ($qa==='-'?0:$qa) + ($cong==='-'?0:$cong),1)
                                   : '-';
-                          $pars = ['sinhVienId'=>$sv->id];
-                          if($dotBcId) $pars['dotBaoCaoId'] = $dotBcId;
+                                  $pars = [$item['sinh_vien']->id];
+                                  if($item['dot_bao_cao_id']) $pars[] = $item['dot_bao_cao_id'];
                         @endphp
                         <tr>
                           <td>{{ $row }}</td>
@@ -129,7 +129,7 @@
                       $sv    = $item['sinh_vien'];
                       $nhom  = $item['nhom'];
                       $deTai = $item['de_tai'];
-                      $role  = $item['vai_tro_cham'];
+                      $role  = $item['vai_tro_cham']; // Đã đúng chuẩn từ controller
                       $lich  = $deTai->lichCham;
                       $baoCao = optional($lich)->dotBaoCao;
                       $dotBc  = optional($baoCao)->id;
@@ -141,8 +141,8 @@
                       $qa     = $da->diem_cau_hoi ?? '-';
                       $cong   = $da->diem_cong ?? '-';
                       $tong   = (is_numeric($bc) && is_numeric($tt))
-                               ? number_format($bc + $tt + ($demo==='-'?0:$demo) + ($qa==='-'?0:$qa) + ($cong==='-'?0:$cong),1)
-                               : '-';
+                              ? number_format($bc + $tt + ($demo==='-'?0:$demo) + ($qa==='-'?0:$qa) + ($cong==='-'?0:$cong),1)
+                              : '-';
                       $pars   = ['sinhVienId'=>$sv->id]; if($dotBc) $pars['dotBaoCaoId']=$dotBc;
                     @endphp
                     <tr>
@@ -153,7 +153,14 @@
                       <td>{{ $deTai->ten_de_tai }}</td>
                       <td>{{ optional($baoCao)->nam_hoc ?? '-' }}</td>
                       <td>{{ optional($lich)->lich_tao ? \Carbon\Carbon::parse(optional($lich)->lich_tao)->format('d/m H:i') : '-' }}</td>
-                      <td><span class="badge {{ $role=='Phản biện'?'bg-primary':'' }} {{ $role=='Hướng dẫn'?'bg-success':'' }} {{ !in_array($role,['Phản biện','Hướng dẫn'])?'bg-secondary':'' }}">{{ $role }}</span></td>
+                      <td>
+                        <span class="badge 
+                          {{ $role=='Phản biện' ? 'bg-primary' : '' }} 
+                          {{ $role=='Hướng dẫn' ? 'bg-success' : '' }} 
+                          {{ !in_array($role,['Phản biện','Hướng dẫn']) ? 'bg-secondary' : '' }}">
+                          {{ $role }}
+                        </span>
+                      </td>
                       <td>{{ $bc }}</td>
                       <td>{{ $tt }}</td>
                       <td>{{ $demo }}</td>
