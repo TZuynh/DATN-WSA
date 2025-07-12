@@ -108,6 +108,30 @@ class PhanCongChamController extends Controller
                 ]);
             }
 
+            // Sau khi tạo phân công chấm, kiểm tra nếu hội đồng đã có giảng viên phản biện thì tự động gán cho đề tài này
+            $hoiDong = $chiTiet->hoiDong;
+            if ($hoiDong) {
+                $phanBien = \App\Models\PhanCongVaiTro::where('hoi_dong_id', $hoiDong->id)
+                    ->where('loai_giang_vien', 'Giảng Viên Phản Biện')
+                    ->first();
+                if ($phanBien) {
+                    // Kiểm tra nếu giảng viên này chưa có phân công cho đề tài này thì thêm mới
+                    $daPhanCong = \App\Models\PhanCongVaiTro::where('hoi_dong_id', $hoiDong->id)
+                        ->where('tai_khoan_id', $phanBien->tai_khoan_id)
+                        ->where('de_tai_id', $deTai->id)
+                        ->exists();
+                    if (!$daPhanCong) {
+                        \App\Models\PhanCongVaiTro::create([
+                            'hoi_dong_id' => $hoiDong->id,
+                            'de_tai_id' => $deTai->id,
+                            'tai_khoan_id' => $phanBien->tai_khoan_id,
+                            'vai_tro_id' => $phanBien->vai_tro_id,
+                            'loai_giang_vien' => 'Giảng Viên Phản Biện',
+                        ]);
+                    }
+                }
+            }
+
             DB::commit();
             return redirect()->route('admin.phan-cong-cham.index')->with('success', 'Phân công chấm và lịch chấm đã được tạo thành công.');
         } catch (\Exception $e) {
@@ -319,17 +343,36 @@ class PhanCongChamController extends Controller
                 $chiTiet->save();
             }
 
-            // Cập nhật hoặc tạo phân công vai trò cho giảng viên phản biện
-            // Chỉ cập nhật loai_giang_vien, không thay đổi vai_tro_id
+            // Đổi vai trò: Nếu đã có giảng viên phản biện thì chuyển họ thành 'Giảng Viên Khác'
+            if ($chiTiet->hoi_dong_id) {
+                $phanBienCu = PhanCongVaiTro::where('hoi_dong_id', $chiTiet->hoi_dong_id)
+                    ->where('loai_giang_vien', 'Giảng Viên Phản Biện')
+                    ->first();
+                if ($phanBienCu && $phanBienCu->tai_khoan_id != $request->giang_vien_id) {
+                    $phanBienCu->update(['loai_giang_vien' => 'Giảng Viên Khác']);
+                }
+            }
+
+            // Nếu tài khoản được chọn đã là giảng viên phản biện thì không cho đổi và trả về lỗi
+            $phanBienHienTai = null;
+            if ($chiTiet->hoi_dong_id) {
+                $phanBienHienTai = PhanCongVaiTro::where('hoi_dong_id', $chiTiet->hoi_dong_id)
+                    ->where('loai_giang_vien', 'Giảng Viên Phản Biện')
+                    ->first();
+                if ($phanBienHienTai && $phanBienHienTai->tai_khoan_id == $request->giang_vien_id) {
+                    DB::rollBack();
+                    return redirect()->back()->with('error', 'Tài khoản này đã là giảng viên phản biện của hội đồng, không thể đổi lại chính mình.');
+                }
+            }
+
+            // Tạo mới hoặc cập nhật phân công vai trò cho giảng viên phản biện mới
             $phanCongPhanBien = PhanCongVaiTro::where('hoi_dong_id', $chiTiet->hoi_dong_id)
                 ->where('tai_khoan_id', $request->giang_vien_id)
                 ->first();
 
             if ($phanCongPhanBien) {
-                // Nếu đã có phân công, chỉ cập nhật loai_giang_vien
                 $phanCongPhanBien->update(['loai_giang_vien' => 'Giảng Viên Phản Biện']);
             } else {
-                // Nếu chưa có phân công, tạo mới với vai trò "Thành viên"
                 $vaiTro = VaiTro::firstOrCreate(
                     ['ten' => 'Thành viên'],
                     ['mo_ta' => 'Thành viên hội đồng']
@@ -367,7 +410,10 @@ class PhanCongChamController extends Controller
             }
 
             DB::commit();
-            return redirect()->back()->with('success', 'Phân công giảng viên phản biện thành công!');
+            // Lấy id hội đồng để chuyển hướng
+            $hoiDongId = $chiTiet->hoi_dong_id;
+            return redirect()->route('admin.hoi-dong.show', ['hoiDong' => $hoiDongId])
+                ->with('success', 'Phân công giảng viên phản biện thành công!');
 
         } catch (\Exception $e) {
             DB::rollBack();

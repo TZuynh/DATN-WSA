@@ -95,14 +95,28 @@
                                                             <i class="fas fa-user-graduate me-1"></i>Giảng viên hướng dẫn
                                                         </span>
                                                     @endif
+                                                    @php
+                                                        // Kiểm tra có đề tài nào chưa thuộc hội đồng này không
+                                                        $coDeTaiChuaThuocHoiDong = false;
+                                                        if(isset($phanCong->taiKhoan) && $phanCong->taiKhoan->deTais) {
+                                                            foreach($phanCong->taiKhoan->deTais as $deTai) {
+                                                                if(!($deTai->chiTietBaoCao && $deTai->chiTietBaoCao->hoi_dong_id == $hoiDong->id)) {
+                                                                    $coDeTaiChuaThuocHoiDong = true;
+                                                                    break;
+                                                                }
+                                                            }
+                                                        }
+                                                    @endphp
                                                     @if($phanCong->taiKhoan && $phanCong->taiKhoan->deTais && $phanCong->taiKhoan->deTais->count() > 0)
-                                                        <button type="button" class="btn btn-sm btn-info ms-2" data-bs-toggle="modal" data-bs-target="#modalDeTai{{ $phanCong->taiKhoan->id }}">
+                                                        <button type="button" class="btn btn-sm btn-info ms-2" data-bs-toggle="modal" data-bs-target="#modalTatCaDeTai{{ $phanCong->taiKhoan->id }}">
                                                             <i class="fas fa-book me-1"></i>
                                                             {{ $phanCong->taiKhoan->deTais->count() }} đề tài
                                                         </button>
-                                                        <button type="button" class="btn btn-sm btn-primary ms-2 btn-mo-modal-chon-detai" data-bs-toggle="modal" data-bs-target="#modalDeTai{{ $phanCong->taiKhoan->id }}">
-                                                            <i class="fas fa-plus"></i> Chọn đề tài vào hội đồng
-                                                        </button>
+                                                        @if($coDeTaiChuaThuocHoiDong)
+                                                            <button type="button" class="btn btn-sm btn-primary ms-2 btn-mo-modal-chon-detai" data-bs-toggle="modal" data-bs-target="#modalDeTai{{ $phanCong->taiKhoan->id }}">
+                                                                <i class="fas fa-plus"></i> Chọn đề tài vào hội đồng
+                                                            </button>
+                                                        @endif
                                                     @endif
                                                 </div>
                                             @endforeach
@@ -343,6 +357,66 @@
                         <button type="button" class="btn btn-primary btn-xac-nhan-chon-detai" data-giang-vien="{{ $phanCong->taiKhoan->id }}" data-hoi-dong="{{ $hoiDong->id }}">
                             <i class="fas fa-plus"></i> Xác nhận chọn đề tài vào hội đồng
                         </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+@endforeach
+
+{{-- Modal hiển thị tất cả đề tài của giảng viên --}}
+@foreach($hoiDong->phanCongVaiTros->where('de_tai_id', null) as $phanCong)
+    @if($phanCong->taiKhoan && $phanCong->taiKhoan->deTais && $phanCong->taiKhoan->deTais->count() > 0)
+        <div class="modal fade" id="modalTatCaDeTai{{ $phanCong->taiKhoan->id }}" tabindex="-1" aria-labelledby="modalTatCaDeTaiLabel{{ $phanCong->taiKhoan->id }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-fullscreen-sm-down">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalTatCaDeTaiLabel{{ $phanCong->taiKhoan->id }}">
+                            <i class="fas fa-book me-2"></i>
+                            Tất cả đề tài của giảng viên {{ $phanCong->taiKhoan->ten }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="table-responsive w-100">
+                            <table class="table table-hover w-100">
+                                <thead>
+                                    <tr>
+                                        <th>Mã đề tài</th>
+                                        <th>Tên đề tài</th>
+                                        <th>Trạng thái</th>
+                                        <th>Nhóm thực hiện</th>
+                                        <th>Thuộc hội đồng</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($phanCong->taiKhoan->deTais as $deTai)
+                                        <tr>
+                                            <td>{{ $deTai->ma_de_tai }}</td>
+                                            <td>{{ $deTai->ten_de_tai }}</td>
+                                            <td>{{ $deTai->trang_thai }}</td>
+                                            <td>
+                                                @if($deTai->nhom)
+                                                    <span class="badge bg-success">{{ $deTai->nhom->ma_nhom }}</span>
+                                                @else
+                                                    <span class="text-muted">Chưa có nhóm</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($deTai->chiTietBaoCao && $deTai->chiTietBaoCao->hoiDong)
+                                                    {{ $deTai->chiTietBaoCao->hoiDong->ten }}
+                                                @else
+                                                    <span class="text-muted">Chưa thuộc hội đồng</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                     </div>
                 </div>
             </div>
