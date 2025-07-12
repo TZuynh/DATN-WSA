@@ -35,11 +35,7 @@
                                     'Trưởng tiểu ban'
                                 ]);
                             @endphp
-                            @if($hasDotBaoCao)
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle"></i> Điểm báo cáo và thuyết trình không thể thay đổi khi đã có lịch chấm.
-                                </div>
-                            @endif
+
                             <div class="row mb-4">
                                 <div class="col-md-6">
                                     <h5>Thông tin sinh viên</h5>
@@ -55,6 +51,18 @@
                                         <tr>
                                             <th>Lớp:</th>
                                             <td>{{ $bangDiem->sinhVien->lop->ten_lop ?? 'N/A' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Vai trò chấm:</th>
+                                            <td>
+                                                <span class="badge {{ $vaiTroCham=='Phản biện'?'bg-primary':'' }} {{ $vaiTroCham=='Hướng dẫn'?'bg-success':'' }} {{ !in_array($vaiTroCham,['Phản biện','Hướng dẫn'])?'bg-secondary':'' }}">
+                                                    {{ $vaiTroCham }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Loại giảng viên:</th>
+                                            <td>{{ $loaiGiangVien ?? 'Không xác định' }}</td>
                                         </tr>
                                     </table>
                                 </div>
@@ -102,17 +110,9 @@
                                 </div>
                             </div>
 
-                            @php
-                                \Log::info('DEBUG_BANG_DIEM_EDIT', [
-                                    'diem_thuyet_trinh' => $bangDiem->diem_thuyet_trinh ?? null,
-                                    'diem_demo' => $bangDiem->diem_demo ?? null,
-                                    'diem_cau_hoi' => $bangDiem->diem_cau_hoi ?? null,
-                                    'diem_cong' => $bangDiem->diem_cong ?? null,
-                                ]);
-                            @endphp
-
                             <div class="alert alert-info mb-4">
                                 <strong>Hướng dẫn nhập điểm:</strong><br>
+                                - Điểm báo cáo: tối đa <b>10.0</b><br>
                                 - Điểm thuyết trình: tối đa <b>3.0</b><br>
                                 - Điểm demo: tối đa <b>4.0</b><br>
                                 - Điểm câu hỏi (phản biện): tối đa <b>1.0</b><br>
@@ -128,17 +128,13 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="diem_bao_cao">Điểm báo cáo <span class="text-danger">*</span></label>
-                                            @if(!$canGradeBaoCaoAndThuyetTrinh)
-                                                <input type="hidden" name="diem_bao_cao" value="{{ $bangDiem->diem_bao_cao }}">
-                                            @endif
                                             <input type="number" class="form-control @error('diem_bao_cao') is-invalid @enderror"
                                                    id="diem_bao_cao"
                                                    name="diem_bao_cao"
                                                    value="{{ old('diem_bao_cao', $bangDiem->diem_bao_cao) }}"
                                                    min="0" max="10" step="0.1"
-                                                   @if(!$canEditBaoCaoAndThuyetTrinh) readonly @endif
-                                                   @if($canEditBaoCaoAndThuyetTrinh) required @endif>
-                                            @if(!$canEditBaoCao)
+                                                   @if(!$canGradeBaoCao) readonly @endif>
+                                            @if(!$canGradeBaoCao)
                                                 <small class="text-muted">Chỉ Giảng viên hướng dẫn và Giảng viên phản biện mới được sửa điểm này</small>
                                             @endif
                                             @error('diem_bao_cao')
@@ -150,18 +146,15 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="diem_thuyet_trinh">Điểm thuyết trình <span class="text-danger">*</span></label>
-                                            @if(!$canGradeBaoCaoAndThuyetTrinh)
-                                                <input type="hidden" name="diem_thuyet_trinh" value="{{ $bangDiem->diem_thuyet_trinh }}">
-                                            @endif
                                             <input type="number" class="form-control @error('diem_thuyet_trinh') is-invalid @enderror"
                                                    id="diem_thuyet_trinh"
                                                    name="diem_thuyet_trinh"
                                                    value="{{ old('diem_thuyet_trinh', $bangDiem->diem_thuyet_trinh) }}"
                                                    min="0" max="3" step="0.1"
-                                                   required
+                                                   @if(!$canGradeOtherScores) readonly @endif
                                                    placeholder="Tối đa 3.0">
-                                            @if(!$canEditBaoCao)
-                                                <small class="text-muted">Chỉ Giảng viên hướng dẫn và Giảng viên phản biện mới được sửa điểm này</small>
+                                            @if(!$canGradeOtherScores)
+                                                <small class="text-muted">Bạn không có quyền chấm điểm này</small>
                                             @endif
                                             @error('diem_thuyet_trinh')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -170,7 +163,7 @@
                                     </div>
                                 </div>
 
-                                @if ($hasDotBaoCao)
+                                @if ($canGradeOtherScores)
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
@@ -178,7 +171,7 @@
                                                 <input type="number" class="form-control @if($errors->has('diem_demo')) is-invalid @endif"
                                                        id="diem_demo" name="diem_demo"
                                                        value="{{ old('diem_demo', $bangDiem->diem_demo) }}"
-                                                       min="0" max="4" step="0.1" required
+                                                       min="0" max="4" step="0.1" 
                                                        placeholder="Tối đa 4.0">
                                                 @if($errors->has('diem_demo'))
                                                     <div class="invalid-feedback">{{ $errors->first('diem_demo') }}</div>
@@ -191,7 +184,8 @@
                                                 <input type="number" class="form-control @if($errors->has('diem_cau_hoi')) is-invalid @endif"
                                                        id="diem_cau_hoi" name="diem_cau_hoi"
                                                        value="{{ old('diem_cau_hoi', $bangDiem->diem_cau_hoi) }}"
-                                                       min="0" max="1" step="0.1" required
+                                                       min="0" max="1" step="0.1" 
+                                                       @if($hasDotBaoCao) required @endif
                                                        placeholder="Tối đa 1.0">
                                                 @if($errors->has('diem_cau_hoi'))
                                                     <div class="invalid-feedback">{{ $errors->first('diem_cau_hoi') }}</div>
@@ -222,10 +216,7 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             @php
-                                                $tong = $bangDiem->diem_bao_cao + $bangDiem->diem_thuyet_trinh;
-                                                if ($hasDotBaoCao) {
-                                                    $tong += $bangDiem->diem_demo + $bangDiem->diem_cau_hoi + ($bangDiem->diem_cong ?? 0);
-                                                }
+                                                $tong = ($bangDiem->diem_bao_cao ?? 0) + ($bangDiem->diem_thuyet_trinh ?? 0) + ($bangDiem->diem_demo ?? 0) + ($bangDiem->diem_cau_hoi ?? 0) + ($bangDiem->diem_cong ?? 0);
                                             @endphp
                                             <label for="tong_diem">Tổng điểm</label>
                                             <input type="text" class="form-control" id="tong_diem" readonly value="{{ number_format($tong, 1) }}">

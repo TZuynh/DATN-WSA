@@ -192,47 +192,63 @@ class BangDiemController extends Controller
             return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ có thể chấm điểm khi đề tài đã có lịch chấm.');
         }
         $deTai = $chiTietNhom->nhom->deTai;
-
+        
         // Lấy phân công vai trò của giảng viên
         $giangVienId = Auth::id();
-        $phanCongVaiTro = PhanCongVaiTro::with(['hoiDong.chiTietBaoCaos.deTai'])
+        
+        // Kiểm tra phân công riêng trước
+        $phanCongVaiTro = PhanCongVaiTro::with(['deTai.nhom.sinhViens'])
             ->where('tai_khoan_id', $giangVienId)
-            ->whereNull('de_tai_id')
-            ->whereHas('hoiDong.chiTietBaoCaos.deTai', function($query) use ($deTai) {
-                $query->where('de_tais.id', $deTai->id);
-            })
+            ->where('de_tai_id', $deTai->id)
             ->first();
+            
+        // Nếu không có phân công riêng, kiểm tra phân công hội đồng
+        if (!$phanCongVaiTro) {
+            $phanCongVaiTro = PhanCongVaiTro::with(['hoiDong.chiTietBaoCaos.deTai'])
+                ->where('tai_khoan_id', $giangVienId)
+                ->whereNull('de_tai_id')
+                ->whereHas('hoiDong.chiTietBaoCaos.deTai', function($query) use ($deTai) {
+                    $query->where('de_tais.id', $deTai->id);
+                })
+                ->first();
+        }
 
         if (!$phanCongVaiTro) {
-            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Bạn chưa được phân công vào hội đồng chấm đề tài này.');
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Bạn chưa được phân công chấm đề tài này.');
         }
-
+        
         // Kiểm tra quyền chấm điểm báo cáo và thuyết trình
-        $canGradeBaoCaoAndThuyetTrinh = in_array(
-            $phanCongVaiTro->loai_giang_vien, // Kiểm tra loại giảng viên
-            ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện']
-        );
+        $loaiGiangVien = $phanCongVaiTro->loai_giang_vien;
+        $vaiTro = $phanCongVaiTro->vaiTro->ten ?? null;
+        
+        // Chỉ cho phép chấm điểm báo cáo nếu có loại giảng viên là hướng dẫn hoặc phản biện
+        $canGradeBaoCao = in_array($loaiGiangVien, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện']);
+        
+        // Cho phép chấm điểm thuyết trình, demo, câu hỏi, cộng nếu có loại giảng viên hoặc là vai trò khác
+        $canGradeOtherScores = !is_null($loaiGiangVien) || in_array($vaiTro, ['Trưởng tiểu ban', 'Thư ký', 'Thành viên']);
+        
+        // Không disable bất kỳ trường nào, chỉ kiểm tra quyền khi hiển thị
+        $shouldDisableBasicScores = false;
+        
+        // Logic cũ để tương thích với view hiện tại
+        $canGradeBaoCaoAndThuyetTrinh = $canGradeOtherScores;
 
-       // Kiểm tra GVHD và GVPB đã đồng ý chưa
-        $hoiDong = $phanCongVaiTro->hoiDong;
-        $phanCongVaiTros = $hoiDong->phanCongVaiTros ?? collect();
-
-        $gvhdDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')->where('trang_thai', 'đồng ý')->count() > 0;
-        $gvpbDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Phản Biện')->where('trang_thai', 'đồng ý')->count() > 0;
-
-        if (!($gvhdDongY && $gvpbDongY)) {
-            // Debug thêm chi tiết - chuyển Collection thành mảng rồi dùng implode
-            $gvhdStatus = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')->pluck('trang_thai')->toArray();
-            $gvpbStatus = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Phản Biện')->pluck('trang_thai')->toArray();
-            
-            return redirect()->route('giangvien.bang-diem.index')
-                ->with('error', 'Chỉ được chấm khi GVHD và GVPB đã đồng ý. 
-                GVHD trạng thái: '. implode(', ', $gvhdStatus) .'
-                GVPB trạng thái: '. implode(', ', $gvpbStatus));
-        }
+        // Bỏ điều kiện kiểm tra GVHD và GVPB phải đồng ý để cho phép chấm điểm
+        // $hoiDong = $phanCongVaiTro->hoiDong;
+        // $phanCongVaiTros = $hoiDong->phanCongVaiTros ?? collect();
+        // $gvhdDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')->where('trang_thai', 'đồng ý')->count() > 0;
+        // $gvpbDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Phản Biện')->where('trang_thai', 'đồng ý')->count() > 0;
+        // if (!($gvhdDongY && $gvpbDongY)) {
+        //     $gvhdStatus = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')->pluck('trang_thai')->toArray();
+        //     $gvpbStatus = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Phản Biện')->pluck('trang_thai')->toArray();
+        //     return redirect()->route('giangvien.bang-diem.index')
+        //         ->with('error', 'Chỉ được chấm khi GVHD và GVPB đã đồng ý. 
+        //         GVHD trạng thái: '. implode(', ', $gvhdStatus) .'
+        //         GVPB trạng thái: '. implode(', ', $gvpbStatus));
+        // }
 
         // Kiểm tra quyền chỉnh sửa điểm
-        $shouldDisableBasicScores = $canGradeBaoCaoAndThuyetTrinh === false;
+        // $shouldDisableBasicScores = $canGradeBaoCaoAndThuyetTrinh === false; // This line is no longer needed
 
         // Còn lại các dữ liệu cần thiết
         $bangDiem = new BangDiem();
@@ -275,6 +291,9 @@ class BangDiemController extends Controller
             'bangDiem',
             'hasDotBaoCao',
             'vaiTroCham',
+            'loaiGiangVien',
+            'canGradeBaoCao',
+            'canGradeOtherScores',
             'canGradeBaoCaoAndThuyetTrinh',
             'shouldDisableBasicScores',
             'sinhVien',
@@ -300,28 +319,33 @@ class BangDiemController extends Controller
 
         // Kiểm tra giảng viên có được phân công vào hội đồng chứa đề tài này không
         $giangVienId = Auth::id();
-        $phanCongVaiTro = \App\Models\PhanCongVaiTro::with(['hoiDong.chiTietBaoCaos.deTai'])
+        
+        // Kiểm tra phân công riêng trước
+        $phanCongVaiTro = \App\Models\PhanCongVaiTro::with(['deTai.nhom.sinhViens'])
             ->where('tai_khoan_id', $giangVienId)
-            ->whereNull('de_tai_id')
-            ->whereHas('hoiDong.chiTietBaoCaos.deTai', function($query) use ($deTai) {
-                $query->where('de_tais.id', $deTai->id);
-            })
+            ->where('de_tai_id', $deTai->id)
             ->first();
+            
+        // Nếu không có phân công riêng, kiểm tra phân công hội đồng
+        if (!$phanCongVaiTro) {
+            $phanCongVaiTro = \App\Models\PhanCongVaiTro::with(['hoiDong.chiTietBaoCaos.deTai'])
+                ->where('tai_khoan_id', $giangVienId)
+                ->whereNull('de_tai_id')
+                ->whereHas('hoiDong.chiTietBaoCaos.deTai', function($query) use ($deTai) {
+                    $query->where('de_tais.id', $deTai->id);
+                })
+                ->first();
+        }
 
         if (!$phanCongVaiTro) {
-            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Bạn chưa được phân công vào hội đồng chấm đề tài này.');
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Bạn chưa được phân công chấm đề tài này.');
         }
 
-        // Kiểm tra GVHD và GVPB đã đồng ý chưa
-        $hoiDong = $phanCongVaiTro->hoiDong;
-        $phanCongVaiTros = $hoiDong->phanCongVaiTros ?? collect();
-
-        $gvhdDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')->where('trang_thai', 'đồng ý')->count() > 0;
-        $gvpbDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Phản Biện')->where('trang_thai', 'đồng ý')->count() > 0;
-
-        if (!($gvhdDongY && $gvpbDongY)) {
-            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ được chấm khi GVHD và GVPB đã đồng ý.');
-        }
+        // Kiểm tra quyền chấm điểm báo cáo
+        $loaiGiangVien = $phanCongVaiTro->loai_giang_vien;
+        $vaiTro = $phanCongVaiTro->vaiTro->ten ?? null;
+        $canGradeBaoCao = in_array($loaiGiangVien, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện']);
+        $canGradeOtherScores = !is_null($loaiGiangVien) || in_array($vaiTro, ['Trưởng tiểu ban', 'Thư ký', 'Thành viên']);
 
         $rules = [
             'sinh_vien_id' => 'required|exists:sinh_viens,id',
@@ -336,28 +360,29 @@ class BangDiemController extends Controller
             ->where('giang_vien_id', Auth::id())
             ->first();
 
-        // Nếu không có đợt báo cáo, yêu cầu nhập điểm báo cáo và thuyết trình
-        if (!$hasDotBaoCao) {
-            $rules = array_merge($rules, [
-                'diem_bao_cao' => 'required|numeric|min:0|max:10',
-                'diem_thuyet_trinh' => 'required|numeric|min:0|max:10',
-            ]);
-        } else {
-            // Nếu có đợt báo cáo, điểm báo cáo và thuyết trình có thể null
+        // Điểm báo cáo
+        if ($canGradeBaoCao) {
             $rules = array_merge($rules, [
                 'diem_bao_cao' => 'nullable|numeric|min:0|max:10',
-                'diem_thuyet_trinh' => 'nullable|numeric|min:0|max:10',
             ]);
         }
-
-        if ($hasDotBaoCao) {
+        
+        // Điểm thuyết trình và các điểm khác
+        if ($canGradeOtherScores) {
             $rules = array_merge($rules, [
-                'diem_bao_cao' => 'nullable|numeric|min:0|max:10',
                 'diem_thuyet_trinh' => 'nullable|numeric|min:0|max:3',
-                'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
-                'diem_demo' => 'required|numeric|min:0|max:4',
-                'diem_cau_hoi' => 'required|numeric|min:0|max:1',
+                'diem_demo' => 'nullable|numeric|min:0|max:4',
+                'diem_cau_hoi' => 'nullable|numeric|min:0|max:1',
                 'diem_cong' => 'nullable|numeric|min:0|max:1',
+            ]);
+        } else {
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Bạn không có quyền chấm điểm.');
+        }
+
+        // Nếu có dot_bao_cao_id thì validate
+        if ($request->filled('dot_bao_cao_id')) {
+            $rules = array_merge($rules, [
+                'dot_bao_cao_id' => 'required|exists:dot_bao_caos,id',
             ]);
         }
 
@@ -378,29 +403,16 @@ class BangDiemController extends Controller
                 'de_tai_id' => $deTai ? $deTai->id : null
             ];
 
-            // Nếu có đợt báo cáo, lấy điểm báo cáo và thuyết trình từ điểm cũ nếu có
-            if ($hasDotBaoCao) {
-                if ($diemCu) {
-                    $data['diem_bao_cao'] = $diemCu->diem_bao_cao;
-                    $data['diem_thuyet_trinh'] = $diemCu->diem_thuyet_trinh;
-                } else {
-                    $data['diem_bao_cao'] = $request->diem_bao_cao;
-                    $data['diem_thuyet_trinh'] = $request->diem_thuyet_trinh;
-                }
+            // Lưu điểm theo quyền chấm
+            if ($canGradeBaoCao) {
+                $data['diem_bao_cao'] = $request->diem_bao_cao;
+            }
+            
+            if ($canGradeOtherScores) {
+                $data['diem_thuyet_trinh'] = $request->diem_thuyet_trinh;
                 $data['diem_demo'] = $request->diem_demo;
                 $data['diem_cau_hoi'] = $request->diem_cau_hoi;
                 $data['diem_cong'] = $request->diem_cong ?? 0;
-
-                // Xác định vai trò chấm điểm
-                $vaiTroCham = $phanCongVaiTro->vaiTro->ten ?? $phanCongVaiTro->loai_giang_vien;
-
-                // Lưu điểm báo cáo vào đúng cột
-                if (in_array($vaiTroCham, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện'])) {
-                    $data['diem_bao_cao'] = $request->diem_bao_cao;
-                }
-            } else {
-                $data['diem_bao_cao'] = $request->diem_bao_cao;
-                $data['diem_thuyet_trinh'] = $request->diem_thuyet_trinh;
             }
 
             BangDiem::create($data);
@@ -491,39 +503,62 @@ class BangDiemController extends Controller
 
         // Kiểm tra giảng viên có được phân công vào hội đồng chứa đề tài này không
         $giangVienId = Auth::id();
-        $phanCongVaiTro = \App\Models\PhanCongVaiTro::with(['hoiDong.chiTietBaoCaos.deTai'])
+        
+        // Kiểm tra phân công riêng trước
+        $phanCongVaiTro = \App\Models\PhanCongVaiTro::with(['deTai.nhom.sinhViens'])
             ->where('tai_khoan_id', $giangVienId)
-            ->whereNull('de_tai_id')
-            ->whereHas('hoiDong.chiTietBaoCaos.deTai', function($query) use ($deTai) {
-                $query->where('de_tais.id', $deTai->id);
-            })
+            ->where('de_tai_id', $deTai->id)
             ->first();
+            
+        // Nếu không có phân công riêng, kiểm tra phân công hội đồng
+        if (!$phanCongVaiTro) {
+            $phanCongVaiTro = \App\Models\PhanCongVaiTro::with(['hoiDong.chiTietBaoCaos.deTai'])
+                ->where('tai_khoan_id', $giangVienId)
+                ->whereNull('de_tai_id')
+                ->whereHas('hoiDong.chiTietBaoCaos.deTai', function($query) use ($deTai) {
+                    $query->where('de_tais.id', $deTai->id);
+                })
+                ->first();
+        }
 
         if (!$phanCongVaiTro) {
-            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Bạn chưa được phân công vào hội đồng chấm đề tài này.');
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Bạn chưa được phân công chấm đề tài này.');
         }
 
-        // Kiểm tra GVHD và GVPB đã đồng ý chưa
-        $hoiDong = $phanCongVaiTro->hoiDong;
-        $phanCongVaiTros = $hoiDong->phanCongVaiTros ?? collect();
-
-        $gvhdDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')->where('trang_thai', 'đồng ý')->count() > 0;
-        $gvpbDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Phản Biện')->where('trang_thai', 'đồng ý')->count() > 0;
-
-        if (!($gvhdDongY && $gvpbDongY)) {
-            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ được chấm khi GVHD và GVPB đã đồng ý.');
-        }
+        // Bỏ điều kiện kiểm tra GVHD và GVPB phải đồng ý để cho phép chấm điểm
+        // $hoiDong = $phanCongVaiTro->hoiDong;
+        // $phanCongVaiTros = $hoiDong->phanCongVaiTros ?? collect();
+        // $gvhdDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')->where('trang_thai', 'đồng ý')->count() > 0;
+        // $gvpbDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Phản Biện')->where('trang_thai', 'đồng ý')->count() > 0;
+        // if (!($gvhdDongY && $gvpbDongY)) {
+        //     return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ được chấm khi GVHD và GVPB đã đồng ý.');
+        // }
 
         // Xác định có đợt báo cáo hay không
         $hasDotBaoCao = $bangDiem->dot_bao_cao_id !== null;
         $vaiTroCham = $phanCongVaiTro->vaiTro->ten ?? $phanCongVaiTro->loai_giang_vien;
-        $canEditBaoCaoAndThuyetTrinh = in_array($vaiTroCham, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện']);
+        $loaiGiangVien = $phanCongVaiTro->loai_giang_vien;
+        $vaiTro = $phanCongVaiTro->vaiTro->ten ?? null;
+        
+        // Logic mới: Chỉ cho phép chấm điểm báo cáo nếu có loại giảng viên là hướng dẫn hoặc phản biện
+        $canGradeBaoCao = in_array($loaiGiangVien, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện']);
+        
+        // Cho phép chấm điểm thuyết trình, demo, câu hỏi, cộng nếu có loại giảng viên hoặc là vai trò khác
+        $canGradeOtherScores = !is_null($loaiGiangVien) || in_array($vaiTro, ['Trưởng tiểu ban', 'Thư ký', 'Thành viên']);
+        
+        // Logic cũ để tương thích với view hiện tại
+        $canEditBaoCaoAndThuyetTrinh = $canGradeOtherScores;
+        $canGradeBaoCaoAndThuyetTrinh = $canGradeOtherScores;
 
         return view('giangvien.bang-diem.edit', compact(
             'bangDiem',
             'hasDotBaoCao',
             'vaiTroCham',
-            'canEditBaoCaoAndThuyetTrinh'
+            'loaiGiangVien',
+            'canGradeBaoCao',
+            'canGradeOtherScores',
+            'canEditBaoCaoAndThuyetTrinh',
+            'canGradeBaoCaoAndThuyetTrinh'
         ));
     }
 
@@ -549,82 +584,69 @@ class BangDiemController extends Controller
 
         // Kiểm tra giảng viên có được phân công vào hội đồng chứa đề tài này không
         $giangVienId = Auth::id();
-        $phanCongVaiTro = \App\Models\PhanCongVaiTro::with(['hoiDong.chiTietBaoCaos.deTai'])
+        
+        // Kiểm tra phân công riêng trước
+        $phanCongVaiTro = \App\Models\PhanCongVaiTro::with(['deTai.nhom.sinhViens'])
             ->where('tai_khoan_id', $giangVienId)
-            ->whereNull('de_tai_id')
-            ->whereHas('hoiDong.chiTietBaoCaos.deTai', function($query) use ($deTai) {
-                $query->where('de_tais.id', $deTai->id);
-            })
+            ->where('de_tai_id', $deTai->id)
             ->first();
+            
+        // Nếu không có phân công riêng, kiểm tra phân công hội đồng
+        if (!$phanCongVaiTro) {
+            $phanCongVaiTro = \App\Models\PhanCongVaiTro::with(['hoiDong.chiTietBaoCaos.deTai'])
+                ->where('tai_khoan_id', $giangVienId)
+                ->whereNull('de_tai_id')
+                ->whereHas('hoiDong.chiTietBaoCaos.deTai', function($query) use ($deTai) {
+                    $query->where('de_tais.id', $deTai->id);
+                })
+                ->first();
+        }
 
         if (!$phanCongVaiTro) {
-            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Bạn chưa được phân công vào hội đồng chấm đề tài này.');
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Bạn chưa được phân công chấm đề tài này.');
         }
 
-        // Kiểm tra GVHD và GVPB đã đồng ý chưa
-        $hoiDong = $phanCongVaiTro->hoiDong;
-        $phanCongVaiTros = $hoiDong->phanCongVaiTros ?? collect();
-
-        $gvhdDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')->where('trang_thai', 'đồng ý')->count() > 0;
-        $gvpbDongY = $phanCongVaiTros->where('loai_giang_vien', 'Giảng Viên Phản Biện')->where('trang_thai', 'đồng ý')->count() > 0;
-
-        if (!($gvhdDongY && $gvpbDongY)) {
-            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Chỉ được chấm khi GVHD và GVPB đã đồng ý.');
-        }
+        // Kiểm tra quyền chấm điểm báo cáo
+        $loaiGiangVien = $phanCongVaiTro->loai_giang_vien;
+        $vaiTro = $phanCongVaiTro->vaiTro->ten ?? null;
+        $canGradeBaoCao = in_array($loaiGiangVien, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện']);
+        $canGradeOtherScores = !is_null($loaiGiangVien) || in_array($vaiTro, ['Trưởng tiểu ban', 'Thư ký', 'Thành viên']);
 
         $rules = [];
         $data = [];
 
-        // Kiểm tra xem có được phép sửa điểm báo cáo và thuyết trình không
-        $hasDotBaoCao = $bangDiem->dot_bao_cao_id !== null;
-
-        // Nếu không có đợt báo cáo thì mới bắt buộc điểm báo cáo và thuyết trình
-        if (!$hasDotBaoCao) {
-            $rules = array_merge($rules, [
-                'diem_bao_cao' => 'required|numeric|min:0|max:10',
-                'diem_thuyet_trinh' => 'required|numeric|min:0|max:10',
-            ]);
-        } else {
-            // Nếu có đợt báo cáo, điểm báo cáo và thuyết trình có thể null
+        // Điểm báo cáo
+        if ($canGradeBaoCao) {
             $rules = array_merge($rules, [
                 'diem_bao_cao' => 'nullable|numeric|min:0|max:10',
-                'diem_thuyet_trinh' => 'nullable|numeric|min:0|max:10',
             ]);
         }
-
-        // Nếu có đợt báo cáo thì yêu cầu nhập đủ các điểm còn lại
-        if ($hasDotBaoCao) {
+        
+        // Điểm thuyết trình và các điểm khác
+        if ($canGradeOtherScores) {
             $rules = array_merge($rules, [
-                'diem_demo' => 'required|numeric|min:0|max:10',
-                'diem_cau_hoi' => 'required|numeric|min:0|max:10',
-                'diem_cong' => 'nullable|numeric|min:0|max:2',
+                'diem_thuyet_trinh' => 'nullable|numeric|min:0|max:3',
+                'diem_demo' => 'nullable|numeric|min:0|max:4',
+                'diem_cau_hoi' => 'nullable|numeric|min:0|max:1',
+                'diem_cong' => 'nullable|numeric|min:0|max:1',
             ]);
-            $data = array_merge($data, [
-                'diem_demo' => $request->diem_demo,
-                'diem_cau_hoi' => $request->diem_cau_hoi,
-                'diem_cong' => $request->diem_cong ?? 0,
-            ]);
+        } else {
+            return redirect()->route('giangvien.bang-diem.index')->with('error', 'Bạn không có quyền chấm điểm.');
         }
-
-        $rules['binh_luan'] = 'nullable|string|max:1000';
-        $data['binh_luan'] = $request->binh_luan;
 
         $validated = $request->validate($rules);
 
         try {
-            // Nếu có đợt báo cáo, chỉ cho phép GVHD và GV Phản Biện sửa điểm báo cáo/thuyết trình
-            if ($hasDotBaoCao) {
-                // Lấy vai trò chấm điểm
-                $vaiTroCham = $phanCongVaiTro->vaiTro->ten ?? $phanCongVaiTro->loai_giang_vien;
-                if (in_array($vaiTroCham, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện'])) {
-                    $data['diem_bao_cao'] = $request->diem_bao_cao;
-                } else {
-                    $data['diem_bao_cao'] = $bangDiem->diem_bao_cao;
-                }
-                $data['diem_thuyet_trinh'] = $request->diem_thuyet_trinh;
-            } else {
+            // Lưu điểm theo quyền chấm
+            if ($canGradeBaoCao) {
                 $data['diem_bao_cao'] = $request->diem_bao_cao;
+            }
+            
+            if ($canGradeOtherScores) {
                 $data['diem_thuyet_trinh'] = $request->diem_thuyet_trinh;
+                $data['diem_demo'] = $request->diem_demo;
+                $data['diem_cau_hoi'] = $request->diem_cau_hoi;
+                $data['diem_cong'] = $request->diem_cong ?? 0;
             }
 
             $bangDiem->update(array_merge($data, [

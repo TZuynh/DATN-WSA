@@ -98,6 +98,7 @@
                                     <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#modalSwapGV{{ $phanCong->id }}">
                                     <i class="fas fa-random"></i>
                                     </button>
+
                                 </td>
                             </tr>
                         @endforeach
@@ -272,23 +273,88 @@
                         <input type="hidden" name="phan_cong_id_1" value="{{ $phanCong->id }}">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title">Hoán đổi giảng viên (vai trò: {{ $phanCong->vaiTro->ten }})</h5>
+                                <h5 class="modal-title">Hoán đổi giảng viên</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Lưu ý:</strong> Có thể hoán đổi giảng viên và vai trò giữa các hội đồng cùng đợt báo cáo và cùng thời gian. <strong>Vai trò sẽ được hoán đổi cùng với giảng viên.</strong> <strong>Có thể hoán đổi giữa các vai trò khác nhau (Trưởng tiểu ban ↔ Thành viên, Thư ký ↔ Thành viên, Thành viên ↔ Thành viên).</strong> Chỉ không thể hoán đổi giữa Trưởng tiểu ban và Thư ký. Loại giảng viên (hướng dẫn/phản biện) sẽ được giữ nguyên. Nếu giảng viên có loại "hướng dẫn" hoặc "phản biện", hệ thống sẽ kiểm tra để đảm bảo không bị trùng lặp loại giảng viên trong hội đồng đích.
+                                </div>
                                 <label>Chọn giảng viên ở hội đồng khác để hoán đổi:</label>
                                 <select name="phan_cong_id_2" class="form-select" required>
-                                    @foreach($phanCongVaiTros->where('vai_tro_id', $phanCong->vai_tro_id)->where('id', '!=', $phanCong->id) as $otherPC)
-                                        @if($otherPC->hoi_dong_id != $phanCong->hoi_dong_id)
-                                            <option value="{{ $otherPC->id }}">
-                                                {{ $otherPC->taiKhoan->ten ?? 'N/A' }} ({{ $otherPC->hoiDong->ten ?? 'N/A' }})
-                                            </option>
-                                        @endif
-                                    @endforeach
+                                    <option value="">-- Chọn giảng viên --</option>
+                                    @php
+                                        // Lọc danh sách giảng viên có thể hoán đổi
+                                        $candidates = $allPhanCongVaiTros
+                                            ->where('de_tai_id', null) // Chỉ phân công hội đồng
+                                            ->where('id', '!=', $phanCong->id) // Không phải chính mình
+                                            ->where('hoi_dong_id', '!=', $phanCong->hoi_dong_id); // Khác hội đồng
+                                        
+                                        // Lọc thêm theo điều kiện đợt báo cáo và thời gian
+                                        $candidates = $candidates->filter(function($candidate) use ($phanCong) {
+                                            $hd1 = $phanCong->hoiDong;
+                                            $hd2 = $candidate->hoiDong;
+                                            
+                                            if (!$hd1 || !$hd2) return false;
+                                            
+                                            // Cùng đợt báo cáo
+                                            if ($hd1->dot_bao_cao_id !== $hd2->dot_bao_cao_id) return false;
+                                            
+                                            // Cùng thời gian bắt đầu
+                                            if ($hd1->thoi_gian_bat_dau != $hd2->thoi_gian_bat_dau) return false;
+                                            
+                                            // Kiểm tra vai trò - chỉ không cho phép hoán đổi trực tiếp giữa Trưởng tiểu ban và Thư ký
+                                            $truongTieuBanId = \App\Models\VaiTro::where('ten', 'Trưởng tiểu ban')->value('id');
+                                            $thuKyId = \App\Models\VaiTro::where('ten', 'Thư ký')->value('id');
+                                            
+                                            // Chỉ không cho phép hoán đổi trực tiếp giữa Trưởng tiểu ban và Thư ký
+                                            if (
+                                                ($phanCong->vai_tro_id == $truongTieuBanId && $candidate->vai_tro_id == $thuKyId) ||
+                                                ($phanCong->vai_tro_id == $thuKyId && $candidate->vai_tro_id == $truongTieuBanId)
+                                            ) {
+                                                return false;
+                                            }
+                                            
+                                            // Cho phép hoán đổi giữa các vai trò khác nhau
+                                            // (Trưởng tiểu ban ↔ Thành viên, Thư ký ↔ Thành viên, Thành viên ↔ Thành viên)
+                                            
+                                            return true;
+                                        });
+                                    @endphp
+                                    
+                                    @forelse($candidates as $candidate)
+                                        <option value="{{ $candidate->id }}">
+                                            {{ $candidate->taiKhoan->ten ?? 'N/A' }} 
+                                            ({{ $candidate->hoiDong->ten ?? 'N/A' }})
+                                            - {{ $candidate->vaiTro->ten ?? 'N/A' }}
+                                            @if($candidate->loai_giang_vien)
+                                                - {{ $candidate->loai_giang_vien }}
+                                            @endif
+                                        </option>
+                                    @empty
+                                        <option value="" disabled>Không có giảng viên phù hợp để hoán đổi</option>
+                                    @endforelse
                                 </select>
+                                @if($candidates->isEmpty())
+                                    <div class="mt-2 text-muted small">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                        Không có giảng viên nào đáp ứng điều kiện hoán đổi.
+                                    </div>
+                                @else
+                                    @if($phanCong->loai_giang_vien && in_array($phanCong->loai_giang_vien, ['hướng dẫn', 'phản biện']))
+                                        <div class="mt-2 alert alert-warning small">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>
+                                            <strong>Lưu ý:</strong> {{ $phanCong->taiKhoan->ten }} có loại "{{ $phanCong->loai_giang_vien }}". Hệ thống sẽ kiểm tra để đảm bảo hội đồng đích chưa có giảng viên cùng loại này.
+                                        </div>
+                                    @endif
+                                @endif
                             </div>
                             <div class="modal-footer">
-                                <button type="submit" class="btn btn-primary">Hoán đổi</button>
+                                <button type="submit" class="btn btn-primary" {{ $candidates->isEmpty() ? 'disabled' : '' }}>
+                                    Hoán đổi
+                                </button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                             </div>
                         </div>
                     </form>
@@ -510,5 +576,7 @@
           }
         });
       @endif
+
+
     </script>
 @endsection
