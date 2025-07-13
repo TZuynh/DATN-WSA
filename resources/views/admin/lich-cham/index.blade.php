@@ -40,7 +40,7 @@
                             </tr>
                         </thead>
                         <tbody class="sortable" data-hoi-dong-id="{{ $hoiDongId }}">
-                            @foreach($lichChamsHoiDong as $lichCham)
+                            @foreach($lichChamsHoiDong as $index => $lichCham)
                                 <tr data-id="{{ $lichCham->id }}" class="sortable-row">
                                     <td>
                                         <i class="fas fa-grip-vertical me-2 text-muted"></i>
@@ -67,6 +67,12 @@
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
+                                            @if($index > 0 && count($lichChamsHoiDong) > 1)
+                                                <button type="button" class="btn btn-sm btn-info btn-len-top" 
+                                                        title="Đưa lên đầu" data-lich-cham-id="{{ $lichCham->id }}">
+                                                    <i class="fas fa-arrow-up"></i>
+                                                </button>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -84,10 +90,11 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Kéo thả
         document.querySelectorAll('.sortable').forEach(function(el) {
             new Sortable(el, {
                 animation: 150,
-                group: el.dataset.hoiDongId, // Chỉ cho phép kéo thả trong cùng hội đồng
+                group: el.dataset.hoiDongId,
                 onEnd: function () {
                     let orders = [];
                     el.querySelectorAll('tr').forEach((row, index) => {
@@ -115,6 +122,58 @@
                 }
             });
         });
+
+        // Ẩn nút lên top mặc định
+        document.querySelectorAll('.btn-len-top').forEach(function(btn) {
+            btn.style.display = 'none';
+        });
+
+        // Hiện nút khi hover
+        document.querySelectorAll('.sortable-row').forEach(function(row) {
+            row.addEventListener('mouseenter', function() {
+                let btn = row.querySelector('.btn-len-top');
+                if (btn) btn.style.display = 'inline-block';
+            });
+            row.addEventListener('mouseleave', function() {
+                let btn = row.querySelector('.btn-len-top');
+                if (btn) btn.style.display = 'none';
+            });
+        });
+
+        // Xử lý click lên top
+        document.querySelectorAll('.btn-len-top').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var lichChamId = btn.dataset.lichChamId;
+                var tbody = btn.closest('tbody');
+                var rows = tbody.querySelectorAll('tr');
+                var orders = [];
+                // Đưa lịch chấm này lên đầu
+                orders.push({ id: lichChamId, new_order: 1 });
+                var order = 2;
+                rows.forEach(function(row) {
+                    var id = row.dataset.id;
+                    if (id != lichChamId) {
+                        orders.push({ id: id, new_order: order });
+                        order++;
+                    }
+                });
+                fetch("{{ route('admin.lich-cham.update-order') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ orders })
+                }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert("Cập nhật thất bại: " + data.message);
+                    }
+                });
+            });
+        });
     });
 </script>
 @endpush
@@ -126,5 +185,6 @@
     .sortable-drag { background: #fff !important; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     tbody tr { transition: all 0.3s ease; }
     tbody tr:hover { background-color: #f8f9fa; }
+    .btn-len-top { display: none; }
 </style>
 @endpush 
