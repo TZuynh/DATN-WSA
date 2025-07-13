@@ -1,5 +1,7 @@
 @extends('components.giangvien.app')
 
+@section('title', 'Nhập biên bản nhận xét')
+
 @section('content')
 <div class="container">
     <h2>Chọn đề tài để nhập biên bản nhận xét</h2>
