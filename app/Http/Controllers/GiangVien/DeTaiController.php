@@ -28,6 +28,9 @@ class DeTaiController extends Controller
         $isThuKy = \App\Models\PhanCongVaiTro::where('tai_khoan_id', $user->id)
             ->whereHas('vaiTro', function($q) { $q->where('ten', 'Thư ký'); })
             ->exists();
+        $isHuongDan = \App\Models\PhanCongVaiTro::where('tai_khoan_id', $user->id)
+            ->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')
+            ->exists();
 
         if ($isPhanBien) {
             // Lấy các đề tài mà giảng viên được phân công phản biện
@@ -58,7 +61,7 @@ class DeTaiController extends Controller
                 ->get();
         }
 
-        return view('giangvien.de-tai.index', compact('deTais', 'isPhanBien', 'isThuKy'));
+        return view('giangvien.de-tai.index', compact('deTais', 'isPhanBien', 'isThuKy', 'isHuongDan'));
     }
 
     public function create()

@@ -41,6 +41,18 @@
                                     <th>Lớp:</th>
                                     <td>{{ $sinhVien->lop->ten_lop ?? 'N/A' }}</td>
                                 </tr>
+                                <tr>
+                                    <th>Vai trò chấm:</th>
+                                    <td>
+                                        <span class="badge {{ $vaiTroCham=='Phản biện'?'bg-primary':'' }} {{ $vaiTroCham=='Hướng dẫn'?'bg-success':'' }} {{ !in_array($vaiTroCham,['Phản biện','Hướng dẫn'])?'bg-secondary':'' }}">
+                                            {{ $vaiTroCham }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Loại giảng viên:</th>
+                                    <td>{{ $loaiGiangVien ?? 'Không xác định' }}</td>
+                                </tr>
                             </table>
                         </div>
                         @if($dotBaoCao)
@@ -98,8 +110,8 @@
                                            max="10"
                                            step="0.1"
                                            placeholder="Tối đa 10.0"
-                                           @if(!$canGradeBaoCaoAndThuyetTrinh) readonly @endif>
-                                    @if(!$canGradeBaoCaoAndThuyetTrinh)
+                                           @if(!$canGradeBaoCao) readonly @endif>
+                                    @if(!$canGradeBaoCao)
                                         <small class="text-muted">Chỉ Giảng viên hướng dẫn và Giảng viên phản biện mới được chấm điểm này</small>
                                     @endif
                                     @error('diem_bao_cao')
@@ -119,9 +131,9 @@
                                            max="3"
                                            step="0.1"
                                            placeholder="Tối đa 3.0"
-                                           @if($shouldDisableBasicScores) readonly @endif>
-                                    @if($shouldDisableBasicScores)
-                                        <small class="text-muted">Điểm thuyết trình được giữ nguyên từ điểm cũ</small>
+                                           @if(!$canGradeOtherScores) readonly @endif>
+                                    @if(!$canGradeOtherScores)
+                                        <small class="text-muted">Bạn không có quyền chấm điểm này</small>
                                     @endif
                                     @error('diem_thuyet_trinh')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -144,7 +156,11 @@
                                            max="4"
                                            step="0.1"
                                            placeholder="Tối đa 4.0"
+                                           @if(!$canGradeOtherScores) readonly @endif
                                            required>
+                                    @if(!$canGradeOtherScores)
+                                        <small class="text-muted">Bạn không có quyền chấm điểm này</small>
+                                    @endif
                                     @if($errors->has('diem_demo'))
                                         <div class="invalid-feedback">{{ $errors->first('diem_demo') }}</div>
                                     @endif
@@ -162,7 +178,11 @@
                                            max="1"
                                            step="0.1"
                                            placeholder="Tối đa 1.0"
+                                           @if(!$canGradeOtherScores) readonly @endif
                                            required>
+                                    @if(!$canGradeOtherScores)
+                                        <small class="text-muted">Bạn không có quyền chấm điểm này</small>
+                                    @endif
                                     @if($errors->has('diem_cau_hoi'))
                                         <div class="invalid-feedback">{{ $errors->first('diem_cau_hoi') }}</div>
                                     @endif
@@ -182,8 +202,12 @@
                                            min="0"
                                            max="1"
                                            step="0.1"
-                                           placeholder="Tối đa 1.0">
+                                           placeholder="Tối đa 1.0"
+                                           @if(!$canGradeOtherScores) readonly @endif>
                                     <small class="form-text text-muted">Điểm cộng tối đa là 1 điểm</small>
+                                    @if(!$canGradeOtherScores)
+                                        <small class="text-muted">Bạn không có quyền chấm điểm này</small>
+                                    @endif
                                     @if($errors->has('diem_cong'))
                                         <div class="invalid-feedback">{{ $errors->first('diem_cong') }}</div>
                                     @endif

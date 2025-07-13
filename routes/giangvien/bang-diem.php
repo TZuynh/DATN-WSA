@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'role:giang_vien'])->group(function () {
     Route::get('/giang-vien/bang-diem', [BangDiemController::class, 'index'])->name('giangvien.bang-diem.index');
     Route::get('/giang-vien/bang-diem/create/{sinhVienId}/{dotBaoCaoId?}', [BangDiemController::class, 'create'])->name('giangvien.bang-diem.create');
-    Route::post('/giang-vien/bang-diem/store/{sinhVienId}/{dotBaoCaoId?}', [BangDiemController::class, 'store'])->name('giangvien.bang-diem.store');
+    Route::post('/giang-vien/bang-diem/store', [BangDiemController::class, 'store'])->name('giangvien.bang-diem.store');
     Route::get('/giang-vien/bang-diem/{id}', [BangDiemController::class, 'show'])->name('giangvien.bang-diem.show');
     Route::get('/giang-vien/bang-diem/{id}/edit', [BangDiemController::class, 'edit'])->name('giangvien.bang-diem.edit');
     Route::put('/giang-vien/bang-diem/{id}', [BangDiemController::class, 'update'])->name('giangvien.bang-diem.update');

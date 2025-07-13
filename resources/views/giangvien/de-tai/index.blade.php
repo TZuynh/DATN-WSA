@@ -18,7 +18,7 @@
                         @endif
                     </h3>
                     <div class="card-tools">
-                        @if(!$isPhanBien && !$isThuKy)
+                        @if($isHuongDan || (!$isPhanBien && !$isThuKy))
                             <a href="{{ route('giangvien.de-tai.create') }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-plus"></i> Thêm mới
                             </a>
