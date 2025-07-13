@@ -33,11 +33,12 @@
                     </td>
                     <td>{{ $deTai->giangVien->ten ?? 'N/A' }}</td>
                     <td>
-                        <a href="{{ route('giangvien.bien-ban-nhan-xet.create', $deTai->id) }}" class="btn btn-primary btn-sm">Nhập biên bản</a>
                         @php
                             $bienBan = \App\Models\BienBanNhanXet::where('ma_de_tai', $deTai->ma_de_tai)->first();
                         @endphp
-                        @if($bienBan)
+                        @if(!$bienBan)
+                            <a href="{{ route('giangvien.bien-ban-nhan-xet.create', $deTai->id) }}" class="btn btn-primary btn-sm">Nhập biên bản</a>
+                        @else
                             <a href="{{ route('giangvien.bien-ban-nhan-xet.show', $deTai->id) }}" class="btn btn-info btn-sm">Xem biên bản</a>
                             <a href="{{ route('giangvien.bien-ban-nhan-xet.edit', $deTai->id) }}" class="btn btn-warning btn-sm">Sửa biên bản</a>
                         @endif
