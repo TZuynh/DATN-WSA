@@ -271,6 +271,15 @@
                                                                 title="Chuyển sang hội đồng khác">
                                                             <i class="fas fa-random"></i>
                                                         </button>
+                                                        @if($chiTiet->deTai->giang_vien_id)
+                                                        <button type="button" 
+                                                                class="btn btn-outline-info btn-debug-vai-tro" 
+                                                                data-hoi-dong-id="{{ $hoiDong->id }}"
+                                                                data-giang-vien-id="{{ $chiTiet->deTai->giang_vien_id }}"
+                                                                title="Debug vai trò giảng viên">
+                                                            <i class="fas fa-bug"></i>
+                                                        </button>
+                                                        @endif
                                                         <a href="{{ route('admin.phan-cong-cham.phan-bien', ['hoi_dong_id' => $hoiDong->id, 'de_tai_id' => $chiTiet->deTai->id]) }}" class="btn btn-outline-secondary btn-xs" title="Phân công phản biện">
                                                             <i class="fas fa-user-check"></i>
                                                         </a>
@@ -487,12 +496,12 @@
                     <i class="fas fa-info-circle"></i>
                     <strong>Lưu ý:</strong> Khi chuyển đề tài sang hội đồng khác:
                     <ul class="mb-0 mt-2">
-                        <li>Chỉ giảng viên liên quan đến đề tài sẽ được chuyển theo</li>
+                        <li>Tất cả giảng viên liên quan đến đề tài sẽ được chuyển theo</li>
                         <li>Bao gồm: giảng viên hướng dẫn và phản biện của đề tài</li>
                         <li>Vai trò và loại giảng viên sẽ được giữ nguyên</li>
                         <li>Giảng viên sẽ bị xóa khỏi hội đồng hiện tại</li>
                         <li>Nếu hội đồng đích đã có giảng viên trùng, sẽ cập nhật thông tin</li>
-                        <li><strong class="text-danger">Giảng viên có vai trò "Trưởng tiểu ban" hoặc "Thư ký" sẽ không được chuyển</strong></li>
+                        <li><strong class="text-danger">Không thể chuyển đề tài nếu có giảng viên với vai trò "Trưởng tiểu ban" hoặc "Thư ký"</strong></li>
                         <li>Vui lòng thay đổi vai trò của họ thành "Thành viên" trước khi chuyển đề tài</li>
                     </ul>
                 </div>
@@ -699,6 +708,52 @@
             $('#modalChuyenHoiDong').modal('show');
         });
 
+        // Xử lý debug vai trò giảng viên
+        $('.btn-debug-vai-tro').click(function() {
+            const hoiDongId = $(this).data('hoi-dong-id');
+            const giangVienId = $(this).data('giang-vien-id');
+            
+            $.ajax({
+                url: '{{ route("admin.hoi-dong.debug-vai-tro") }}',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    hoi_dong_id: hoiDongId,
+                    giang_vien_id: giangVienId
+                },
+                success: function(res) {
+                    if (res.success) {
+                        Swal.fire({
+                            title: 'Thông tin vai trò giảng viên',
+                            html: '<div class="text-start">' +
+                                  '<p><strong>Tên giảng viên:</strong> ' + res.data.giang_vien_ten + '</p>' +
+                                  '<p><strong>Vai trò:</strong> ' + res.data.vai_tro_ten + '</p>' +
+                                  '<p><strong>Loại giảng viên:</strong> ' + res.data.loai_giang_vien + '</p>' +
+                                  '<p><strong>Có thể chuyển:</strong> ' + (res.data.co_the_chuyen ? 'Có' : 'Không') + '</p>' +
+                                  '</div>',
+                            icon: res.data.co_the_chuyen ? 'success' : 'warning',
+                            confirmButtonColor: '#3085d6'
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Lỗi!',
+                            text: res.message,
+                            icon: 'error',
+                            confirmButtonColor: '#3085d6'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        title: 'Lỗi!',
+                        text: 'Có lỗi xảy ra khi kiểm tra vai trò',
+                        icon: 'error',
+                        confirmButtonColor: '#3085d6'
+                    });
+                }
+            });
+        });
+
         // Xử lý submit chuyển hội đồng
         $('#btnSubmitChuyenHoiDong').click(function() {
             const deTaiId = $('#chuyen_de_tai_id').val();
@@ -771,7 +826,7 @@
                         Swal.fire({
                             title: 'Không thể chuyển đề tài!',
                             html: '<div class="text-start">' + 
-                                  '<p><strong>Lý do:</strong> Có giảng viên với vai trò quan trọng không thể chuyển.</p>' +
+                                  '<p><strong>Lý do:</strong> Có giảng viên với vai trò quan trọng trong hội đồng hiện tại.</p>' +
                                   '<p><strong>Giải pháp:</strong></p>' +
                                   '<ol class="text-start">' +
                                   '<li>Vào phần "Phân công vai trò hội đồng"</li>' +
