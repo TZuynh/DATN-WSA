@@ -77,52 +77,79 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th class="text-muted text-start" style="width: 200px; text-align: left;">Thành viên hội đồng:</th>
-                                <td class="fw-semibold text-start">
+                                <th class="text-muted text-start" style="width: 200px; text-align: left;">
+                                    Thành viên hội đồng:
+                                    <div class="mt-1">
+                                        <button type="button" id="btn-toggle-auto-update" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-sync-alt"></i> Tự động cập nhật
+                                        </button>
+                                        <small class="text-muted ms-2" id="update-status">Đang cập nhật...</small>
+                                    </div>
+                                </th>
+                                <td class="fw-semibold text-start" id="thanh-vien-hoi-dong">
                                     @if($hoiDong->phanCongVaiTros && $hoiDong->phanCongVaiTros->where('de_tai_id', null)->count() > 0)
                                         <div class="d-flex flex-column gap-2">
-                                            @foreach($hoiDong->phanCongVaiTros->where('de_tai_id', null) as $phanCong)
-                                                <div class="d-inline-flex align-items-center">
-                                                    <i class="fas fa-user-tie text-primary me-2"></i>
-                                                    {{ $phanCong->taiKhoan->ten ?? 'N/A' }} 
-                                                    <span class="text-muted ms-1">({{ $phanCong->vaiTro->ten ?? 'N/A' }})</span>
-                                                    @if($phanCong->loai_giang_vien == 'Giảng Viên Phản Biện')
-                                                        <span class="badge bg-warning ms-2">
-                                                            <i class="fas fa-user-check me-1"></i>Giảng viên phản biện
-                                                        </span>
-                                                    @elseif($phanCong->loai_giang_vien == 'Giảng Viên Hướng Dẫn')
-                                                        <span class="badge bg-success ms-2">
-                                                            <i class="fas fa-user-graduate me-1"></i>Giảng viên hướng dẫn
-                                                        </span>
-                                                    @endif
-                                                    @php
-                                                        // Kiểm tra có đề tài nào chưa thuộc hội đồng này không
-                                                        $coDeTaiChuaThuocHoiDong = false;
-                                                        if(isset($phanCong->taiKhoan) && $phanCong->taiKhoan->deTais) {
-                                                            foreach($phanCong->taiKhoan->deTais as $deTai) {
-                                                                if(!($deTai->chiTietBaoCao && $deTai->chiTietBaoCao->hoi_dong_id == $hoiDong->id)) {
-                                                                    $coDeTaiChuaThuocHoiDong = true;
-                                                                    break;
-                                                                }
+                                            @foreach($hoiDong->phanCongVaiTros->where('de_tai_id', null)->sortBy(function($phanCong) {
+                                                $vaiTro = $phanCong->vaiTro->ten ?? '';
+                                                $ten = $phanCong->taiKhoan->ten ?? '';
+                                                $priority = 0;
+                                                if (str_contains($vaiTro, 'Trưởng tiểu ban')) $priority = 1;
+                                                elseif (str_contains($vaiTro, 'Thư ký')) $priority = 2;
+                                                elseif (str_contains($vaiTro, 'Thành viên')) $priority = 3;
+                                                else $priority = 4;
+                                                return $priority . $ten;
+                                            }) as $phanCong)
+                                                <div class="d-flex align-items-center justify-content-between p-2 border rounded bg-light">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas fa-user-tie text-primary me-2"></i>
+                                                        <strong>{{ $phanCong->taiKhoan->ten ?? 'N/A' }}</strong>
+                                                        @php
+                                                            $vaiTroClass = 'text-muted';
+                                                            if (str_contains($phanCong->vaiTro->ten ?? '', 'Trưởng tiểu ban')) {
+                                                                $vaiTroClass = 'text-danger fw-bold';
+                                                            } elseif (str_contains($phanCong->vaiTro->ten ?? '', 'Thư ký')) {
+                                                                $vaiTroClass = 'text-primary fw-bold';
                                                             }
-                                                        }
-                                                    @endphp
-                                                    @if($phanCong->taiKhoan && $phanCong->taiKhoan->deTais && $phanCong->taiKhoan->deTais->count() > 0)
-                                                        <button type="button" class="btn btn-sm btn-info ms-2" data-bs-toggle="modal" data-bs-target="#modalTatCaDeTai{{ $phanCong->taiKhoan->id }}">
-                                                            <i class="fas fa-book me-1"></i>
-                                                            {{ $phanCong->taiKhoan->deTais->count() }} đề tài
-                                                        </button>
-                                                        @if($coDeTaiChuaThuocHoiDong)
-                                                            <button type="button" class="btn btn-sm btn-primary ms-2 btn-mo-modal-chon-detai" data-bs-toggle="modal" data-bs-target="#modalDeTai{{ $phanCong->taiKhoan->id }}">
-                                                                <i class="fas fa-plus"></i> Chọn đề tài vào hội đồng
-                                                            </button>
+                                                        @endphp
+                                                        <span class="ms-2 {{ $vaiTroClass }}">({{ $phanCong->vaiTro->ten ?? 'N/A' }})</span>
+                                                        @if($phanCong->loai_giang_vien == 'Giảng Viên Phản Biện')
+                                                            <span class="badge bg-warning ms-2">
+                                                                <i class="fas fa-user-check me-1"></i>Phản biện
+                                                            </span>
+                                                        @elseif($phanCong->loai_giang_vien == 'Giảng Viên Hướng Dẫn')
+                                                            <span class="badge bg-success ms-2">
+                                                                <i class="fas fa-user-graduate me-1"></i>Hướng dẫn
+                                                            </span>
                                                         @endif
-                                                    @endif
+                                                    </div>
+                                                    <div class="d-flex align-items-center">
+                                                        @if($phanCong->taiKhoan && $phanCong->taiKhoan->deTais && $phanCong->taiKhoan->deTais->count() > 0)
+                                                            <button type="button" class="btn btn-sm btn-outline-info me-1" data-bs-toggle="modal" data-bs-target="#modalTatCaDeTai{{ $phanCong->taiKhoan->id }}" title="Xem đề tài">
+                                                                <i class="fas fa-book"></i> {{ $phanCong->taiKhoan->deTais->count() }}
+                                                            </button>
+                                                            @php
+                                                                $coDeTaiChuaThuocHoiDong = false;
+                                                                if(isset($phanCong->taiKhoan) && $phanCong->taiKhoan->deTais) {
+                                                                    foreach($phanCong->taiKhoan->deTais as $deTai) {
+                                                                        if(!($deTai->chiTietBaoCao && $deTai->chiTietBaoCao->hoi_dong_id == $hoiDong->id)) {
+                                                                            $coDeTaiChuaThuocHoiDong = true;
+                                                                            break;
+                                                                        }
+                                                                    }
+                                                                }
+                                                            @endphp
+                                                            @if($coDeTaiChuaThuocHoiDong)
+                                                                <button type="button" class="btn btn-sm btn-outline-primary btn-mo-modal-chon-detai" data-bs-toggle="modal" data-bs-target="#modalDeTai{{ $phanCong->taiKhoan->id }}" title="Chọn đề tài">
+                                                                    <i class="fas fa-plus"></i>
+                                                                </button>
+                                                            @endif
+                                                        @endif
+                                                    </div>
                                                 </div>
                                             @endforeach
                                         </div>
                                     @else
-                                        <div class="text-muted" style="width: 200px; text-align: left;">
+                                        <div class="text-muted">
                                             <small>Chưa có thành viên nào trong hội đồng</small>
                                         </div>
                                     @endif
@@ -394,7 +421,27 @@
                                         <tr>
                                             <td>{{ $deTai->ma_de_tai }}</td>
                                             <td>{{ $deTai->ten_de_tai }}</td>
-                                            <td>{{ $deTai->trang_thai }}</td>
+                                            <td>
+                                                @switch($deTai->trang_thai)
+                                                    @case(0)
+                                                        <span class="badge bg-warning">Chờ duyệt</span>
+                                                        @break
+                                                    @case(1)
+                                                        <span class="badge bg-info">Đang thực hiện (GVHD)</span>
+                                                        @break
+                                                    @case(2)
+                                                        <span class="badge bg-primary">Đang thực hiện (GVPB)</span>
+                                                        @break
+                                                    @case(3)
+                                                        <span class="badge bg-danger">Không xảy ra (GVHD)</span>
+                                                        @break
+                                                    @case(4)
+                                                        <span class="badge bg-danger">Không xảy ra (GVPB)</span>
+                                                        @break
+                                                    @default
+                                                        <span class="badge bg-secondary">Không xác định</span>
+                                                @endswitch
+                                            </td>
                                             <td>
                                                 @if($deTai->nhom)
                                                     <span class="badge bg-success">{{ $deTai->nhom->ma_nhom }}</span>
@@ -440,8 +487,13 @@
                     <i class="fas fa-info-circle"></i>
                     <strong>Lưu ý:</strong> Khi chuyển đề tài sang hội đồng khác:
                     <ul class="mb-0 mt-2">
-                        <li>Giảng viên phản biện và hướng dẫn sẽ được giữ nguyên</li>
-                        <li>Các giảng viên khác sẽ thay đổi theo hội đồng mới</li>
+                        <li>Chỉ giảng viên liên quan đến đề tài sẽ được chuyển theo</li>
+                        <li>Bao gồm: giảng viên hướng dẫn và phản biện của đề tài</li>
+                        <li>Vai trò và loại giảng viên sẽ được giữ nguyên</li>
+                        <li>Giảng viên sẽ bị xóa khỏi hội đồng hiện tại</li>
+                        <li>Nếu hội đồng đích đã có giảng viên trùng, sẽ cập nhật thông tin</li>
+                        <li><strong class="text-danger">Giảng viên có vai trò "Trưởng tiểu ban" hoặc "Thư ký" sẽ không được chuyển</strong></li>
+                        <li>Vui lòng thay đổi vai trò của họ thành "Thành viên" trước khi chuyển đề tài</li>
                     </ul>
                 </div>
                 <form id="formChuyenHoiDong">
@@ -655,6 +707,29 @@
                 alert('Vui lòng chọn hội đồng mới!');
                 return;
             }
+            
+            // Hiển thị xác nhận trước khi chuyển
+            Swal.fire({
+                title: 'Xác nhận chuyển đề tài?',
+                text: 'Đề tài và giảng viên liên quan sẽ được chuyển sang hội đồng mới. Giảng viên sẽ bị xóa khỏi hội đồng hiện tại.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Chuyển',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Hiển thị loading
+                    Swal.fire({
+                        title: 'Đang chuyển...',
+                        text: 'Vui lòng chờ trong giây lát',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+            
             $.ajax({
                 url: '{{ route('admin.hoi-dong.index') }}/chuyen-de-tai',
                 method: 'POST',
@@ -670,9 +745,11 @@
                             title: 'Thành công!',
                             text: res.message,
                             icon: 'success',
-                            confirmButtonColor: '#3085d6'
+                            confirmButtonColor: '#3085d6',
+                            showConfirmButton: true
                         }).then(() => {
-                            location.reload();
+                            // Cập nhật thành viên hội đồng bằng AJAX
+                            updateThanhVienHoiDong();
                         });
                     } else {
                         Swal.fire({
@@ -688,12 +765,35 @@
                     if (xhr.responseJSON && xhr.responseJSON.message) {
                         errorMessage = xhr.responseJSON.message;
                     }
-                    Swal.fire({
-                        title: 'Lỗi!',
-                        text: errorMessage,
-                        icon: 'error',
-                        confirmButtonColor: '#3085d6'
-                    });
+                    
+                    // Kiểm tra nếu lỗi liên quan đến vai trò giảng viên
+                    if (errorMessage.includes('vai trò quan trọng') || errorMessage.includes('Trưởng tiểu ban') || errorMessage.includes('Thư ký')) {
+                        Swal.fire({
+                            title: 'Không thể chuyển đề tài!',
+                            html: '<div class="text-start">' + 
+                                  '<p><strong>Lý do:</strong> Có giảng viên với vai trò quan trọng không thể chuyển.</p>' +
+                                  '<p><strong>Giải pháp:</strong></p>' +
+                                  '<ol class="text-start">' +
+                                  '<li>Vào phần "Phân công vai trò hội đồng"</li>' +
+                                  '<li>Thay đổi vai trò của giảng viên từ "Trưởng tiểu ban" hoặc "Thư ký" thành "Thành viên"</li>' +
+                                  '<li>Thử chuyển đề tài lại</li>' +
+                                  '</ol>' +
+                                  '<p class="text-danger"><strong>Chi tiết lỗi:</strong> ' + errorMessage + '</p>' +
+                                  '</div>',
+                            icon: 'warning',
+                            confirmButtonColor: '#3085d6',
+                            confirmButtonText: 'Đã hiểu'
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Lỗi!',
+                            text: errorMessage,
+                            icon: 'error',
+                            confirmButtonColor: '#3085d6'
+                        });
+                    }
+                }
+            });
                 }
             });
         });
@@ -804,6 +904,102 @@
                     alert(errorMessage);
                 }
             });
+        });
+
+        // Function cập nhật thành viên hội đồng
+        function updateThanhVienHoiDong() {
+            const currentContent = $('#thanh-vien-hoi-dong').html();
+            
+            $.ajax({
+                url: '{{ route("admin.hoi-dong.thanh-vien", $hoiDong->id) }}',
+                method: 'GET',
+                success: function(res) {
+                    if (res.success) {
+                        if (currentContent !== res.html) {
+                            // Có thay đổi, cập nhật nội dung
+                            $('#thanh-vien-hoi-dong').html(res.html);
+                            
+                            // Hiển thị thông báo có thay đổi
+                            updateStatus('Đã cập nhật ' + new Date().toLocaleTimeString(), 'text-success');
+                            
+                            // Tự động ẩn thông báo sau 3 giây
+                            setTimeout(function() {
+                                if (isAutoUpdateEnabled) {
+                                    updateStatus('Đang cập nhật...', 'text-success');
+                                }
+                            }, 3000);
+                        }
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Lỗi khi cập nhật thành viên hội đồng:', xhr);
+                    updateStatus('Lỗi cập nhật', 'text-danger');
+                }
+            });
+        }
+
+        // Tự động cập nhật thành viên hội đồng mỗi 5 giây
+        let updateInterval;
+        let isAutoUpdateEnabled = true;
+        
+        function startAutoUpdate() {
+            if (!isAutoUpdateEnabled) return;
+            
+            updateInterval = setInterval(function() {
+                updateThanhVienHoiDong();
+            }, 5000); // Cập nhật mỗi 5 giây
+            
+            updateStatus('Đang cập nhật...', 'text-success');
+        }
+        
+        function stopAutoUpdate() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+                updateInterval = null;
+            }
+            updateStatus('Đã dừng', 'text-muted');
+        }
+
+        function updateStatus(message, className) {
+            $('#update-status').text(message).removeClass().addClass('text-muted ms-2 ' + className);
+        }
+
+        function toggleAutoUpdate() {
+            if (isAutoUpdateEnabled) {
+                stopAutoUpdate();
+                isAutoUpdateEnabled = false;
+                $('#btn-toggle-auto-update').removeClass('btn-outline-primary').addClass('btn-outline-secondary');
+                $('#btn-toggle-auto-update i').removeClass('fa-sync-alt').addClass('fa-pause');
+                $('#btn-toggle-auto-update').html('<i class="fas fa-pause"></i> Tạm dừng');
+            } else {
+                isAutoUpdateEnabled = true;
+                startAutoUpdate();
+                $('#btn-toggle-auto-update').removeClass('btn-outline-secondary').addClass('btn-outline-primary');
+                $('#btn-toggle-auto-update i').removeClass('fa-pause').addClass('fa-sync-alt');
+                $('#btn-toggle-auto-update').html('<i class="fas fa-sync-alt"></i> Tự động cập nhật');
+            }
+        }
+
+        // Xử lý nút bật/tắt tự động cập nhật
+        $('#btn-toggle-auto-update').click(function() {
+            toggleAutoUpdate();
+        });
+
+        // Bắt đầu tự động cập nhật khi trang load
+        startAutoUpdate();
+
+        // Dừng tự động cập nhật khi tab không active
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                stopAutoUpdate();
+            } else if (isAutoUpdateEnabled) {
+                startAutoUpdate();
+            }
+        });
+
+        // Dừng tự động cập nhật khi đóng trang
+        window.addEventListener('beforeunload', function() {
+            stopAutoUpdate();
         });
     });
 </script>

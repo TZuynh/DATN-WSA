@@ -381,7 +381,6 @@ class HoiDongController extends Controller
             DB::beginTransaction();
 
             $deTai = \App\Models\DeTai::findOrFail($request->de_tai_id);
-            $hoiDongCu = \App\Models\HoiDong::find($request->hoi_dong_id);
             $hoiDongMoi = \App\Models\HoiDong::findOrFail($request->hoi_dong_id);
 
             // Cập nhật chi tiết đề tài báo cáo
@@ -391,65 +390,100 @@ class HoiDongController extends Controller
             }
 
             $hoiDongCuId = $chiTiet->hoi_dong_id;
+            
+            // Kiểm tra không được chuyển về chính hội đồng hiện tại
+            if ($hoiDongCuId == $request->hoi_dong_id) {
+                throw new \Exception('Không thể chuyển đề tài về chính hội đồng hiện tại!');
+            }
+
             $chiTiet->hoi_dong_id = $request->hoi_dong_id;
             $chiTiet->save();
 
-            // Lấy danh sách giảng viên phản biện và hướng dẫn từ hội đồng cũ
+            // Lấy giảng viên liên quan đến đề tài này (hướng dẫn và phản biện)
+            $giangVienDeTai = [];
+            
+            // Lấy giảng viên hướng dẫn của đề tài
+            if ($deTai->giang_vien_id) {
+                $giangVienDeTai[] = $deTai->giang_vien_id;
+            }
+            
+            // Lấy giảng viên phản biện từ phân công chấm
+            $phanCongChamDeTai = \App\Models\PhanCongCham::where('de_tai_id', $request->de_tai_id)->first();
+            if ($phanCongChamDeTai && $phanCongChamDeTai->giang_vien_id) {
+                $giangVienDeTai[] = $phanCongChamDeTai->giang_vien_id;
+            }
+            
+            // Lấy thêm giảng viên phản biện từ phân công vai trò có loại giảng viên phản biện
             $giangVienPhanBienIds = \App\Models\PhanCongVaiTro::where('hoi_dong_id', $hoiDongCuId)
                 ->where('loai_giang_vien', 'Giảng Viên Phản Biện')
                 ->pluck('tai_khoan_id')
                 ->toArray();
-
-            $giangVienHuongDanIds = \App\Models\PhanCongVaiTro::where('hoi_dong_id', $hoiDongCuId)
-                ->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')
-                ->pluck('tai_khoan_id')
-                ->toArray();
-
-            // Thêm giảng viên phản biện vào hội đồng mới (nếu chưa có)
-            foreach ($giangVienPhanBienIds as $giangVienId) {
-                $phanCong = \App\Models\PhanCongVaiTro::where('hoi_dong_id', $request->hoi_dong_id)
+            
+            $giangVienDeTai = array_merge($giangVienDeTai, $giangVienPhanBienIds);
+            $giangVienDeTai = array_unique($giangVienDeTai); // Loại bỏ trùng lặp
+            
+            // Kiểm tra vai trò của giảng viên trước khi chuyển
+            $giangVienKhongDuocChuyen = [];
+            foreach ($giangVienDeTai as $giangVienId) {
+                $phanCongCu = \App\Models\PhanCongVaiTro::where('hoi_dong_id', $hoiDongCuId)
                     ->where('tai_khoan_id', $giangVienId)
+                    ->whereNull('de_tai_id')
+                    ->with(['taiKhoan', 'vaiTro'])
                     ->first();
-
-                if (!$phanCong) {
-                    // Tạo phân công mới cho giảng viên phản biện
-                    $vaiTro = \App\Models\VaiTro::firstOrCreate(
-                        ['ten' => 'Thành viên'],
-                        ['mo_ta' => 'Thành viên hội đồng']
-                    );
-                    \App\Models\PhanCongVaiTro::create([
-                        'hoi_dong_id' => $request->hoi_dong_id,
-                        'tai_khoan_id' => $giangVienId,
-                        'vai_tro_id' => $vaiTro->id,
-                        'loai_giang_vien' => 'Giảng Viên Phản Biện'
-                    ]);
-                } else {
-                    // Cập nhật loại giảng viên nếu đã có phân công
-                    $phanCong->update(['loai_giang_vien' => 'Giảng Viên Phản Biện']);
+                
+                if ($phanCongCu && $phanCongCu->vaiTro) {
+                    $vaiTroTen = $phanCongCu->vaiTro->ten;
+                    if (str_contains($vaiTroTen, 'Trưởng tiểu ban') || str_contains($vaiTroTen, 'Thư ký')) {
+                        $giangVienKhongDuocChuyen[] = [
+                            'ten' => $phanCongCu->taiKhoan->ten ?? 'N/A',
+                            'vai_tro' => $vaiTroTen
+                        ];
+                    }
                 }
             }
-
-            // Thêm giảng viên hướng dẫn vào hội đồng mới (nếu chưa có)
-            foreach ($giangVienHuongDanIds as $giangVienId) {
-                $phanCong = \App\Models\PhanCongVaiTro::where('hoi_dong_id', $request->hoi_dong_id)
+            
+            // Nếu có giảng viên không được chuyển, trả về lỗi
+            if (!empty($giangVienKhongDuocChuyen)) {
+                $danhSachGiangVien = implode(', ', array_map(function($gv) {
+                    return $gv['ten'] . ' (' . $gv['vai_tro'] . ')';
+                }, $giangVienKhongDuocChuyen));
+                
+                throw new \Exception("Không thể chuyển đề tài vì các giảng viên sau có vai trò quan trọng: {$danhSachGiangVien}. Vui lòng thay đổi vai trò của họ thành 'Thành viên' trước khi chuyển đề tài.");
+            }
+            
+            // Chỉ chuyển giảng viên liên quan đến đề tài này
+            foreach ($giangVienDeTai as $giangVienId) {
+                // Lấy thông tin phân công của giảng viên này từ hội đồng cũ
+                $phanCongCu = \App\Models\PhanCongVaiTro::where('hoi_dong_id', $hoiDongCuId)
                     ->where('tai_khoan_id', $giangVienId)
+                    ->whereNull('de_tai_id')
                     ->first();
 
-                if (!$phanCong) {
-                    // Tạo phân công mới cho giảng viên hướng dẫn
-                    $vaiTro = \App\Models\VaiTro::firstOrCreate(
-                        ['ten' => 'Thành viên'],
-                        ['mo_ta' => 'Thành viên hội đồng']
-                    );
-                    \App\Models\PhanCongVaiTro::create([
-                        'hoi_dong_id' => $request->hoi_dong_id,
-                        'tai_khoan_id' => $giangVienId,
-                        'vai_tro_id' => $vaiTro->id,
-                        'loai_giang_vien' => 'Giảng Viên Hướng Dẫn'
-                    ]);
-                } else {
-                    // Cập nhật loại giảng viên nếu đã có phân công
-                    $phanCong->update(['loai_giang_vien' => 'Giảng Viên Hướng Dẫn']);
+                if ($phanCongCu) {
+                    // Kiểm tra giảng viên đã có trong hội đồng mới chưa
+                    $phanCongDaTonTai = \App\Models\PhanCongVaiTro::where('hoi_dong_id', $request->hoi_dong_id)
+                        ->where('tai_khoan_id', $giangVienId)
+                        ->whereNull('de_tai_id')
+                        ->first();
+
+                    if (!$phanCongDaTonTai) {
+                        // Tạo phân công mới cho giảng viên
+                        \App\Models\PhanCongVaiTro::create([
+                            'hoi_dong_id' => $request->hoi_dong_id,
+                            'tai_khoan_id' => $giangVienId,
+                            'vai_tro_id' => $phanCongCu->vai_tro_id,
+                            'loai_giang_vien' => $phanCongCu->loai_giang_vien
+                        ]);
+                    } else {
+                        // Cập nhật vai trò và loại giảng viên nếu đã có phân công
+                        $phanCongDaTonTai->update([
+                            'vai_tro_id' => $phanCongCu->vai_tro_id,
+                            'loai_giang_vien' => $phanCongCu->loai_giang_vien
+                        ]);
+                    }
+                    
+                    // Xóa phân công của giảng viên khỏi hội đồng cũ
+                    $phanCongCu->delete();
                 }
             }
 
@@ -466,7 +500,7 @@ class HoiDongController extends Controller
             }
 
             DB::commit();
-            return response()->json(['success' => true, 'message' => 'Chuyển hội đồng thành công! Giảng viên phản biện và hướng dẫn đã được giữ nguyên.']);
+            return response()->json(['success' => true, 'message' => 'Chuyển hội đồng thành công! Giảng viên liên quan đến đề tài đã được chuyển theo và xóa khỏi hội đồng cũ.']);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -525,6 +559,85 @@ class HoiDongController extends Controller
         return response()->json([
             'success' => true,
             'message' => $msg,
+        ]);
+    }
+
+    /**
+     * Lấy dữ liệu thành viên hội đồng để cập nhật AJAX
+     */
+    public function getThanhVienHoiDong(HoiDong $hoiDong)
+    {
+        $thanhVien = $hoiDong->phanCongVaiTros()
+            ->whereNull('de_tai_id')
+            ->with(['taiKhoan', 'vaiTro'])
+            ->get()
+            ->sortBy(function($phanCong) {
+                // Sắp xếp theo thứ tự ưu tiên: Trưởng tiểu ban, Thư ký, Thành viên, sau đó theo tên
+                $vaiTro = $phanCong->vaiTro->ten ?? '';
+                $ten = $phanCong->taiKhoan->ten ?? '';
+                
+                $priority = 0;
+                if (str_contains($vaiTro, 'Trưởng tiểu ban')) $priority = 1;
+                elseif (str_contains($vaiTro, 'Thư ký')) $priority = 2;
+                elseif (str_contains($vaiTro, 'Thành viên')) $priority = 3;
+                else $priority = 4;
+                
+                return $priority . $ten;
+            });
+
+        if ($thanhVien->count() == 0) {
+            return response()->json([
+                'success' => true,
+                'html' => '<div class="text-muted"><small>Chưa có thành viên nào trong hội đồng</small></div>'
+            ]);
+        }
+
+        $html = '<div class="d-flex flex-column gap-2">';
+        
+        foreach ($thanhVien as $phanCong) {
+            $html .= '<div class="d-flex align-items-center justify-content-between p-2 border rounded bg-light">';
+            
+            // Phần thông tin giảng viên
+            $html .= '<div class="d-flex align-items-center">';
+            $html .= '<i class="fas fa-user-tie text-primary me-2"></i>';
+            $html .= '<strong>' . ($phanCong->taiKhoan->ten ?? 'N/A') . '</strong>';
+            
+            // Vai trò
+            $vaiTroClass = 'text-muted';
+            if (str_contains($phanCong->vaiTro->ten ?? '', 'Trưởng tiểu ban')) {
+                $vaiTroClass = 'text-danger fw-bold';
+            } elseif (str_contains($phanCong->vaiTro->ten ?? '', 'Thư ký')) {
+                $vaiTroClass = 'text-primary fw-bold';
+            }
+            
+            $html .= '<span class="ms-2 ' . $vaiTroClass . '">(' . ($phanCong->vaiTro->ten ?? 'N/A') . ')</span>';
+            
+            // Loại giảng viên
+            if ($phanCong->loai_giang_vien == 'Giảng Viên Phản Biện') {
+                $html .= '<span class="badge bg-warning ms-2"><i class="fas fa-user-check me-1"></i>Phản biện</span>';
+            } elseif ($phanCong->loai_giang_vien == 'Giảng Viên Hướng Dẫn') {
+                $html .= '<span class="badge bg-success ms-2"><i class="fas fa-user-graduate me-1"></i>Hướng dẫn</span>';
+            }
+            
+            $html .= '</div>';
+            
+            // Phần nút thao tác
+            $html .= '<div class="d-flex align-items-center">';
+            if ($phanCong->taiKhoan && $phanCong->taiKhoan->deTais && $phanCong->taiKhoan->deTais->count() > 0) {
+                $html .= '<button type="button" class="btn btn-sm btn-outline-info me-1" data-bs-toggle="modal" data-bs-target="#modalTatCaDeTai' . $phanCong->taiKhoan->id . '" title="Xem đề tài">';
+                $html .= '<i class="fas fa-book"></i> ' . $phanCong->taiKhoan->deTais->count();
+                $html .= '</button>';
+            }
+            $html .= '</div>';
+            
+            $html .= '</div>';
+        }
+        
+        $html .= '</div>';
+
+        return response()->json([
+            'success' => true,
+            'html' => $html
         ]);
     }
 } 
