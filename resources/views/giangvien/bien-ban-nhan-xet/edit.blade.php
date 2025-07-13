@@ -1,5 +1,7 @@
 @extends('components.giangvien.app')
 
+@section('title', 'Sửa biên bản nhận xét')
+
 @section('content')
 <div class="container mt-4">
     <div class="card shadow">
