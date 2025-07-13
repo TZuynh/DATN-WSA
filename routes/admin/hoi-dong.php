@@ -21,4 +21,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     
     // Lấy dữ liệu thành viên hội đồng
     Route::get('/admin/hoi-dong/{hoiDong}/thanh-vien', [HoiDongController::class, 'getThanhVienHoiDong'])->name('admin.hoi-dong.thanh-vien');
+    
+    // Debug: Kiểm tra vai trò giảng viên
+    Route::post('/admin/hoi-dong/debug-vai-tro', [HoiDongController::class, 'debugVaiTroGiangVien'])->name('admin.hoi-dong.debug-vai-tro');
 });
