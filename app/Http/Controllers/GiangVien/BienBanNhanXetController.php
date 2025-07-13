@@ -8,6 +8,7 @@ use App\Models\BienBanNhanXet;
 use App\Models\BienBanCauTraLoi;
 use App\Models\DeTai;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class BienBanNhanXetController extends Controller
 {
@@ -17,6 +18,10 @@ class BienBanNhanXetController extends Controller
         $user = Auth::user();
         $isThuKy = $deTai->chiTietBaoCao && $deTai->chiTietBaoCao->hoiDong && $deTai->chiTietBaoCao->hoiDong->phanCongVaiTros->where('tai_khoan_id', $user->id)->where('vaiTro.ten', 'Thư ký')->count();
         if (!$isThuKy) abort(403, 'Bạn không phải là thư ký hội đồng này');
+        $bienBan = \App\Models\BienBanNhanXet::where('ma_de_tai', $deTai->ma_de_tai)->first();
+        if ($bienBan) {
+            return redirect()->route('giangvien.bien-ban-nhan-xet.show', $deTai->id);
+        }
         return view('giangvien.bien-ban-nhan-xet.create', compact('deTai'));
     }
 
@@ -28,7 +33,7 @@ class BienBanNhanXetController extends Controller
             'muc_tieu' => 'nullable',
             'tai_lieu' => 'nullable',
             'phuong_phap' => 'nullable',
-            'ket_qua' => 'nullable',
+            'ket_qua' => 'required|in:Đạt,Không đạt',
             'qua_trinh_hoat_dong' => 'nullable',
             'cau_hoi' => 'required|array',
         ]);
@@ -62,18 +67,18 @@ class BienBanNhanXetController extends Controller
     public function selectDeTai()
     {
         $user = auth()->user();
-        \Log::info('[BienBanNhanXetController@selectDeTai] user_id: ' . $user->id);
+        Log::info('[BienBanNhanXetController@selectDeTai] user_id: ' . $user->id);
         $hoiDongIds = \App\Models\PhanCongVaiTro::where('tai_khoan_id', $user->id)
             ->whereHas('vaiTro', function($q) { $q->where('ten', 'Thư ký'); })
             ->pluck('hoi_dong_id');
-        \Log::info('[BienBanNhanXetController@selectDeTai] hoiDongIds: ' . json_encode($hoiDongIds));
+        Log::info('[BienBanNhanXetController@selectDeTai] hoiDongIds: ' . json_encode($hoiDongIds));
         $deTaiIds = \App\Models\ChiTietDeTaiBaoCao::whereIn('hoi_dong_id', $hoiDongIds)->pluck('de_tai_id');
-        \Log::info('[BienBanNhanXetController@selectDeTai] deTaiIds: ' . json_encode($deTaiIds));
+        Log::info('[BienBanNhanXetController@selectDeTai] deTaiIds: ' . json_encode($deTaiIds));
         $deTais = \App\Models\DeTai::with(['nhoms.sinhViens', 'dotBaoCao.hocKy', 'giangVien'])
             ->whereIn('id', $deTaiIds)
             ->orderBy('created_at', 'desc')
             ->get();
-        \Log::info('[BienBanNhanXetController@selectDeTai] deTais count: ' . $deTais->count());
+        Log::info('[BienBanNhanXetController@selectDeTai] deTais count: ' . $deTais->count());
         return view('giangvien.bien-ban-nhan-xet.select-detai', compact('deTais'));
     }
 
@@ -111,7 +116,7 @@ class BienBanNhanXetController extends Controller
             'muc_tieu' => 'nullable',
             'tai_lieu' => 'nullable',
             'phuong_phap' => 'nullable',
-            'ket_qua' => 'nullable',
+            'ket_qua' => 'required|in:Đạt,Không đạt',
             'qua_trinh_hoat_dong' => 'nullable',
             'cau_hoi' => 'required|array',
         ]);

@@ -2,55 +2,64 @@
 
 @section('content')
 <div class="container mt-4">
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">Biên bản nhận xét - Đề tài: {{ $deTai->ten_de_tai ?? '' }}</h4>
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white d-flex align-items-center">
+            <i class="fas fa-file-alt fa-lg me-2"></i>
+            <h4 class="mb-0">Biên bản nhận xét - Đề tài: <span class="text-warning">{{ $deTai->ten_de_tai ?? '' }}</span></h4>
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
             @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
             @endif
-            <div class="mb-3">
-                <label class="fw-bold">1. Nhận xét về hình thức:</label>
-                <textarea class="form-control bg-light" rows="2" readonly>{{ $bienBan->hinh_thuc }}</textarea>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="border rounded-3 p-3 bg-light mb-3">
+                        <div class="fw-bold mb-1"><i class="fas fa-eye me-1 text-primary"></i> Nhận xét về hình thức:</div>
+                        <div class="text-secondary">{{ $bienBan->hinh_thuc }}</div>
+                    </div>
+                    <div class="border rounded-3 p-3 bg-light mb-3">
+                        <div class="fw-bold mb-1"><i class="fas fa-bolt me-1 text-warning"></i> Tính cấp thiết của đề tài:</div>
+                        <div class="text-secondary">{{ $bienBan->cap_thiet }}</div>
+                    </div>
+                    <div class="border rounded-3 p-3 bg-light mb-3">
+                        <div class="fw-bold mb-1"><i class="fas fa-bullseye me-1 text-success"></i> Mục tiêu và nội dung:</div>
+                        <div class="text-secondary">{{ $bienBan->muc_tieu }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="border rounded-3 p-3 bg-light mb-3">
+                        <div class="fw-bold mb-1"><i class="fas fa-book me-1 text-info"></i> Tổng quan tài liệu và tài liệu tham khảo:</div>
+                        <div class="text-secondary">{{ $bienBan->tai_lieu }}</div>
+                    </div>
+                    <div class="border rounded-3 p-3 bg-light mb-3">
+                        <div class="fw-bold mb-1"><i class="fas fa-flask me-1 text-danger"></i> Phương pháp nghiên cứu:</div>
+                        <div class="text-secondary">{{ $bienBan->phuong_phap }}</div>
+                    </div>
+                </div>
             </div>
-            <div class="mb-3">
-                <label class="fw-bold">2.2. Tính cấp thiết của đề tài:</label>
-                <textarea class="form-control bg-light" rows="2" readonly>{{ $bienBan->cap_thiet }}</textarea>
-            </div>
-            <div class="mb-3">
-                <label class="fw-bold">2.3. Mục tiêu và nội dung:</label>
-                <textarea class="form-control bg-light" rows="2" readonly>{{ $bienBan->muc_tieu }}</textarea>
-            </div>
-            <div class="mb-3">
-                <label class="fw-bold">2.4. Tổng quan tài liệu và tài liệu tham khảo:</label>
-                <textarea class="form-control bg-light" rows="2" readonly>{{ $bienBan->tai_lieu }}</textarea>
-            </div>
-            <div class="mb-3">
-                <label class="fw-bold">2.5. Phương pháp nghiên cứu:</label>
-                <textarea class="form-control bg-light" rows="2" readonly>{{ $bienBan->phuong_phap }}</textarea>
-            </div>
-            <div class="mb-3">
-                <label class="fw-bold">2.6. Kết quả đạt được:</label>
-                <textarea class="form-control bg-light" rows="2" readonly>{{ $bienBan->ket_qua }}</textarea>
-            </div>
-            <div class="mb-3">
-                <label class="fw-bold">Quá trình hoạt động đề tài</label>
-                <textarea class="form-control bg-light" rows="2" readonly>{{ $bienBan->qua_trinh_hoat_dong }}</textarea>
-            </div>
-            <div class="mb-3">
-                <h5 class="fw-bold">Câu hỏi phản biện</h5>
-                <ul class="list-group list-group-flush">
+            <div class="mb-4">
+                <div class="fw-bold mb-2"><i class="fas fa-question-circle text-primary me-1"></i> Câu hỏi phản biện:</div>
+                <ol class="list-group list-group-numbered list-group-flush">
                     @forelse($bienBan->cauTraLois as $cauHoi)
                         <li class="list-group-item ps-4">{{ $cauHoi->cau_hoi }}</li>
                     @empty
                         <li class="list-group-item ps-4 text-muted">Không có câu hỏi phản biện.</li>
                     @endforelse
-                </ul>
+                </ol>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route('giangvien.bien-ban-nhan-xet.edit', $deTai->id) }}" class="btn btn-warning">Sửa biên bản</a>
-                <a href="{{ route('giangvien.bien-ban-nhan-xet.select-detai') }}" class="btn btn-secondary">Quay lại</a>
+            <div class="mb-4 text-center">
+                <label class="fw-bold fs-5 mb-2"><i class="fas fa-award me-2 text-success"></i>Kết quả đạt được:</label><br>
+                @if($bienBan->ket_qua === 'Đạt')
+                    <span class="badge bg-success fs-4 py-2 px-4"><i class="fas fa-check-circle me-2"></i>Đạt</span>
+                @elseif($bienBan->ket_qua === 'Không đạt')
+                    <span class="badge bg-danger fs-4 py-2 px-4"><i class="fas fa-times-circle me-2"></i>Không đạt</span>
+                @else
+                    <span class="badge bg-secondary fs-4 py-2 px-4">Chưa xác định</span>
+                @endif
+            </div>
+            <div class="d-flex justify-content-end gap-2 mt-3">
+                <a href="{{ route('giangvien.bien-ban-nhan-xet.edit', $deTai->id) }}" class="btn btn-warning"><i class="fas fa-edit me-1"></i> Sửa biên bản</a>
+                <a href="{{ route('giangvien.bien-ban-nhan-xet.select-detai') }}" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i> Quay lại</a>
             </div>
         </div>
     </div>
