@@ -39,5 +39,10 @@ class BangDiem extends Model
     {
         return $this->belongsTo(Nhom::class, 'nhom_id');
     }
+
+    public function deTai()
+    {
+        return $this->belongsTo(DeTai::class, 'de_tai_id');
+    }
 }
 

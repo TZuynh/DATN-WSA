@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\QueryException;
 
 class HoiDongController extends Controller
 {
@@ -127,6 +128,16 @@ class HoiDongController extends Controller
             DB::commit();
             return redirect()->route('admin.hoi-dong.index')
                 ->with('success', 'Thêm hội đồng thành công.');
+        } catch (QueryException $e) {
+            DB::rollBack();
+            if ($e->getCode() == 23000 && str_contains($e->getMessage(), 'hoi_dongs_ma_hoi_dong_unique')) {
+                $errorMessage = 'Mã hội đồng đã tồn tại!';
+            } else {
+                $errorMessage = 'Có lỗi xảy ra: ' . $e->getMessage();
+            }
+            return redirect()->back()
+                ->withInput()
+                ->with('error', $errorMessage);
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()

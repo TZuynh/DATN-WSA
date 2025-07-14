@@ -23,6 +23,67 @@ class BangDiemController extends Controller
     public function index()
     {
         $giangVienId = Auth::id();
+        $isTruongTieuBan = \App\Models\PhanCongVaiTro::where('tai_khoan_id', $giangVienId)
+            ->whereHas('vaiTro', function($q) { $q->where('ten', 'Trưởng tiểu ban'); })
+            ->exists();
+        $bangDiemsHoiDong = collect();
+        $bangDiemBySinhVienHoiDong = collect();
+        if ($isTruongTieuBan) {
+            $phanCongHoiDong = \App\Models\PhanCongVaiTro::with(['hoiDong.chiTietBaoCaos.deTai.nhom.sinhViens', 'vaiTro'])
+                ->where('tai_khoan_id', $giangVienId)
+                ->whereNull('de_tai_id')
+                ->whereHas('vaiTro', function($q) { $q->where('ten', 'Trưởng tiểu ban'); })
+                ->get();
+            $hoiDongsHoiDong = $phanCongHoiDong->pluck('hoiDong')->filter();
+            $sinhVienIds = collect();
+            foreach ($hoiDongsHoiDong as $hoiDong) {
+                if ($hoiDong && $hoiDong->chiTietBaoCaos) {
+                    foreach ($hoiDong->chiTietBaoCaos as $chiTiet) {
+                        if ($chiTiet->deTai && $chiTiet->deTai->nhom && $chiTiet->deTai->nhom->sinhViens) {
+                            foreach ($chiTiet->deTai->nhom->sinhViens as $sv) {
+                                $sinhVienIds->push($sv->id);
+                            }
+                        }
+                    }
+                }
+            }
+            $sinhVienIds = $sinhVienIds->unique()->values();
+            $bangDiemsHoiDong = \App\Models\BangDiem::with(['sinhVien', 'deTai.chiTietBaoCao.hoiDong', 'deTai.nhom', 'giangVien'])
+                ->whereIn('sinh_vien_id', $sinhVienIds)
+                ->orderBy('created_at', 'desc')
+                ->get();
+            $bangDiemBySinhVienHoiDong = $bangDiemsHoiDong
+                ->groupBy('sinh_vien_id')
+                ->map(function($items) {
+                    $valid = $items->filter(function($bd) {
+                        $tong =
+                            ($bd->diem_thuyet_trinh ?? 0)
+                        + ($bd->diem_demo          ?? 0)
+                        + ($bd->diem_cau_hoi       ?? 0)
+                        + ($bd->diem_cong          ?? 0);
+                        return $tong > 0;
+                    });
+                    $bcTB = $valid->avg('diem_bao_cao');
+                    $tkTB = $valid->map(function($bd) {
+                        return
+                            ($bd->diem_thuyet_trinh ?? 0)
+                        + ($bd->diem_demo          ?? 0)
+                        + ($bd->diem_cau_hoi       ?? 0)
+                        + ($bd->diem_cong          ?? 0);
+                    })->avg();
+                    $dtk = null;
+                    if (!is_null($bcTB) && !is_null($tkTB)) {
+                        $dtk = min(round($bcTB * 0.2 + $tkTB * 0.8, 2), 10);
+                    }
+                    return [
+                        'list'             => $items,
+                        'diem_bao_cao_tb'  => is_null($bcTB) ? null : round($bcTB, 2),
+                        'tong_ket'         => is_null($tkTB) ? null : round($tkTB, 2),
+                        'diem_tong_ket'    => $dtk,
+                    ];
+                })
+                ->values();
+        }
     
         // 1. Lấy tất cả phân công (hội đồng + riêng đề tài)
         $phanCongVaiTros = PhanCongVaiTro::with([
@@ -178,6 +239,9 @@ class BangDiemController extends Controller
             'diemTrungBinhBaoCaoChung'   => $diemTrungBinhBaoCaoChung,
             'tongDiemTrungBinhChung'     => $tongDiemTrungBinhChung,
             'diemTongKetChung'           => $diemTongKetChung,
+            'isTruongTieuBan' => $isTruongTieuBan,
+            'bangDiemsHoiDong' => $bangDiemsHoiDong,
+            'bangDiemBySinhVienHoiDong' => $bangDiemBySinhVienHoiDong,
         ]);
     }
 
@@ -431,17 +495,24 @@ class BangDiemController extends Controller
      */
     public function show($id)
     {
-        $bangDiem = BangDiem::with([
-            'sinhVien.lop',
-            'sinhVien.chiTietNhom.nhom.deTai',
-            'dotBaoCao.lichChams.hoiDong',
-            'giangVien'
-        ])->findOrFail($id);
+        $bangDiem = BangDiem::findOrFail($id);
+        $user = Auth::user();
 
-        // Kiểm tra quyền xem
-        if ($bangDiem->giang_vien_id !== Auth::id()) {
-            return redirect()->route('giangvien.bang-diem.index')
-                ->with('error', 'Bạn không có quyền xem điểm này.');
+        // Cho phép nếu là người chấm điểm này
+        if ($bangDiem->giang_vien_id === $user->id) {
+            // OK
+        } else {
+            // Nếu là trưởng tiểu ban của hội đồng này thì cũng cho xem
+            $isTruongTieuBan = \App\Models\PhanCongVaiTro::where('tai_khoan_id', $user->id)
+                ->whereHas('vaiTro', function($q) { $q->where('ten', 'Trưởng tiểu ban'); })
+                ->whereHas('hoiDong.chiTietBaoCaos.deTai.nhom.sinhViens', function($q) use ($bangDiem) {
+                    $q->where('sinh_viens.id', $bangDiem->sinh_vien_id);
+                })
+                ->exists();
+
+            if (!$isTruongTieuBan) {
+                return redirect()->route('giangvien.bang-diem.index')->with('error', 'Bạn không có quyền xem điểm này.');
+            }
         }
 
         // Thêm thông tin vai trò chấm
@@ -684,6 +755,84 @@ class BangDiemController extends Controller
                 ->with('error', 'Có lỗi xảy ra khi xóa điểm: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Hiển thị danh sách điểm hội đồng cho trưởng tiểu ban và thư ký
+     */
+    public function councilIndex()
+    {
+        $user = Auth::user();
+
+        $phanCongHoiDong = PhanCongVaiTro::with([
+            'hoiDong.chiTietBaoCaos.deTai.nhom.sinhViens', 'vaiTro'
+        ])
+            ->where('tai_khoan_id', $user->id)
+            ->whereNull('de_tai_id')
+            ->whereHas('vaiTro', function($q) {
+                $q->whereIn('ten', ['Trưởng tiểu ban', 'Thư ký']);
+            })
+            ->get();
+
+        $hoiDongs = $phanCongHoiDong->pluck('hoiDong')->filter();
+
+        // Lấy danh sách sinh viên từ các đề tài trong hội đồng
+        $sinhVienIds = collect();
+        foreach ($hoiDongs as $hoiDong) {
+            foreach ($hoiDong->chiTietBaoCaos as $chiTiet) {
+                $deTai = $chiTiet->deTai;
+                if ($deTai && $deTai->nhom && $deTai->nhom->sinhViens) {
+                    foreach ($deTai->nhom->sinhViens as $sv) {
+                        $sinhVienIds->push($sv->id);
+                    }
+                }
+            }
+        }
+        $sinhVienIds = $sinhVienIds->unique()->values();
+
+        // Truy vấn bảng điểm theo sinh viên
+        $bangDiems = \App\Models\BangDiem::with([
+            'sinhVien', 'giangVien', 'dotBaoCao'
+        ])
+            ->whereIn('sinh_vien_id', $sinhVienIds)
+            ->orderBy('sinh_vien_id')
+            ->get();
+
+        // Tính toán giống bên index
+        $bangDiemBySinhVienHoiDong = $bangDiems
+            ->groupBy('sinh_vien_id')
+            ->map(function($items) {
+                $valid = $items->filter(function($bd) {
+                    $tong =
+                        ($bd->diem_thuyet_trinh ?? 0)
+                      + ($bd->diem_demo          ?? 0)
+                      + ($bd->diem_cau_hoi       ?? 0)
+                      + ($bd->diem_cong          ?? 0);
+                    return $tong > 0;
+                });
+                $bcTB = $valid->avg('diem_bao_cao');
+                $tkTB = $valid->map(function($bd) {
+                    return
+                        ($bd->diem_thuyet_trinh ?? 0)
+                      + ($bd->diem_demo          ?? 0)
+                      + ($bd->diem_cau_hoi       ?? 0)
+                      + ($bd->diem_cong          ?? 0);
+                })->avg();
+                $dtk = null;
+                if (!is_null($bcTB) && !is_null($tkTB)) {
+                    $dtk = min(round($bcTB * 0.2 + $tkTB * 0.8, 2), 10);
+                }
+                return [
+                    'list'             => $items,
+                    'diem_bao_cao_tb'  => is_null($bcTB) ? null : round($bcTB, 2),
+                    'tong_ket'         => is_null($tkTB) ? null : round($tkTB, 2),
+                    'diem_tong_ket'    => $dtk,
+                ];
+            })
+            ->values();
+
+        return view('giangvien.bang-diem.hoi-dong', compact('hoiDongs', 'bangDiemBySinhVienHoiDong'));
+    }
+
 
 
         

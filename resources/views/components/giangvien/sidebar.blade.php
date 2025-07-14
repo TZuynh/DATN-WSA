@@ -11,6 +11,10 @@
     $isHuongDan = PhanCongVaiTro::where('tai_khoan_id', auth()->id() ?? 0)
         ->where('loai_giang_vien', 'Giảng Viên Hướng Dẫn')
         ->exists();
+    // Kiểm tra là trưởng tiểu ban
+    $isTruongTieuBan = PhanCongVaiTro::where('tai_khoan_id', auth()->id() ?? 0)
+        ->whereHas('vaiTro', function($q) { $q->where('ten', 'Trưởng tiểu ban'); })
+        ->exists();
     \Log::info('[Sidebar] isPhanBien: ' . ($isPhanBien ? 'true' : 'false') . ', isThuKy: ' . ($isThuKy ? 'true' : 'false') . ', isHuongDan: ' . ($isHuongDan ? 'true' : 'false') . ', user_id: ' . (auth()->id() ?? 0));
 @endphp
 

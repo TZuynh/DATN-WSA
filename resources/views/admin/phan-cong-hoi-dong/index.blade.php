@@ -180,11 +180,11 @@
                                         @endphp
                                         <tr>
                                             <td>{{ $chiTiet->deTai->ten_de_tai }}</td>
-                                            <td>{{ $chiTiet->deTai->giangVien->ten }}</td>
+                                            <td>{{ optional(optional($chiTiet->deTai)->giangVien)->ten ?? 'N/A' }}</td>
                                             <td>
                                                 @forelse($chamList as $pc)
                                                     <span class="badge bg-info me-1">
-                                                        {{ $pc->taiKhoan->ten }} ({{ $pc->vaiTro->ten }}, chấm đề tài)
+                                                        {{ $pc->taiKhoan->ten ?? 'N/A' }} ({{ $pc->vaiTro->ten ?? 'N/A' }}, chấm đề tài)
                                                     </span>
                                                 @empty
                                                     <span class="text-muted">Chưa có</span>
@@ -244,7 +244,7 @@
                                     <option value="">-- Chọn giảng viên --</option>
                                     @foreach($hoiDongObj->phanCongVaiTros->where('de_tai_id', null)->unique('tai_khoan_id') as $pc)
                                         <option value="{{ $pc->tai_khoan_id }}">
-                                            {{ $pc->taiKhoan->ten }} ({{ $pc->vaiTro->ten }})
+                                            {{ $pc->taiKhoan->ten ?? 'N/A' }} ({{ $pc->vaiTro->ten ?? 'N/A' }})
                                         </option>
                                     @endforeach
                                 </select>
@@ -345,7 +345,7 @@
                                     @if($phanCong->loai_giang_vien && in_array($phanCong->loai_giang_vien, ['hướng dẫn', 'phản biện']))
                                         <div class="mt-2 alert alert-warning small">
                                             <i class="fas fa-exclamation-triangle me-1"></i>
-                                            <strong>Lưu ý:</strong> {{ $phanCong->taiKhoan->ten }} có loại "{{ $phanCong->loai_giang_vien }}". Hệ thống sẽ kiểm tra để đảm bảo hội đồng đích chưa có giảng viên cùng loại này.
+                                            <strong>Lưu ý:</strong> {{ $phanCong->taiKhoan->ten ?? 'N/A' }} có loại "{{ $phanCong->loai_giang_vien }}". Hệ thống sẽ kiểm tra để đảm bảo hội đồng đích chưa có giảng viên cùng loại này.
                                         </div>
                                     @endif
                                 @endif

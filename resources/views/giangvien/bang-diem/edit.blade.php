@@ -216,7 +216,7 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             @php
-                                                $tong = ($bangDiem->diem_bao_cao ?? 0) + ($bangDiem->diem_thuyet_trinh ?? 0) + ($bangDiem->diem_demo ?? 0) + ($bangDiem->diem_cau_hoi ?? 0) + ($bangDiem->diem_cong ?? 0);
+                                                $tong = ($bangDiem->diem_bao_cao ?? 0) * 0.2 + ($bangDiem->diem_thuyet_trinh ?? 0) + ($bangDiem->diem_demo ?? 0) + ($bangDiem->diem_cau_hoi ?? 0) + ($bangDiem->diem_cong ?? 0);
                                             @endphp
                                             <label for="tong_diem">Tổng điểm</label>
                                             <input type="text" class="form-control" id="tong_diem" readonly value="{{ number_format($tong, 1) }}">
@@ -267,7 +267,7 @@
                 const cauHoi = parseFloat(diemCauHoi?.value) || 0;
                 const cong = parseFloat(diemCong?.value) || 0;
 
-                const tong = baoCao + thuyetTrinh + demo + cauHoi + cong;
+                const tong = (baoCao * 0.2) + thuyetTrinh + demo + cauHoi + cong;
                 tongDiem.value = tong.toFixed(1);
             }
 

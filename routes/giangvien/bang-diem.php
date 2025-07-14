@@ -12,6 +12,8 @@ Route::middleware(['auth', 'role:giang_vien'])->group(function () {
     Route::put('/giang-vien/bang-diem/{id}', [BangDiemController::class, 'update'])->name('giangvien.bang-diem.update');
     Route::delete('/giang-vien/bang-diem/{id}', [BangDiemController::class, 'destroy'])->name('giangvien.bang-diem.destroy');
 
+    Route::get('/giang-vien/bang-diem-hoi-dong', [App\Http\Controllers\GiangVien\BangDiemController::class, 'councilIndex'])->name('giangvien.bang-diem-hoi-dong.index');
+
     // Route debug tạm thời
 //    Route::get('/giang-vien/bang-diem-debug', [BangDiemController::class, 'debug'])->name('giangvien.bang-diem.debug');
 //    Route::get('/giang-vien/bang-diem-debug-simple', [BangDiemController::class, 'debugSimple'])->name('giangvien.bang-diem.debug-simple');

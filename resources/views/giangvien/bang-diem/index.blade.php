@@ -3,6 +3,69 @@
 @section('title', content: 'Chấm điểm')
 
 @section('content')
+@if(isset($isTruongTieuBan) && $isTruongTieuBan)
+    <div class="mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Danh sách điểm hội đồng (Trưởng tiểu ban)</h3>
+            </div>
+            <div class="card-body">
+                @if($bangDiemBySinhVienHoiDong->isEmpty())
+                    <div class="alert alert-info">Không có dữ liệu điểm nào trong các hội đồng bạn phụ trách.</div>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>MSSV</th>
+                                    <th>Tên sinh viên</th>
+                                    <th>Đợt báo cáo</th>
+                                    <th>Điểm trung bình báo cáo</th>
+                                    <th>Tổng điểm trung bình</th>
+                                    <th>Điểm tổng kết</th>
+                                    <th>Giảng viên chấm</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php $stt = 1; @endphp
+                                @foreach($bangDiemBySinhVienHoiDong as $sinhVienId => $group)
+                                    @php
+                                        $bangDiemList = $group['list'];
+                                        $diem_bao_cao_tb = $group['diem_bao_cao_tb'];
+                                        $tong_ket = $group['tong_ket'];
+                                        $diem_tong_ket = $group['diem_tong_ket'];
+                                        $sinhVien = $bangDiemList->first()->sinhVien ?? null;
+                                        $dotBaoCao = $bangDiemList->first()->dotBaoCao ?? null;
+                                        $giangVienChams = $bangDiemList->pluck('giangVien.ten')->unique()->filter()->implode(', ');
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $stt++ }}</td>
+                                        <td>{{ $sinhVien->mssv ?? '' }}</td>
+                                        <td>{{ $sinhVien->ten ?? '' }}</td>
+                                        <td>{{ ($dotBaoCao->nam_hoc ?? 'N/A') . ' - ' . ($dotBaoCao->hocKy->ten ?? 'N/A') }}</td>
+                                        <td>{{ $diem_bao_cao_tb !== null ? number_format($diem_bao_cao_tb, 2) : '-' }}</td>
+                                        <td>{{ $tong_ket !== null ? number_format($tong_ket, 2) : '-' }}</td>
+                                        <td>{{ $diem_tong_ket !== null ? number_format(min($diem_tong_ket, 10), 2) : '-' }}</td>
+                                        <td>{{ $giangVienChams }}</td>
+                                        <td>
+                                            @if($bangDiemList->first())
+                                                <a href="{{ route('giangvien.bang-diem.show', $bangDiemList->first()->id) }}" class="btn btn-sm btn-info" title="Xem chi tiết">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+@endif
 <div class="container-fluid">
   <div class="row">
     <div class="col-12">
@@ -48,7 +111,7 @@
                           $role    = $pc['vai_tro_cham'];
                           $dotBcId = optional($baoCao)->id;
                         @endphp
-                      @foreach($nhom->sinhViens as $sv)
+                      @foreach(optional($nhom)->sinhViens ?? [] as $sv)
                         @php
                           $row  = ($idx+1) . '.' . $loop->iteration;
                           $bd   = $bangDiems->where('sinh_vien_id',$sv->id)->where('dot_bao_cao_id',$dotBcId)->first();
@@ -59,7 +122,7 @@
                           $qa   = $bd->diem_cau_hoi ?? '-';
                           $cong = $bd->diem_cong ?? '-';
                           $tong = (is_numeric($bc) && is_numeric($tt))
-                                  ? number_format($bc + $tt + ($demo==='-'?0:$demo) + ($qa==='-'?0:$qa) + ($cong==='-'?0:$cong),1)
+                                  ? number_format(($bc * 0.2) + ($demo==='-'?0:$demo) + ($tt==='-'?0:$tt) + ($qa==='-'?0:$qa) + ($cong==='-'?0:$cong),1)
                                   : '-';
                           $pars = [$sv->id];
                           if($dotBcId) $pars[] = $dotBcId;
@@ -140,7 +203,7 @@
                       $demo = floatval($da->diem_demo ?? 0);
                       $qa   = floatval($da->diem_cau_hoi ?? 0);
                       $cong = floatval($da->diem_cong ?? 0);
-                      $tong = $bc + $tt + $demo + $qa + $cong;
+                      $tong = ($bc * 0.2) + $tt + $demo + $qa + $cong;
                       $pars   = ['sinhVienId'=>$sv->id]; if($dotBc) $pars['dotBaoCaoId']=$dotBc;
                     @endphp
                       <tr>
