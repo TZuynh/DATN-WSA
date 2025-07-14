@@ -103,34 +103,45 @@
                         class="form-control @error('giang_vien_id') is-invalid @enderror"
                         style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                         <option value="">-- Chọn giảng viên hướng dẫn --</option>
-                        
-                        @if($giangVienHoiDong->count() > 0)
-                            <optgroup label="Giảng viên trong hội đồng">
-                                @foreach($giangVienHoiDong as $giangVien)
+                        @if($deTai->giang_vien_id)
+                            {{-- Nếu đã có giảng viên, hiển thị tất cả như cũ --}}
+                            @if($giangVienHoiDong->count() > 0)
+                                <optgroup label="Giảng viên trong hội đồng">
+                                    @foreach($giangVienHoiDong as $giangVien)
+                                        <option value="{{ $giangVien->id }}" {{ old('giang_vien_id', $deTai->giang_vien_id) == $giangVien->id ? 'selected' : '' }}>
+                                            {{ $giangVien->ten }} (Hội đồng)
+                                        </option>
+                                    @endforeach
+                                </optgroup>
+                            @endif
+                            @if($giangVienPhanBien->count() > 0)
+                                <optgroup label="Giảng viên phản biện">
+                                    @foreach($giangVienPhanBien as $giangVien)
+                                        <option value="{{ $giangVien->id }}" {{ old('giang_vien_id', $deTai->giang_vien_id) == $giangVien->id ? 'selected' : '' }}>
+                                            {{ $giangVien->ten }} (Phản biện)
+                                        </option>
+                                    @endforeach
+                                </optgroup>
+                            @endif
+                            <optgroup label="Tất cả giảng viên">
+                                @foreach($giangViens as $giangVien)
                                     <option value="{{ $giangVien->id }}" {{ old('giang_vien_id', $deTai->giang_vien_id) == $giangVien->id ? 'selected' : '' }}>
+                                        {{ $giangVien->ten }}
+                                    </option>
+                                @endforeach
+                            </optgroup>
+                        @else
+                            {{-- Nếu chưa có giảng viên, chỉ hiển thị giảng viên trong hội đồng --}}
+                            @if($giangVienHoiDong->count() > 0)
+                                @foreach($giangVienHoiDong as $giangVien)
+                                    <option value="{{ $giangVien->id }}" {{ old('giang_vien_id') == $giangVien->id ? 'selected' : '' }}>
                                         {{ $giangVien->ten }} (Hội đồng)
                                     </option>
                                 @endforeach
-                            </optgroup>
+                            @else
+                                <option value="">-- Không có giảng viên trong hội đồng --</option>
+                            @endif
                         @endif
-                        
-                        @if($giangVienPhanBien->count() > 0)
-                            <optgroup label="Giảng viên phản biện">
-                                @foreach($giangVienPhanBien as $giangVien)
-                                    <option value="{{ $giangVien->id }}" {{ old('giang_vien_id', $deTai->giang_vien_id) == $giangVien->id ? 'selected' : '' }}>
-                                        {{ $giangVien->ten }} (Phản biện)
-                                    </option>
-                                @endforeach
-                            </optgroup>
-                        @endif
-                        
-                        <optgroup label="Tất cả giảng viên">
-                            @foreach($giangViens as $giangVien)
-                                <option value="{{ $giangVien->id }}" {{ old('giang_vien_id', $deTai->giang_vien_id) == $giangVien->id ? 'selected' : '' }}>
-                                    {{ $giangVien->ten }}
-                                </option>
-                            @endforeach
-                        </optgroup>
                     </select>
                     @error('giang_vien_id')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -150,11 +161,14 @@
                         class="form-control @error('nhom_id') is-invalid @enderror"
                         style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                         <option value="">-- Chọn nhóm --</option>
-                        @foreach($nhoms as $nhom)
-                        <option value="{{ $nhom->id }}" {{ old('nhom_id', $deTai->nhom_id) == $nhom->id ? 'selected' : '' }}>
-                            {{ $nhom->ten }}
-                        </option>
-                        @endforeach
+                        {{-- Các option nhóm sẽ được render lại bằng JS dựa trên giảng viên được chọn --}}
+                        @if($deTai->giang_vien_id)
+                            @foreach($nhoms as $nhom)
+                                <option value="{{ $nhom->id }}" {{ old('nhom_id', $deTai->nhom_id) == $nhom->id ? 'selected' : '' }}>
+                                    {{ $nhom->ten }}
+                                </option>
+                            @endforeach
+                        @endif
                     </select>
                     @error('nhom_id')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -244,6 +258,48 @@
                         return;
                     }
                 }
+            });
+        });
+    </script>
+    <script>
+        // Dữ liệu nhóm theo giảng viên (server render thành JS object)
+        const nhomsByGiangVien = @json($nhoms->groupBy('giang_vien_id'));
+        const nhomSelect = document.getElementById('nhom_id');
+        const giangVienSelect = document.getElementById('giang_vien_id');
+        const oldNhomId = "{{ old('nhom_id', $deTai->nhom_id) }}";
+
+        function renderNhomOptions(giangVienId) {
+            nhomSelect.innerHTML = '';
+            const optionDefault = document.createElement('option');
+            optionDefault.value = '';
+            optionDefault.textContent = '-- Chọn nhóm --';
+            nhomSelect.appendChild(optionDefault);
+            if (giangVienId && nhomsByGiangVien[giangVienId] && nhomsByGiangVien[giangVienId].length > 0) {
+                nhomsByGiangVien[giangVienId].forEach(nhom => {
+                    const option = document.createElement('option');
+                    option.value = nhom.id;
+                    option.textContent = nhom.ten;
+                    if (oldNhomId == nhom.id) option.selected = true;
+                    nhomSelect.appendChild(option);
+                });
+                nhomSelect.disabled = false;
+            } else {
+                // Không có nhóm
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = '-- Không có nhóm --';
+                nhomSelect.appendChild(option);
+                nhomSelect.disabled = true;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Nếu chưa có giảng viên hướng dẫn, disable select nhóm ban đầu
+            @if(!$deTai->giang_vien_id)
+                nhomSelect.disabled = true;
+            @endif
+            giangVienSelect.addEventListener('change', function() {
+                renderNhomOptions(this.value);
             });
         });
     </script>
