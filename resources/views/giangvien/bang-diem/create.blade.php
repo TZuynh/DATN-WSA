@@ -79,11 +79,21 @@
                                     </tr>
                                     <tr>
                                         <th>Tên nhóm:</th>
-                                        <td>{{ $tenNhom }}</td>
+                                        <td>
+                                            @php
+                                                $maNhom = isset($chiTietNhom) && $chiTietNhom->nhom ? $chiTietNhom->nhom->ma_nhom : (isset($maNhom) ? $maNhom : null);
+                                            @endphp
+                                            {{ $tenNhom }}@if(!empty($maNhom)) - {{ $maNhom }}@endif
+                                        </td>
                                     </tr>
                                     <tr>
                                         <th>Tên đề tài:</th>
-                                        <td>{{ $tenDeTai }}</td>
+                                        <td>
+                                            @php
+                                                $maDeTai = isset($chiTietNhom) && $chiTietNhom->nhom && $chiTietNhom->nhom->deTai ? $chiTietNhom->nhom->deTai->ma_de_tai : (isset($maDeTai) ? $maDeTai : null);
+                                            @endphp
+                                            {{ $tenDeTai }}@if(!empty($maDeTai)) - {{ $maDeTai }}@endif
+                                        </td>
                                     </tr>
                                 </table>
                             </div>
@@ -269,9 +279,33 @@ document.addEventListener('DOMContentLoaded', function() {
         const thuyetTrinh = parseFloat(diemThuyetTrinh.value) || 0;
         const demo = parseFloat(diemDemo?.value) || 0;
         const cauHoi = parseFloat(diemCauHoi?.value) || 0;
-        const cong = parseFloat(diemCong?.value) || 0;
+        let cong = parseFloat(diemCong?.value) || 0;
 
-        const tong = baoCao + thuyetTrinh + demo + cauHoi + cong;
+        // Tổng điểm theo công thức mới: (báo cáo * 0.2) + demo + thuyết trình + câu hỏi
+        const tongKhongCong = (baoCao * 0.2) + demo + thuyetTrinh + cauHoi;
+        let maxCong = +(10 - tongKhongCong).toFixed(1);
+        if (maxCong < 0) maxCong = 0;
+
+        if (diemCong) {
+            if (tongKhongCong >= 10) {
+                diemCong.value = 0;
+                diemCong.setAttribute('readonly', 'readonly');
+                diemCong.setAttribute('disabled', 'disabled');
+                diemCong.setAttribute('max', '0');
+            } else {
+                diemCong.removeAttribute('readonly');
+                diemCong.removeAttribute('disabled');
+                diemCong.setAttribute('max', maxCong);
+                // Nếu giá trị hiện tại lớn hơn max mới thì đặt lại
+                if (cong > maxCong) {
+                    diemCong.value = maxCong;
+                    cong = maxCong;
+                }
+            }
+            // Cập nhật lại giá trị cộng sau khi có thể bị reset
+            cong = parseFloat(diemCong.value) || 0;
+        }
+        const tong = tongKhongCong + cong;
         tongDiem.value = tong.toFixed(1);
     }
 
@@ -280,6 +314,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (diemDemo) diemDemo.addEventListener('input', tinhTongDiem);
     if (diemCauHoi) diemCauHoi.addEventListener('input', tinhTongDiem);
     if (diemCong) diemCong.addEventListener('input', tinhTongDiem);
+
+    // Gọi lần đầu để cập nhật trạng thái điểm cộng nếu có dữ liệu sẵn
+    tinhTongDiem();
 
     // Chống double submit
     const form = document.querySelector('form');

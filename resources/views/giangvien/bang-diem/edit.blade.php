@@ -94,7 +94,7 @@
                                                     $chiTietNhom = $bangDiem->sinhVien->chiTietNhom;
                                                     $tenNhom = $chiTietNhom?->nhom?->ten ?? 'N/A';
                                                 @endphp
-                                                {{ $tenNhom }}
+                                                {{ $tenNhom }}@if(!empty($maNhom)) - {{ $maNhom }}@endif
                                             </td>
                                         </tr>
                                         <tr>
@@ -103,7 +103,7 @@
                                                 @php
                                                     $tenDeTai = $chiTietNhom?->nhom?->deTai?->ten_de_tai ?? 'N/A';
                                                 @endphp
-                                                {{ $tenDeTai }}
+                                                {{ $tenDeTai }}@if(!empty($maDeTai)) - {{ $maDeTai }}@endif
                                             </td>
                                         </tr>
                                     </table>
@@ -265,15 +265,41 @@
                 const thuyetTrinh = parseFloat(diemThuyetTrinh?.value) || 0;
                 const demo = parseFloat(diemDemo?.value) || 0;
                 const cauHoi = parseFloat(diemCauHoi?.value) || 0;
-                const cong = parseFloat(diemCong?.value) || 0;
+                let cong = parseFloat(diemCong?.value) || 0;
 
-                const tong = (baoCao * 0.2) + thuyetTrinh + demo + cauHoi + cong;
+                // Tổng điểm không tính điểm cộng
+                const tongKhongCong = (baoCao * 0.2) + thuyetTrinh + demo + cauHoi;
+                let maxCong = +(10 - tongKhongCong).toFixed(1);
+                if (maxCong < 0) maxCong = 0;
+
+                if (diemCong) {
+                    if (tongKhongCong >= 10) {
+                        diemCong.value = 0;
+                        diemCong.setAttribute('readonly', 'readonly');
+                        diemCong.setAttribute('disabled', 'disabled');
+                        diemCong.setAttribute('max', '0');
+                    } else {
+                        diemCong.removeAttribute('readonly');
+                        diemCong.removeAttribute('disabled');
+                        diemCong.setAttribute('max', maxCong);
+                        // Nếu giá trị hiện tại lớn hơn max mới thì đặt lại
+                        if (cong > maxCong) {
+                            diemCong.value = maxCong;
+                            cong = maxCong;
+                        }
+                    }
+                    // Cập nhật lại giá trị cộng sau khi có thể bị reset
+                    cong = parseFloat(diemCong.value) || 0;
+                }
+                const tong = tongKhongCong + cong;
                 tongDiem.value = tong.toFixed(1);
             }
 
             [diemBaoCao, diemThuyetTrinh, diemDemo, diemCauHoi, diemCong].forEach(el => {
                 if (el) el.addEventListener('input', tinhTongDiem);
             });
+            // Gọi lần đầu để cập nhật trạng thái điểm cộng nếu có dữ liệu sẵn
+            tinhTongDiem();
         });
     </script>
 @endsection
