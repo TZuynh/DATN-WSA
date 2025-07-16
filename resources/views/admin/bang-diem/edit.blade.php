@@ -43,6 +43,7 @@
                                         @php
                                             $lichCham = $bangDiem->dotBaoCao->lichChams->first();
                                             $tenHoiDong = $lichCham && $lichCham->hoiDong ? $lichCham->hoiDong->ten : 'N/A';
+                                            $dotBaoCao = $bangDiem->dotBaoCao;
                                         @endphp
                                         {{ $tenHoiDong }}
                                     </td>
@@ -82,6 +83,14 @@
                         @csrf
                         @method('PUT')
 
+                        @php
+                            // Xác định vai trò chấm điểm (nếu có)
+                            $vaiTroCham = $bangDiem->vai_tro_cham ?? null;
+                            // Quyền sửa điểm báo cáo/thuyết trình
+                            $canGradeBaoCao = in_array($vaiTroCham, ['Hướng dẫn', 'Phản biện']);
+                            $canGradeOtherScores = in_array($vaiTroCham, ['Hướng dẫn', 'Phản biện', 'Trưởng tiểu ban']);
+                        @endphp
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -94,7 +103,10 @@
                                            min="0"
                                            max="10"
                                            step="0.1"
-                                           required>
+                                           @if(!$canGradeBaoCao) readonly @endif>
+                                    @if(!$canGradeBaoCao)
+                                        <small class="text-muted">Chỉ Giảng viên hướng dẫn và Giảng viên phản biện mới được sửa điểm này</small>
+                                    @endif
                                     @error('diem_bao_cao')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -111,7 +123,10 @@
                                            min="0"
                                            max="10"
                                            step="0.1"
-                                           required>
+                                           @if(!$canGradeOtherScores) readonly @endif>
+                                    @if(!$canGradeOtherScores)
+                                        <small class="text-muted">Bạn không có quyền chấm điểm này</small>
+                                    @endif
                                     @error('diem_thuyet_trinh')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -131,7 +146,10 @@
                                            min="0"
                                            max="10"
                                            step="0.1"
-                                           required>
+                                           @if(!$canGradeOtherScores) readonly @endif>
+                                    @if(!$canGradeOtherScores)
+                                        <small class="text-muted">Bạn không có quyền chấm điểm này</small>
+                                    @endif
                                     @error('diem_demo')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -148,7 +166,10 @@
                                            min="0"
                                            max="10"
                                            step="0.1"
-                                           required>
+                                           @if(!$canGradeOtherScores) readonly @endif>
+                                    @if(!$canGradeOtherScores)
+                                        <small class="text-muted">Bạn không có quyền chấm điểm này</small>
+                                    @endif
                                     @error('diem_cau_hoi')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -167,8 +188,11 @@
                                            value="{{ old('diem_cong', $bangDiem->diem_cong) }}"
                                            min="0"
                                            max="2"
-                                           step="0.1">
-                                    <small class="form-text text-muted">Điểm cộng tối đa là 2 điểm</small>
+                                           step="0.1"
+                                           @if(!$canGradeOtherScores) readonly @endif>
+                                    @if(!$canGradeOtherScores)
+                                        <small class="text-muted">Bạn không có quyền chấm điểm này</small>
+                                    @endif
                                     @error('diem_cong')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror

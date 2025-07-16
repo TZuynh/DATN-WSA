@@ -128,7 +128,7 @@
                                             <td>{{ $diem_tong_ket !== null ? number_format(min($diem_tong_ket, 10), 2) : '-' }}</td>
                                             <td>
                                                 <a href="{{ route('admin.bang-diem.show', $bangDiemList->first()->id) }}" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a>
-                                                <a href="{{ route('admin.bang-diem.edit', $bangDiemList->first()->id) }}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
+                                                {{-- <a href="{{ route('admin.bang-diem.edit', $bangDiemList->first()->id) }}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a> --}}
                                                 <form action="{{ route('admin.bang-diem.destroy', $bangDiemList->first()->id) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     @method('DELETE')
