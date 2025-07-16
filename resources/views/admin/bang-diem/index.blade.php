@@ -93,6 +93,8 @@
                                         <th>STT</th>
                                         <th>MSSV</th>
                                         <th>Tên sinh viên</th>
+                                        <th>Đề tài</th>
+                                        <th>Nhóm</th>
                                         <th>Đợt báo cáo</th>
                                         <th>Điểm trung bình báo cáo</th>
                                         <th>Tổng điểm trung bình</th>
@@ -110,11 +112,16 @@
                                             $diem_tong_ket = $group['diem_tong_ket'];
                                             $sinhVien = $bangDiemList->first()->sinhVien ?? null;
                                             $dotBaoCao = $bangDiemList->first()->dotBaoCao ?? null;
+                                            $bangDiem = $bangDiemList->first();
+                                            $deTai = $bangDiem->deTai ?? ($bangDiem->nhom->deTai ?? ($sinhVien->chiTietNhom->nhom->deTai ?? null));
+                                            $nhom = $bangDiem->nhom ?? ($sinhVien->chiTietNhom->nhom ?? null);
                                         @endphp
                                         <tr>
                                             <td>{{ $stt++ }}</td>
                                             <td>{{ $sinhVien->mssv ?? '' }}</td>
                                             <td>{{ $sinhVien->ten ?? '' }}</td>
+                                            <td>{{ $deTai ? ($deTai->ma_de_tai . ' - ' . $deTai->ten_de_tai) : '' }}</td>
+                                            <td>{{ $nhom ? ($nhom->ma_nhom . ' - ' . $nhom->ten) : '' }}</td>
                                             <td>{{ ($dotBaoCao->nam_hoc ?? 'N/A') . ' - ' . ($dotBaoCao->hocKy->ten ?? 'N/A') }}</td>
                                             <td>{{ $diem_bao_cao_tb !== null ? number_format($diem_bao_cao_tb, 2) : '-' }}</td>
                                             <td>{{ $tong_ket !== null ? number_format($tong_ket, 2) : '-' }}</td>

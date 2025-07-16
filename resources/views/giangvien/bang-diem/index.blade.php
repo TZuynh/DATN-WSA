@@ -86,8 +86,7 @@
                       <th>ID</th>
                       <th>MSV</th>
                       <th>Họ tên</th>
-                      <th>Mã đề tài</th>
-                      <th>Tên đề tài</th>
+                      <th>Đề tài</th>
                       <th>Nhóm</th>
                       <th>Đợt báo cáo</th>
                       <th>Lịch</th>
@@ -131,9 +130,8 @@
                           <td>{{ $row }}</td>
                           <td>{{ $sv->mssv }}</td>
                           <td>{{ $sv->ten }}</td>
-                          <td>{{ $deTai->ma_de_tai }}</td>
-                          <td>{{ $deTai->ten_de_tai }}</td>
-                          <td>{{ $nhom->ten }}</td>
+                          <td>{{ $deTai->ma_de_tai }} - {{ $deTai->ten_de_tai }}</td>
+                          <td>{{ $nhom->ma_nhom }} - {{ $nhom->ten }}</td>
                           <td>{{ optional($baoCao)->nam_hoc ?? '-' }} - {{ optional($baoCao)->hocKy->ten ?? '' }}</td>
                           <td>{{ optional($lich)->lich_tao ? \Carbon\Carbon::parse(optional($lich)->lich_tao)->format('d/m H:i') : '-' }}</td>
                           <td>
@@ -172,8 +170,8 @@
                     <th>STT</th>
                     <th>MSV</th>
                     <th>Họ tên</th>
-                    <th>Nhóm</th>
                     <th>Đề tài</th>
+                    <th>Nhóm</th>
                     <th>Đợt báo cáo</th>
                     <th>Lịch</th>
                     <th>Vai trò</th>
@@ -210,8 +208,8 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $sv->mssv }}</td>
                         <td>{{ $sv->ten }}</td>
-                        <td>{{ $nhom->ten }}</td>
-                        <td>{{ $deTai->ten_de_tai }}</td>
+                        <td>{{ $deTai->ma_de_tai }} - {{ $deTai->ten_de_tai }}</td>
+                        <td>{{ $nhom->ma_nhom }} - {{ $nhom->ten }}</td>
                         <td>{{ optional($baoCao)->nam_hoc ?? '-' }} - {{ optional($baoCao)->hocKy->ten ?? '' }}</td>
                         <td>{{ optional($lich)->lich_tao ? \Carbon\Carbon::parse(optional($lich)->lich_tao)->format('d/m H:i') : '-' }}</td>
                         <td>

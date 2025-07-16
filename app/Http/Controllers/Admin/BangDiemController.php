@@ -23,7 +23,7 @@ class BangDiemController extends Controller
      */
     public function index(Request $request)
     {
-        $query = BangDiem::with(['sinhVien', 'dotBaoCao', 'giangVien']);
+        $query = BangDiem::with(['sinhVien', 'dotBaoCao', 'giangVien', 'deTai', 'nhom']);
 
         // Lọc theo đợt báo cáo
         if ($request->filled('dot_bao_cao_id')) {
