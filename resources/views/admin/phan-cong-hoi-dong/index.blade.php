@@ -243,9 +243,14 @@
                                 <select name="tai_khoan_id" class="form-select" required>
                                     <option value="">-- Chọn giảng viên --</option>
                                     @foreach($hoiDongObj->phanCongVaiTros->where('de_tai_id', null)->unique('tai_khoan_id') as $pc)
-                                        <option value="{{ $pc->tai_khoan_id }}">
-                                            {{ $pc->taiKhoan->ten ?? 'N/A' }} ({{ $pc->vaiTro->ten ?? 'N/A' }})
-                                        </option>
+                                        @php
+                                            $loaiGV = strtolower($pc->loai_giang_vien ?? '');
+                                        @endphp
+                                        @if(empty($loaiGV) || (!str_contains($loaiGV, 'hướng dẫn') && !str_contains($loaiGV, 'phản biện')))
+                                            <option value="{{ $pc->tai_khoan_id }}">
+                                                {{ $pc->taiKhoan->ten ?? 'N/A' }} ({{ $pc->vaiTro->ten ?? 'N/A' }})
+                                            </option>
+                                        @endif
                                     @endforeach
                                 </select>
                             </div>

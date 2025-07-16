@@ -145,7 +145,9 @@ class BangDiemController extends Controller
             $phanCong = $item['phanCong'];
             $deTai    = $item['deTai'];
             $dot_bao_cao_id = $deTai->lichCham && $deTai->lichCham->dot_bao_cao_id ? $deTai->lichCham->dot_bao_cao_id : null;
-        
+            // Nếu là hướng dẫn hoặc phản biện thì luôn hiển thị, còn lại chỉ hiển thị khi de_tai_id != null
+            $loaiGV = $phanCong->loai_giang_vien ?? null;
+            if (!$phanCong->de_tai_id && !in_array($loaiGV, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện'])) continue;
             if ($deTai->nhom && $deTai->nhom->sinhViens) {
                 foreach ($deTai->nhom->sinhViens as $sinhVien) {
                     $dsSinhVien->push([

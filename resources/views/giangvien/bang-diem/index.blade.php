@@ -213,11 +213,18 @@
                         <td>{{ optional($baoCao)->nam_hoc ?? '-' }} - {{ optional($baoCao)->hocKy->ten ?? '' }}</td>
                         <td>{{ optional($lich)->lich_tao ? \Carbon\Carbon::parse(optional($lich)->lich_tao)->format('d/m H:i') : '-' }}</td>
                         <td>
+                          @php
+                            $roleLabel = $role;
+                            $loaiGV = $item['phan_cong_vai_tro']->loai_giang_vien ?? null;
+                            if (in_array($role, ['Trưởng tiểu ban', 'Thư ký', 'Thành viên']) && in_array($loaiGV, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện'])) {
+                              $roleLabel .= $loaiGV === 'Giảng Viên Hướng Dẫn' ? ' (Hướng dẫn)' : ' (Phản biện)';
+                            }
+                          @endphp
                           <span class="badge 
                             {{ $role=='Phản biện' ? 'bg-primary' : '' }} 
                             {{ $role=='Hướng dẫn' ? 'bg-success' : '' }} 
                             {{ !in_array($role,['Phản biện','Hướng dẫn']) ? 'bg-secondary' : '' }}">
-                            {{ $role }}
+                            {{ $roleLabel }}
                           </span>
                         </td>
                         <td>{{ number_format($bc, 1) }}</td>
