@@ -105,8 +105,24 @@
                                                             } elseif (str_contains($phanCong->vaiTro->ten ?? '', 'Thư ký')) {
                                                                 $vaiTroClass = 'text-primary fw-bold';
                                                             }
+                                                            // Kiểm tra nếu giảng viên này có đề tài thuộc hội đồng này
+                                                            $coDeTaiTrongHoiDong = false;
+                                                            if ($phanCong->taiKhoan && $hoiDong->chiTietBaoCaos) {
+                                                                foreach($hoiDong->chiTietBaoCaos as $chiTiet) {
+                                                                    if ($chiTiet->deTai && $chiTiet->deTai->giang_vien_id == $phanCong->taiKhoan->id) {
+                                                                        $coDeTaiTrongHoiDong = true;
+                                                                        break;
+                                                                    }
+                                                                }
+                                                            }
                                                         @endphp
                                                         <span class="ms-2 {{ $vaiTroClass }}">({{ $phanCong->vaiTro->ten ?? 'N/A' }})</span>
+                                                        @if($coDeTaiTrongHoiDong && $phanCong->loai_giang_vien != 'Giảng Viên Hướng Dẫn')
+                                                            <span class="badge bg-success ms-2" style="font-size:12px;">
+                                                                <i class="fas fa-user-graduate me-1"></i>
+                                                                Hướng dẫn
+                                                            </span>
+                                                        @endif
                                                         @if($phanCong->loai_giang_vien == 'Giảng Viên Phản Biện')
                                                             <span class="badge bg-warning ms-2">
                                                                 <i class="fas fa-user-check me-1"></i>Phản biện
