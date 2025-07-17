@@ -10,7 +10,7 @@
     <div class="page-header d-flex justify-content-between align-items-center mb-4">
         <div class="d-flex align-items-center">
             <div>
-                <h1 class="mb-1">Chi tiết hội đồng</h1>   
+                <h1 class="mb-1">Chi tiết hội đồng</h1>
             </div>
         </div>
         <div class="header-actions">
@@ -79,12 +79,7 @@
                             <tr>
                                 <th class="text-muted text-start" style="width: 200px; text-align: left;">
                                     Thành viên hội đồng:
-                                    <div class="mt-1">
-                                        <button type="button" id="btn-toggle-auto-update" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-sync-alt"></i> Tự động cập nhật
-                                        </button>
-                                        <small class="text-muted ms-2" id="update-status">Đang cập nhật...</small>
-                                    </div>
+                                    <!-- Đã xóa nút và status tự động cập nhật ở đây -->
                                 </th>
                                 <td class="fw-semibold text-start" id="thanh-vien-hoi-dong">
                                     @if($hoiDong->phanCongVaiTros && $hoiDong->phanCongVaiTros->where('de_tai_id', null)->count() > 0)
@@ -155,7 +150,7 @@
                                     @endif
                                 </td>
                             </tr>
-                           
+
                             <tr>
                                 <th class="text-muted text-start" style="width: 200px; text-align: left;">Ngày tạo:</th>
                                 <td class="text-start">
@@ -253,27 +248,27 @@
                                                 </td>
                                                 <td>
                                                     <div class="btn-group btn-group-sm" role="group">
-                                                        <a href="{{ route('admin.de-tai.edit', $chiTiet->deTai->id) }}" 
-                                                           class="btn btn-outline-primary" 
+                                                        <a href="{{ route('admin.de-tai.edit', $chiTiet->deTai->id) }}"
+                                                           class="btn btn-outline-primary"
                                                            title="Sửa đề tài">
                                                             <i class="fas fa-edit"></i>
                                                         </a>
-                                                        <a href="{{ route('admin.de-tai.preview-pdf', $chiTiet->deTai->id) }}" 
-                                                           class="btn btn-outline-info" 
+                                                        <a href="{{ route('admin.de-tai.preview-pdf', $chiTiet->deTai->id) }}"
+                                                           class="btn btn-outline-info"
                                                            title="Xem chi tiết"
                                                            target="_blank">
                                                             <i class="fas fa-eye"></i>
                                                         </a>
-                                                        <button type="button" 
-                                                                class="btn btn-outline-warning btn-chuyen-hoi-dong" 
+                                                        <button type="button"
+                                                                class="btn btn-outline-warning btn-chuyen-hoi-dong"
                                                                 data-detai-id="{{ $chiTiet->deTai->id }}"
                                                                 data-current-hoidong="{{ $hoiDong->id }}"
                                                                 title="Chuyển sang hội đồng khác">
                                                             <i class="fas fa-random"></i>
                                                         </button>
                                                         @if($chiTiet->deTai->giang_vien_id)
-                                                        <button type="button" 
-                                                                class="btn btn-outline-info btn-debug-vai-tro" 
+                                                        <button type="button"
+                                                                class="btn btn-outline-info btn-debug-vai-tro"
                                                                 data-hoi-dong-id="{{ $hoiDong->id }}"
                                                                 data-giang-vien-id="{{ $chiTiet->deTai->giang_vien_id }}"
                                                                 title="Debug vai trò giảng viên">
@@ -286,8 +281,8 @@
                                                         <a href="{{ route('admin.phan-cong-cham.index',  ['hoi_dong_id' => $hoiDong->id, 'de_tai_id' => $chiTiet->deTai->id])  }}" class="btn btn-outline-secondary btn-xs" title="Quản lý phản biện">
                                                             <i class="fas fa-tasks"></i>
                                                         </a>
-                                                        <button type="button" 
-                                                                class="btn btn-outline-danger btn-xoa-de-tai" 
+                                                        <button type="button"
+                                                                class="btn btn-outline-danger btn-xoa-de-tai"
                                                                 data-href="{{ route('admin.hoi-dong.xoa-de-tai', ['hoiDong' => $hoiDong->id, 'deTai' => $chiTiet->deTai->id]) }}"
                                                                 title="Xóa khỏi hội đồng">
                                                             <i class="fas fa-trash"></i>
@@ -614,27 +609,27 @@
         $('.btn-xoa-de-tai').click(function(e) {
             e.preventDefault();
             const url = $(this).attr('data-href');
-            
+
             if (confirm('Bạn có chắc chắn muốn xóa đề tài này khỏi hội đồng? Hành động này không thể hoàn tác.')) {
                 // Tạo form ẩn để submit DELETE request
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = url;
-                
+
                 // Thêm CSRF token
                 const csrfToken = document.createElement('input');
                 csrfToken.type = 'hidden';
                 csrfToken.name = '_token';
                 csrfToken.value = '{{ csrf_token() }}';
                 form.appendChild(csrfToken);
-                
+
                 // Thêm method override
                 const methodField = document.createElement('input');
                 methodField.type = 'hidden';
                 methodField.name = '_method';
                 methodField.value = 'DELETE';
                 form.appendChild(methodField);
-                
+
                 document.body.appendChild(form);
                 form.submit();
             }
@@ -688,7 +683,7 @@
         $('form').submit(function(e) {
             const thoiGianBatDau = $('input[name="thoi_gian_bat_dau"]').val();
             const thoiGianKetThuc = $('input[name="thoi_gian_ket_thuc"]').val();
-            
+
             if (thoiGianBatDau && thoiGianKetThuc && thoiGianBatDau >= thoiGianKetThuc) {
                 e.preventDefault();
                 Swal.fire({
@@ -712,7 +707,7 @@
         $('.btn-debug-vai-tro').click(function() {
             const hoiDongId = $(this).data('hoi-dong-id');
             const giangVienId = $(this).data('giang-vien-id');
-            
+
             $.ajax({
                 url: '{{ route("admin.hoi-dong.debug-vai-tro") }}',
                 method: 'POST',
@@ -762,7 +757,7 @@
                 alert('Vui lòng chọn hội đồng mới!');
                 return;
             }
-            
+
             // Hiển thị xác nhận trước khi chuyển
             Swal.fire({
                 title: 'Xác nhận chuyển đề tài?',
@@ -784,7 +779,7 @@
                             Swal.showLoading();
                         }
                     });
-            
+
             $.ajax({
                 url: '{{ route('admin.hoi-dong.index') }}/chuyen-de-tai',
                 method: 'POST',
@@ -804,7 +799,7 @@
                             showConfirmButton: true
                         }).then(() => {
                             // Cập nhật thành viên hội đồng bằng AJAX
-                            updateThanhVienHoiDong();
+                            // updateThanhVienHoiDong(); // Đã xóa
                         });
                     } else {
                         Swal.fire({
@@ -820,12 +815,12 @@
                     if (xhr.responseJSON && xhr.responseJSON.message) {
                         errorMessage = xhr.responseJSON.message;
                     }
-                    
+
                     // Kiểm tra nếu lỗi liên quan đến vai trò giảng viên
                     if (errorMessage.includes('vai trò quan trọng') || errorMessage.includes('Trưởng tiểu ban') || errorMessage.includes('Thư ký')) {
                         Swal.fire({
                             title: 'Không thể chuyển đề tài!',
-                            html: '<div class="text-start">' + 
+                            html: '<div class="text-start">' +
                                   '<p><strong>Lý do:</strong> Có giảng viên với vai trò quan trọng trong hội đồng hiện tại.</p>' +
                                   '<p><strong>Giải pháp:</strong></p>' +
                                   '<ol class="text-start">' +
@@ -962,100 +957,22 @@
         });
 
         // Function cập nhật thành viên hội đồng
-        function updateThanhVienHoiDong() {
-            const currentContent = $('#thanh-vien-hoi-dong').html();
-            
-            $.ajax({
-                url: '{{ route("admin.hoi-dong.thanh-vien", $hoiDong->id) }}',
-                method: 'GET',
-                success: function(res) {
-                    if (res.success) {
-                        if (currentContent !== res.html) {
-                            // Có thay đổi, cập nhật nội dung
-                            $('#thanh-vien-hoi-dong').html(res.html);
-                            
-                            // Hiển thị thông báo có thay đổi
-                            updateStatus('Đã cập nhật ' + new Date().toLocaleTimeString(), 'text-success');
-                            
-                            // Tự động ẩn thông báo sau 3 giây
-                            setTimeout(function() {
-                                if (isAutoUpdateEnabled) {
-                                    updateStatus('Đang cập nhật...', 'text-success');
-                                }
-                            }, 3000);
-                        }
-                    }
-                },
-                error: function(xhr) {
-                    console.error('Lỗi khi cập nhật thành viên hội đồng:', xhr);
-                    updateStatus('Lỗi cập nhật', 'text-danger');
-                }
-            });
-        }
+        // Đã xóa hàm này
 
         // Tự động cập nhật thành viên hội đồng mỗi 5 giây
-        let updateInterval;
-        let isAutoUpdateEnabled = true;
-        
-        function startAutoUpdate() {
-            if (!isAutoUpdateEnabled) return;
-            
-            updateInterval = setInterval(function() {
-                updateThanhVienHoiDong();
-            }, 5000); // Cập nhật mỗi 5 giây
-            
-            updateStatus('Đang cập nhật...', 'text-success');
-        }
-        
-        function stopAutoUpdate() {
-            if (updateInterval) {
-                clearInterval(updateInterval);
-                updateInterval = null;
-            }
-            updateStatus('Đã dừng', 'text-muted');
-        }
-
-        function updateStatus(message, className) {
-            $('#update-status').text(message).removeClass().addClass('text-muted ms-2 ' + className);
-        }
-
-        function toggleAutoUpdate() {
-            if (isAutoUpdateEnabled) {
-                stopAutoUpdate();
-                isAutoUpdateEnabled = false;
-                $('#btn-toggle-auto-update').removeClass('btn-outline-primary').addClass('btn-outline-secondary');
-                $('#btn-toggle-auto-update i').removeClass('fa-sync-alt').addClass('fa-pause');
-                $('#btn-toggle-auto-update').html('<i class="fas fa-pause"></i> Tạm dừng');
-            } else {
-                isAutoUpdateEnabled = true;
-                startAutoUpdate();
-                $('#btn-toggle-auto-update').removeClass('btn-outline-secondary').addClass('btn-outline-primary');
-                $('#btn-toggle-auto-update i').removeClass('fa-pause').addClass('fa-sync-alt');
-                $('#btn-toggle-auto-update').html('<i class="fas fa-sync-alt"></i> Tự động cập nhật');
-            }
-        }
+        // Đã xóa biến updateInterval và isAutoUpdateEnabled
 
         // Xử lý nút bật/tắt tự động cập nhật
-        $('#btn-toggle-auto-update').click(function() {
-            toggleAutoUpdate();
-        });
+        // Đã xóa nút và hàm toggleAutoUpdate
 
         // Bắt đầu tự động cập nhật khi trang load
-        startAutoUpdate();
+        // Đã xóa
 
         // Dừng tự động cập nhật khi tab không active
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                stopAutoUpdate();
-            } else if (isAutoUpdateEnabled) {
-                startAutoUpdate();
-            }
-        });
+        // Đã xóa
 
         // Dừng tự động cập nhật khi đóng trang
-        window.addEventListener('beforeunload', function() {
-            stopAutoUpdate();
-        });
+        // Đã xóa
     });
 </script>
 <script>
