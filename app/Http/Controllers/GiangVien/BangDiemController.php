@@ -55,14 +55,8 @@ class BangDiemController extends Controller
             $bangDiemBySinhVienHoiDong = $bangDiemsHoiDong
                 ->groupBy('sinh_vien_id')
                 ->map(function($items) {
-                    $valid = $items->filter(function($bd) {
-                        $tong =
-                            ($bd->diem_thuyet_trinh ?? 0)
-                        + ($bd->diem_demo          ?? 0)
-                        + ($bd->diem_cau_hoi       ?? 0)
-                        + ($bd->diem_cong          ?? 0);
-                        return $tong > 0;
-                    });
+                    // BỎ filter, luôn lấy tất cả bảng điểm
+                    $valid = $items; // $items->filter(function($bd) { ... });
                     $bcTB = $valid->avg('diem_bao_cao');
                     $tkTB = $valid->map(function($bd) {
                         return
@@ -145,9 +139,8 @@ class BangDiemController extends Controller
             $phanCong = $item['phanCong'];
             $deTai    = $item['deTai'];
             $dot_bao_cao_id = $deTai->lichCham && $deTai->lichCham->dot_bao_cao_id ? $deTai->lichCham->dot_bao_cao_id : null;
-            // Nếu là hướng dẫn hoặc phản biện thì luôn hiển thị, còn lại chỉ hiển thị khi de_tai_id != null
-            $loaiGV = $phanCong->loai_giang_vien ?? null;
-            if (!$phanCong->de_tai_id && !in_array($loaiGV, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện'])) continue;
+            // BỎ điều kiện lọc chỉ cho GVHD/GVPB, để tất cả vai trò đều được hiển thị
+            // if (!$phanCong->de_tai_id && !in_array($loaiGV, ['Giảng Viên Hướng Dẫn', 'Giảng Viên Phản Biện'])) continue;
             if ($deTai->nhom && $deTai->nhom->sinhViens) {
                 foreach ($deTai->nhom->sinhViens as $sinhVien) {
                     $dsSinhVien->push([
